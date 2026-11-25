@@ -92,7 +92,8 @@ COVER_JS = r"""
   const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
   if (!top || top === el || el.contains(top) || top.contains(el) && top.tagName === 'LABEL') return null;
   const dlg = top.closest('[role=dialog], [aria-modal=true], .modal, .overlay') || top;
-  const words = /^(dismiss|close|got it|no thanks|not now|skip|ok|×|x)$/i;
+  // only non-committal labels: never 'OK', 'Confirm', 'Delete' or anything that could act on data
+  const words = /^(dismiss|close|got it|no thanks|not now|maybe later|×)$/i;
   const btn = [...dlg.querySelectorAll('button, [role=button], a')].find(b => words.test((b.innerText || b.getAttribute('aria-label') || '').trim()));
   if (btn) btn.setAttribute('data-fb-dismiss', '1');
   return {cover: (dlg.getAttribute('aria-label') || dlg.innerText || dlg.tagName).trim().slice(0, 80), dismiss: !!btn};
@@ -239,6 +240,7 @@ class BrowserEnv:
         """Run one action. Returns (result_text, error_text_or_None)."""
         kind = action.get("action")
         n_pages = len(self.pages)
+        g0 = len(self.guard_events)
         try:
             if kind in ("click", "type", "select", "check"):
                 loc = self._loc(action["id"])
@@ -294,7 +296,8 @@ class BrowserEnv:
                     note = f" The link opened a new tab; switched to it (tab {self.active})."
                 else:
                     note = f" A new tab opened (tab {len(self.pages) - 1}); you are still on tab {self.active}."
-            return "ok." + note, None
+            fixes = "".join(f" [{g['guard']}: {g['detail']}]" for g in self.guard_events[g0:])
+            return "ok." + note + fixes, None
         except PWTimeout as e:
             msg = str(e).split("\n")
             detail = next((l.strip() for l in msg if "intercepts pointer events" in l), msg[0])

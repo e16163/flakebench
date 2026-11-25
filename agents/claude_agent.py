@@ -4,6 +4,8 @@ Default model is Claude Opus 5.5 at low effort (fast, cheap per step). Pass
 --model claude-sonnet-5-5 or claude-haiku-5-5 to compare models: model-vs-model
 variance on the same seeds is a nice extra chart for the report.
 """
+import json
+
 import anthropic
 
 SYSTEM = """You are a browser agent operating a web CRM called Pipeline at http://localhost.
@@ -37,20 +39,30 @@ TOOLS[-1]["cache_control"] = {"type": "ephemeral"}
 
 
 class ClaudeAgent:
-    def __init__(self, model="claude-opus-5-5", effort="low"):
+    def __init__(self, model="claude-opus-5-5", effort="low", compact=False):
         self.client = anthropic.Anthropic()
         self.model = model
         self.effort = effort
-        self.name = f"claude:{model}:{effort}"
+        # compact=True: each call sends task + one-line action log + current page only.
+        # Flat ~2-3k tokens per call instead of a growing transcript: about 5x cheaper.
+        self.compact = compact
+        self.name = f"claude:{model}:{effort}" + (":compact" if compact else "")
         self.usage = {"input": 0, "output": 0, "cache_read": 0}
 
     def reset(self, task, seed):
         self.task = task
         self.messages = []
+        self.log = []
         self.pending = None
 
     def step(self, obs, obs_text, last_result):
-        if self.pending is None:
+        if self.compact:
+            if self.pending is not None:
+                self.log.append(f"{len(self.log) + 1}. {self.pending} -> {last_result}")
+            self.messages = [{"role": "user", "content":
+                              f"Task: {self.task.prompt}\n\nActions so far:\n" + ("\n".join(self.log[-30:]) or "(none yet)") +
+                              f"\n\nCurrent page:\n{obs_text}"}]
+        elif self.pending is None:
             self.messages.append({"role": "user", "content":
                                   f"Task: {self.task.prompt}\n\nCurrent page:\n{obs_text}"})
         else:
@@ -58,7 +70,11 @@ class ClaudeAgent:
                 "type": "tool_result", "tool_use_id": self.pending,
                 "content": f"Result: {last_result}\n\nCurrent page:\n{obs_text}"}]})
 
+        # server-side refusal fallbacks exist for Opus 5.x / Sonnet 5.5 / Fable, not Haiku
+        fb = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"} \
+            if self.model.startswith(("claude-opus-5", "claude-sonnet-5-5", "claude-fable")) else {}
         resp = self.client.beta.messages.create(
+            **fb,
             model=self.model,
             max_tokens=4000,
             system=SYSTEM,
@@ -66,8 +82,6 @@ class ClaudeAgent:
             tool_choice={"type": "auto", "disable_parallel_tool_use": True},
             output_config={"effort": self.effort},
             cache_control={"type": "ephemeral"},
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
             messages=self.messages,
         )
         u = resp.usage
@@ -85,5 +99,6 @@ class ClaudeAgent:
         if call is None:
             self.pending = None
             return {"action": "done", "summary": text or "stopped without a tool call"}, text
-        self.pending = call.id
-        return {"action": call.name, **call.input}, text
+        action = {"action": call.name, **call.input}
+        self.pending = json.dumps(action, ensure_ascii=False) if self.compact else call.id
+        return action, text

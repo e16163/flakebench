@@ -49,8 +49,11 @@ def make_agent(args):
     if args.agent == "scripted":
         from agents.scripted import ScriptedAgent
         return ScriptedAgent()
+    if args.agent in ("gemini", "ollama"):
+        from agents.openai_compat import OpenAICompatAgent
+        return OpenAICompatAgent(args.agent, model=args.model, rpm=args.rpm)
     from agents.claude_agent import ClaudeAgent
-    return ClaudeAgent(model=args.model, effort=args.effort)
+    return ClaudeAgent(model=args.model or "claude-opus-5-5", effort=args.effort, compact=args.compact)
 
 
 def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_off):
@@ -102,8 +105,11 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--agent", choices=["scripted", "claude"], default="scripted")
-    ap.add_argument("--model", default="claude-opus-5-5")
+    ap.add_argument("--agent", choices=["scripted", "claude", "gemini", "ollama"], default="scripted")
+    ap.add_argument("--model", default=None, help="model id; defaults: claude-opus-5-5, gemini-3.5-flash-lite, qwen3:8b")
+    ap.add_argument("--compact", action="store_true", help="claude: send only task + action log + current page (cheaper)")
+    ap.add_argument("--rpm", type=float, default=None, help="max requests per minute (gemini default 14)")
+    ap.add_argument("--resume", action="store_true", help="skip runs that already have a trace in --out")
     ap.add_argument("--effort", default="low")
     ap.add_argument("--tasks", default="all")
     ap.add_argument("--runs", type=int, default=5)
@@ -125,13 +131,23 @@ def main():
     env = BrowserEnv(base, headless=not args.headed, guards=guards)
     meta = {"agent": agent.name, "guards": list(guards), "runs": args.runs, "max_steps": args.max_steps,
             "chaos": not args.no_chaos, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
-    json.dump(meta, open(os.path.join(out, "meta.json"), "w"), indent=2)
+    if not (args.resume and os.path.exists(os.path.join(out, "meta.json"))):
+        json.dump(meta, open(os.path.join(out, "meta.json"), "w"), indent=2)
     try:
         with open(os.path.join(out, "results.jsonl"), "a") as fh:
             for task in tasks:
                 for seed in range(args.runs):
                     run_dir = os.path.join(out, task.id, f"run{seed}")
-                    rec = run_once(env, agent, task, seed, base, db_path, run_dir, args.max_steps, args.no_chaos)
+                    if args.resume and os.path.exists(os.path.join(run_dir, "trace.json")):
+                        continue
+                    try:
+                        rec = run_once(env, agent, task, seed, base, db_path, run_dir, args.max_steps, args.no_chaos)
+                    except Exception as e:
+                        if type(e).__name__ == "RateLimited":
+                            print(f"\nStopped: {e}\nFinished runs are saved. Rerun the same command with --resume "
+                                  "once the quota resets (usually midnight Pacific).")
+                            return
+                        raise
                     json.dump(rec, open(os.path.join(run_dir, "trace.json"), "w"), indent=1)
                     fh.write(json.dumps({k: rec[k] for k in ("task", "seed", "passed", "reason", "n_steps", "duration_s")}) + "\n")
                     fh.flush()

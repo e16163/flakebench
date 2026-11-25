@@ -53,3 +53,21 @@ def test_request_shape_and_loop(monkeypatch):
     assert second["messages"][:1] == first["messages"]
     assert second["messages"][-1]["content"][0]["tool_use_id"] == "tu_1"
     assert agent.usage == {"input": 200, "output": 20, "cache_read": 100}
+
+
+def test_compact_mode_sends_one_message(monkeypatch):
+    SEEN.clear()
+    srv = HTTPServer(("127.0.0.1", 0), Fake)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    monkeypatch.setenv("ANTHROPIC_BASE_URL", f"http://127.0.0.1:{srv.server_port}")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
+    agent = ClaudeAgent(model="claude-haiku-5-5", compact=True)
+    agent.reset(BY_ID["t01_qualify_priya"], 0)
+    agent.step(None, "URL: /leads", None)
+    agent.step(None, "URL: /leads?page=4", "ok.")
+    srv.shutdown()
+    second = SEEN[1]["body"]
+    assert second["model"] == "claude-haiku-5-5"
+    assert len(second["messages"]) == 1
+    assert "fallbacks" not in second and not SEEN[1]["beta"]
+    assert '1. {"action": "click", "id": 14} -> ok.' in second["messages"][0]["content"]

@@ -126,6 +126,14 @@ def t10(con):
                   untouched_leads(con, {r["id"]}))
 
 
+def t11(con):
+    want = {"Dana Whitfield", "Leo Strand", "Maya Iqbal"}  # people with unread mail
+    rows = {r["name"]: r for r in con.execute("SELECT * FROM leads WHERE name IN (%s)" % ",".join("?" * 3), tuple(want))}
+    missing = sorted(n for n, r in rows.items() if "follow up" not in (r["notes"] or "").lower())
+    return all_of((not missing, f"note missing on: {', '.join(missing)}"),
+                  untouched_leads(con, {r["id"] for r in rows.values()}))
+
+
 TASKS = [
     Task("t01_qualify_priya", "Move the lead Priya Raman (Northwind Labs) to the Qualified stage.", t01, ("pagination",)),
     Task("t02_assign_helix", "Assign every lead from Helix Robotics to the owner Riley.", t02, ("pagination", "multi-item")),
@@ -137,6 +145,7 @@ TASKS = [
     Task("t08_oldest_contacted", "Among leads in the Contacted stage, find the one with the oldest last activity and assign it to Riley.", t08, ("reasoning", "reorder")),
     Task("t09_move_lumen", "Move the calendar event 'Sync with Lumen' from Dec 2 to Dec 4, keeping the same time.", t09, ("form",)),
     Task("t10_note_q1", "Someone emailed asking about the Q1 rollout. Add the note 'sent deck' to that person's lead record.", t10, ("cross-page",)),
+    Task("t11_followups", "For every unread email from a real person (not an automated noreply sender), find that sender's lead and add the note 'follow up'.", t11, ("long-horizon", "cross-page", "multi-item")),
 ]
 
 BY_ID = {t.id: t for t in TASKS}

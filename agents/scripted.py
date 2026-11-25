@@ -30,6 +30,8 @@ PLANS = {
                        ("type", "Notes", "budget frozen"), ("click", "Save")],
     "t08_oldest_contacted": [("goto", L), ("find", "Hugo Bianchi"), ("select", "Owner", "Riley"), ("click", "Save")],
     "t09_move_lumen": [("goto", "/calendar/1"), ("type", "Date", "2026-12-04"), ("click", "Save event")],
+    "t11_followups": sum([[("goto", L), ("find", n), ("type", "Notes", "follow up"), ("click", "Save")]
+                          for n in ("Dana Whitfield", "Leo Strand", "Maya Iqbal")], []),
     "t10_note_q1": [("goto", L), ("find", "Leo Strand"), ("type", "Notes", "sent deck"), ("click", "Save")],
 }
 
