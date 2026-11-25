@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Compose{% endblock %}
+{% block body %}
+<h2>New email</h2>
+{% if error %}<p style="color:#c92a2a">To and Subject are required.</p>{% endif %}
+<div class="card"><form method="post">
+  <label for="to">To</label><input id="to" name="to" type="email">
+  <label for="subject">Subject</label><input id="subject" name="subject">
+  <label for="body">Message</label><textarea id="body" name="body" rows="6"></textarea>
+  <div><button type="submit">Send</button></div>
+</form></div>
+{% endblock %}

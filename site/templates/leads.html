@@ -1,0 +1,45 @@
+{% extends "base.html" %}{% block title %}Leads{% endblock %}
+{% block body %}
+<h2>Leads <span class="muted">({{ total }})</span></h2>
+<form method="get" action="/leads" style="display:flex; gap:8px; align-items:end; margin-bottom:12px">
+  <div><label for="stage">Stage</label>
+  <select id="stage" name="stage">
+    <option value="">All stages</option>
+    {% for s in stages %}<option value="{{ s }}" {% if s == stage %}selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select></div>
+  <button type="submit">Filter</button>
+</form>
+<p class="muted" id="sortnote">Sorted by name</p>
+<table>
+  <thead><tr><th>Name</th><th>Company</th><th>Title</th><th>Stage</th><th>Owner</th><th>Last activity</th></tr></thead>
+  <tbody id="lead-rows">
+  {% for r in rows %}
+    <tr><td><a href="/leads/{{ r.id }}" {% if chaos.newtab %}target="_blank"{% endif %}>{{ r.name }}</a></td>
+      <td>{{ r.company }}</td><td>{{ r.title }}</td><td>{{ r.stage }}</td><td>{{ r.owner }}</td><td>{{ r.last_activity }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="pager">
+  {% if page > 1 %}<a href="/leads?page={{ page - 1 }}&stage={{ stage }}">Prev</a>{% endif %}
+  {% for p in range(1, pages + 1) %}
+    {% if p == page %}<span class="cur">{{ p }}</span>{% else %}<a href="/leads?page={{ p }}&stage={{ stage }}">{{ p }}</a>{% endif %}
+  {% endfor %}
+  {% if page < pages %}<a href="/leads?page={{ page + 1 }}&stage={{ stage }}">Next</a>{% endif %}
+  <span class="muted" style="border:0;background:none">Page {{ page }} of {{ pages }}</span>
+</div>
+{% if chaos.reorder_ms %}
+<script>
+  // "Live" re-sort by recent activity: rebuilds the rows, so old element handles go stale.
+  setTimeout(function () {
+    var rows = {{ rows | tojson }};
+    rows.sort(function (a, b) { return a.last_activity < b.last_activity ? 1 : -1; });
+    var nt = {{ 'true' if chaos.newtab else 'false' }};
+    document.getElementById('lead-rows').innerHTML = rows.map(function (r) {
+      return '<tr><td><a href="/leads/' + r.id + '"' + (nt ? ' target="_blank"' : '') + '>' + r.name + '</a></td><td>' +
+        r.company + '</td><td>' + r.title + '</td><td>' + r.stage + '</td><td>' + r.owner + '</td><td>' + r.last_activity + '</td></tr>';
+    }).join('');
+    document.getElementById('sortnote').textContent = 'Sorted by recent activity (live)';
+  }, {{ chaos.reorder_ms }});
+</script>
+{% endif %}
+{% endblock %}

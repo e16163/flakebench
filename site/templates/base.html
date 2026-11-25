@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}Pipeline{% endblock %} · Pipeline CRM</title>
+<style>
+  body { font: 14px/1.45 system-ui, sans-serif; margin: 0; color: #1d2433; background: #f6f7f9; }
+  nav { background: #1d2433; padding: 10px 20px; display: flex; gap: 18px; align-items: center; }
+  nav a { color: #cfd6e4; text-decoration: none; } nav a:hover { color: #fff; }
+  nav .brand { color: #fff; font-weight: 700; margin-right: 12px; }
+  main { max-width: 980px; margin: 24px auto; padding: 0 20px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e5e8ee; }
+  th { background: #eef1f5; font-weight: 600; }
+  .card { background: #fff; border: 1px solid #e5e8ee; border-radius: 8px; padding: 16px 20px; }
+  label { display: block; margin: 10px 0 4px; font-weight: 600; }
+  input, select, textarea { font: inherit; padding: 6px 8px; width: 100%; max-width: 420px; box-sizing: border-box; }
+  button { font: inherit; padding: 7px 14px; background: #3b5bdb; color: #fff; border: 0; border-radius: 6px; cursor: pointer; margin-top: 12px; }
+  .pager { margin-top: 12px; display: flex; gap: 6px; align-items: center; }
+  .pager a, .pager span { padding: 4px 9px; border: 1px solid #cfd6e4; border-radius: 4px; text-decoration: none; color: #1d2433; background: #fff; }
+  .pager .cur { background: #3b5bdb; color: #fff; border-color: #3b5bdb; }
+  .muted { color: #6b7385; } .ok { color: #2b8a3e; font-weight: 600; }
+  .unread { font-weight: 700; }
+  #whatsnew { position: fixed; inset: 0; background: rgba(15,20,30,.55); display: none; z-index: 50; }
+  #whatsnew .box { background: #fff; width: 420px; margin: 120px auto; padding: 22px; border-radius: 10px; }
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand">Pipeline</span>
+  <a href="/leads">Leads</a><a href="/inbox">Inbox</a><a href="/compose">Compose</a>
+  <a href="/sent">Sent</a><a href="/calendar">Calendar</a>
+</nav>
+<main>{% block body %}{% endblock %}</main>
+{% if chaos and chaos.modal_ms %}
+<div id="whatsnew" role="dialog" aria-label="What's new">
+  <div class="box">
+    <h3>What's new in Pipeline</h3>
+    <p>Smart sequences are here. Send follow-ups automatically when a lead goes quiet.</p>
+    <button type="button" id="whatsnew-dismiss">Dismiss</button>
+  </div>
+</div>
+<script>
+  setTimeout(function () { document.getElementById('whatsnew').style.display = 'block'; }, {{ chaos.modal_ms }});
+  document.getElementById('whatsnew-dismiss').onclick = function () {
+    document.getElementById('whatsnew').style.display = 'none';
+  };
+</script>
+{% endif %}
+</body>
+</html>

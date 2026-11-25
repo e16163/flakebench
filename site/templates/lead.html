@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}{{ lead.name }}{% endblock %}
+{% block body %}
+<p><a href="/leads">&larr; All leads</a></p>
+<div class="card">
+  <h2>{{ lead.name }}</h2>
+  <p class="muted">{{ lead.title }} at {{ lead.company }} · {{ lead.email }}</p>
+  {% if saved %}<p class="ok">Saved</p>{% endif %}
+  <form method="post">
+    <label for="stage">Stage</label>
+    <select id="stage" name="stage">{% for s in stages %}<option {% if s == lead.stage %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+    <label for="owner">Owner</label>
+    <select id="owner" name="owner">{% for o in owners %}<option {% if o == lead.owner %}selected{% endif %}>{{ o }}</option>{% endfor %}</select>
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes" rows="4">{{ lead.notes }}</textarea>
+    <div><button type="submit">Save</button></div>
+  </form>
+</div>
+{% endblock %}

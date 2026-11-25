@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Inbox{% endblock %}
+{% block body %}
+<h2>Inbox</h2>
+<form method="post" action="/inbox/archive">
+  <table>
+    <thead><tr><th></th><th>From</th><th>Subject</th><th>Received</th></tr></thead>
+    <tbody id="inbox-rows"><tr><td colspan="4" class="muted">Loading messages…</td></tr></tbody>
+  </table>
+  <button type="submit">Archive selected</button>
+</form>
+<script>
+  setTimeout(function () {
+    fetch('/api/inbox').then(function (r) { return r.json(); }).then(function (rows) {
+      document.getElementById('inbox-rows').innerHTML = rows.length ? rows.map(function (m) {
+        return '<tr class="' + (m.is_read ? '' : 'unread') + '"><td><input type="checkbox" name="ids" value="' + m.id +
+          '" aria-label="Select ' + m.subject + '"></td><td>' + m.from_addr + '</td><td><a href="/inbox/' + m.id + '">' +
+          m.subject + '</a>' + (m.is_read ? '' : ' (unread)') + '</td><td>' + m.created_at + '</td></tr>';
+      }).join('') : '<tr><td colspan="4" class="muted">No messages</td></tr>';
+    });
+  }, {{ chaos.slow_ms or 0 }});
+</script>
+{% endblock %}

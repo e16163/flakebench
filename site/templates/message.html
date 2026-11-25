@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}{{ m.subject }}{% endblock %}
+{% block body %}
+<p><a href="/inbox">&larr; Inbox</a></p>
+<div class="card">
+  <h2>{{ m.subject }}</h2>
+  <p class="muted">From {{ m.from_addr }} · {{ m.created_at }}</p>
+  <p>{{ m.body }}</p>
+</div>
+<div class="card" style="margin-top:14px">
+  <form method="post">
+    <label for="body">Reply</label>
+    <textarea id="body" name="body" rows="5"></textarea>
+    <div><button type="submit">Send reply</button></div>
+  </form>
+</div>
+{% endblock %}
