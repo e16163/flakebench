@@ -113,7 +113,7 @@ def main():
     args = ap.parse_args()
 
     tasks = TASKS if args.tasks == "all" else [BY_ID[t] for t in args.tasks.split(",")]
-    out = args.out or os.path.join(ROOT, "runs", time.strftime("%Y%m%d-%H%M%S") + f"-{args.agent}")
+    out = os.path.abspath(args.out or os.path.join(ROOT, "runs", time.strftime("%Y%m%d-%H%M%S") + f"-{args.agent}"))
     os.makedirs(out, exist_ok=True)
     db_path = os.path.join(out, "pipeline.db")
     proc, base = start_server(db_path, args.port)
