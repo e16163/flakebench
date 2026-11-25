@@ -69,6 +69,21 @@ def bar_rows(items, max_v, fmt, right):
     return "\n".join(out)
 
 
+def trace_html(f):
+    items = []
+    for st in f["trace"]:
+        a = dict(st["action"])
+        kind = a.pop("action")
+        a.pop("id", None)
+        desc = kind + (f' <code>{E(st["label"])}</code>' if st["label"] else "") + \
+            (" " + E(json.dumps(a, ensure_ascii=False)) if a else "")
+        mark = " <b>&larr; split</b>" if st["i"] == f["divergence_step"] else ""
+        err = f'<br><span class="k">error: {E(st["error"][:160])}</span>' if st["error"] else ""
+        gd = "".join(f'<br><span class="k">guard: {E(g)}</span>' for g in st["guards"])
+        items.append(f'<li><span class="k">{E(st["url"])}</span> · {desc}{mark}{err}{gd}</li>')
+    return "".join(items)
+
+
 def build(run_dir):
     a = analyze(run_dir)
     rep = os.path.join(run_dir, "report")
@@ -115,20 +130,25 @@ def build(run_dir):
   {f'<p style="margin:4px 0"><span class="k">Agent said:</span> {E(f["reasoning"])}</p>' if f["reasoning"] else ""}
   <p style="margin:4px 0"><span class="k">Checker:</span> {E(f["checker_reason"])}</p>
   <p style="margin:4px 0" class="k">Chaos this run: {E(", ".join(f["chaos_seen"]) or "none")}</p>
+  <details><summary>Full trace ({f["n_steps"]} steps)</summary><ol start="0" style="font-size:13px;padding-left:22px">{trace_html(f)}</ol>
+  <p class="k" style="font-size:13px">Replay: <code>python runner/run.py --agent ... --tasks {E(t["task"])} --runs {f["seed"] + 1}</code> (seed {f["seed"]} is the last run)</p></details>
 </div></div>''')
 
     top = next(iter(a["causes"]), None)
+    n_guard = sum(sum(t.get("guard_events", {}).values()) for t in a["tasks"])
+    guard_names = E(", ".join(meta.get("guards") or []) or "off")
     usage = meta.get("usage")
     html_out = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>flakebench report</title><style>{CSS}</style></head><body><main>
 <h1>Where browser agents break</h1>
 <p class="sub">Agent <span class="mono">{E(meta["agent"])}</span> · {o["runs"]} runs ({meta["runs"]} per task, seeds 0–{meta["runs"] - 1}) ·
-chaos {"on" if meta["chaos"] else "off"} · {E(meta["started"])}</p>
+chaos {"on" if meta["chaos"] else "off"} · guards: {guard_names} · {E(meta["started"])}</p>
 <div class="tiles">
   <div class="tile"><div class="v">{o["pass_rate"]:.0%}</div><div class="l">runs passed ({o["passes"]}/{o["runs"]})</div></div>
   <div class="tile"><div class="v">{o["flaky_tasks"]}/{len(a["tasks"])}</div><div class="l">tasks flaky (pass sometimes)</div></div>
   <div class="tile"><div class="v">{o["always_fail"]}</div><div class="l">tasks that never passed</div></div>
+  <div class="tile"><div class="v">{n_guard}</div><div class="l">guard interventions ({guard_names})</div></div>
   <div class="tile"><div class="v s">{E(a["cause_labels"][top].split(" (")[0]) if top else "none"}</div><div class="l">top failure cause</div></div>
 </div>
 

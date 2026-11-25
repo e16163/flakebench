@@ -19,7 +19,7 @@ import urllib.request
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
-from agents.browser import BrowserEnv  # noqa: E402
+from agents.browser import ALL_GUARDS, BrowserEnv  # noqa: E402
 from tasks.tasks import BY_ID, TASKS, check  # noqa: E402
 
 
@@ -59,6 +59,7 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
     agent.reset(task, seed)
     steps, last_result, t0 = [], None, time.time()
     for i in range(max_steps):
+        g0 = len(env.guard_events)
         obs = env.observe()
         obs_text = env.render(obs)
         t_obs = time.time()
@@ -84,6 +85,7 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
             "modal_at_observe": obs["modal_visible"], "modal_at_act": modal_at_act, "loading": obs["loading"],
             "action": action, "target": ({"tag": target["tag"], "label": target["label"]} if target else None),
             "reasoning": (reasoning or "")[:400], "result": result, "error": error,
+            "guards": env.guard_events[g0:],
             "screenshot": os.path.relpath(shot, run_dir) if shot else None,
         })
         last_result = error and f"ERROR: {error}" or result
@@ -110,6 +112,7 @@ def main():
     ap.add_argument("--out", default=None)
     ap.add_argument("--no-chaos", action="store_true", help="control run with chaos disabled")
     ap.add_argument("--headed", action="store_true")
+    ap.add_argument("--guards", default="", help="comma list of " + ",".join(ALL_GUARDS) + ", or 'all'")
     args = ap.parse_args()
 
     tasks = TASKS if args.tasks == "all" else [BY_ID[t] for t in args.tasks.split(",")]
@@ -118,8 +121,9 @@ def main():
     db_path = os.path.join(out, "pipeline.db")
     proc, base = start_server(db_path, args.port)
     agent = make_agent(args)
-    env = BrowserEnv(base, headless=not args.headed)
-    meta = {"agent": agent.name, "runs": args.runs, "max_steps": args.max_steps,
+    guards = ALL_GUARDS if args.guards == "all" else tuple(g for g in args.guards.split(",") if g)
+    env = BrowserEnv(base, headless=not args.headed, guards=guards)
+    meta = {"agent": agent.name, "guards": list(guards), "runs": args.runs, "max_steps": args.max_steps,
             "chaos": not args.no_chaos, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
     json.dump(meta, open(os.path.join(out, "meta.json"), "w"), indent=2)
     try:

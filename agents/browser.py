@@ -83,11 +83,51 @@ def dom_hash(obs):
     return hashlib.sha1(sig.encode()).hexdigest()[:10]
 
 
+COVER_JS = r"""
+(el) => {
+  // Is the element's center covered by something else? If so, describe the cover
+  // and find a dismiss control inside the dialog that covers it.
+  el.scrollIntoView({block: 'center', inline: 'center'});
+  const r = el.getBoundingClientRect();
+  const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  if (!top || top === el || el.contains(top) || top.contains(el) && top.tagName === 'LABEL') return null;
+  const dlg = top.closest('[role=dialog], [aria-modal=true], .modal, .overlay') || top;
+  const words = /^(dismiss|close|got it|no thanks|not now|skip|ok|×|x)$/i;
+  const btn = [...dlg.querySelectorAll('button, [role=button], a')].find(b => words.test((b.innerText || b.getAttribute('aria-label') || '').trim()));
+  if (btn) btn.setAttribute('data-fb-dismiss', '1');
+  return {cover: (dlg.getAttribute('aria-label') || dlg.innerText || dlg.tagName).trim().slice(0, 80), dismiss: !!btn};
+}
+"""
+
+SETTLE_JS = r"""
+() => new Promise(resolve => {
+  // resolve once nothing is aria-busy and the DOM has been quiet for 300 ms (max 6 s)
+  const t0 = performance.now();
+  let last = performance.now();
+  const mo = new MutationObserver(() => { last = performance.now(); });
+  mo.observe(document.body, {subtree: true, childList: true, attributes: true, characterData: true});
+  const tick = () => {
+    const busy = document.querySelector('[aria-busy=true]');
+    const now = performance.now();
+    if ((!busy && now - last > 300) || now - t0 > 6000) { mo.disconnect(); resolve(now - t0); }
+    else setTimeout(tick, 50);
+  };
+  tick();
+})
+"""
+
+# Guards are the "fix" half of the demo. Each one targets one failure class the
+# analysis found, and each can be switched on alone to measure its effect.
+ALL_GUARDS = ("settle", "reresolve", "overlay", "follow_tab")
+
+
 class BrowserEnv:
-    def __init__(self, base_url, headless=True, screenshot_dir=None):
+    def __init__(self, base_url, headless=True, screenshot_dir=None, guards=()):
         self.base = base_url.rstrip("/")
         self.headless = headless
         self.shot_dir = screenshot_dir
+        self.guards = set(guards)
+        self.guard_events = []
         self._pw = sync_playwright().start()
         self.browser = self._pw.chromium.launch(headless=headless, executable_path=chromium_path())
         self.ctx = None
@@ -103,6 +143,7 @@ class BrowserEnv:
         self.ctx = self.browser.new_context(viewport={"width": 1280, "height": 860})
         self.ctx.new_page().goto(self.base + "/leads")
         self.active = 0
+        self.guard_events = []
         time.sleep(0.3)
 
     def close(self):
@@ -125,6 +166,10 @@ class BrowserEnv:
         p = self.page
         try:
             p.wait_for_load_state("domcontentloaded", timeout=5000)
+            if "settle" in self.guards:
+                waited = p.evaluate(SETTLE_JS)
+                if waited > 400:
+                    self.guard_events.append({"guard": "settle", "detail": f"waited {waited:.0f} ms for the page to settle"})
             raw = p.evaluate(OBSERVE_JS)
         except PWError as e:
             raw = {"elements": [], "text": f"(page unavailable: {e})", "title": "", "modal_visible": False, "loading": False}
@@ -154,29 +199,67 @@ class BrowserEnv:
             return None
 
     # -------------------------------------------------------------- act
+    def _fingerprint(self, el_id):
+        if not self.last_obs:
+            return None
+        e = next((e for e in self.last_obs["elements"] if e["id"] == int(el_id)), None)
+        return e and (e["tag"], e["label"], e.get("href"))
+
     def _loc(self, el_id):
         loc = self.page.locator(f'[data-fb-id="{int(el_id)}"]')
         if loc.count() == 0:
+            fp = self._fingerprint(el_id)
+            if "reresolve" in self.guards and fp:
+                # The page re-rendered since the agent looked. Find the same element
+                # (same tag, label and link) in a fresh observation, if it is unique.
+                old = self.last_obs
+                fresh = self.observe()
+                self.last_obs = old  # keep the agent's view as the reference
+                matches = [e for e in fresh["elements"] if (e["tag"], e["label"], e.get("href")) == fp]
+                if len(matches) == 1:
+                    self.guard_events.append({"guard": "reresolve",
+                                              "detail": f"[{el_id}] went stale; re-found '{fp[1]}' as [{matches[0]['id']}]"})
+                    return self.page.locator(f'[data-fb-id="{matches[0]["id"]}"]').first
             raise LookupError(f"stale element: [{el_id}] is no longer on the page (it changed after the last observation)")
         return loc.first
+
+    def _clear_overlay(self, loc):
+        if "overlay" not in self.guards:
+            return
+        try:
+            info = loc.evaluate(COVER_JS)
+        except PWError:
+            return
+        if info and info["dismiss"]:
+            self.page.locator('[data-fb-dismiss="1"]').first.click(timeout=2000)
+            self.guard_events.append({"guard": "overlay", "detail": f"dismissed overlay '{info['cover'][:50]}' before acting"})
+            time.sleep(0.15)
 
     def act(self, action):
         """Run one action. Returns (result_text, error_text_or_None)."""
         kind = action.get("action")
         n_pages = len(self.pages)
         try:
-            if kind == "click":
-                self._loc(action["id"]).click(timeout=3000)
-            elif kind == "type":
-                self._loc(action["id"]).fill(str(action["text"]), timeout=3000)
-            elif kind == "select":
+            if kind in ("click", "type", "select", "check"):
                 loc = self._loc(action["id"])
+                self._clear_overlay(loc)
+            if kind == "click":
+                try:
+                    opens_tab = loc.evaluate("e => (e.closest('a') || {}).target === '_blank'")
+                except PWError:
+                    opens_tab = False
+                loc.click(timeout=3000)
+                deadline = time.time() + 2.0
+                while opens_tab and len(self.pages) <= n_pages and time.time() < deadline:
+                    self.page.wait_for_timeout(50)
+            elif kind == "type":
+                loc.fill(str(action["text"]), timeout=3000)
+            elif kind == "select":
                 try:
                     loc.select_option(label=action["option"], timeout=3000)
                 except PWError:
                     loc.select_option(value=action["option"], timeout=3000)
             elif kind == "check":
-                loc = self._loc(action["id"])
                 loc.set_checked(bool(action.get("checked", True)), timeout=3000)
             elif kind == "goto":
                 path = action["path"] if action["path"].startswith("/") else "/" + action["path"]
@@ -200,7 +283,17 @@ class BrowserEnv:
             time.sleep(0.25)
             note = ""
             if len(self.pages) > n_pages:
-                note = f" A new tab opened (tab {len(self.pages) - 1}); you are still on tab {self.active}."
+                if "follow_tab" in self.guards:
+                    self.active = len(self.pages) - 1
+                    self.page.bring_to_front()
+                    try:
+                        self.page.wait_for_load_state("domcontentloaded", timeout=5000)
+                    except PWError:
+                        pass
+                    self.guard_events.append({"guard": "follow_tab", "detail": f"followed the new tab {self.active}"})
+                    note = f" The link opened a new tab; switched to it (tab {self.active})."
+                else:
+                    note = f" A new tab opened (tab {len(self.pages) - 1}); you are still on tab {self.active}."
             return "ok." + note, None
         except PWTimeout as e:
             msg = str(e).split("\n")

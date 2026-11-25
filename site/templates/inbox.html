@@ -4,7 +4,7 @@
 <form method="post" action="/inbox/archive">
   <table>
     <thead><tr><th></th><th>From</th><th>Subject</th><th>Received</th></tr></thead>
-    <tbody id="inbox-rows"><tr><td colspan="4" class="muted">Loading messages…</td></tr></tbody>
+    <tbody id="inbox-rows" aria-busy="true"><tr><td colspan="4" class="muted">Loading messages…</td></tr></tbody>
   </table>
   <button type="submit">Archive selected</button>
 </form>
@@ -16,6 +16,7 @@
           '" aria-label="Select ' + m.subject + '"></td><td>' + m.from_addr + '</td><td><a href="/inbox/' + m.id + '">' +
           m.subject + '</a>' + (m.is_read ? '' : ' (unread)') + '</td><td>' + m.created_at + '</td></tr>';
       }).join('') : '<tr><td colspan="4" class="muted">No messages</td></tr>';
+      document.getElementById('inbox-rows').setAttribute('aria-busy', 'false');
     });
   }, {{ chaos.slow_ms or 0 }});
 </script>

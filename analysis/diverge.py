@@ -37,13 +37,19 @@ def key(step):
 
 
 def divergence_index(fail, passes):
+    """First step of the failing run that no passing run ever took.
+
+    Membership is checked against every step of every passing run, not position
+    by position, so a failing run that reached the same page by a different but
+    valid route (typing a URL vs clicking Next) is not flagged early.
+    """
     keys = [key(s) for s in fail["steps"]]
     if not passes:
         errs = [s["i"] for s in fail["steps"] if s["error"]]
         return (errs[0] if errs else len(keys) - 1), False
-    pkeys = [[key(s) for s in p["steps"]] for p in passes]
-    for k in range(len(keys)):
-        if not any(len(pk) > k and pk[:k + 1] == keys[:k + 1] for pk in pkeys):
+    seen = {key(s) for p in passes for s in p["steps"]}
+    for k, kk in enumerate(keys):
+        if kk not in seen:
             return k, True
     return len(keys) - 1, True
 
@@ -111,9 +117,13 @@ def analyze(run_dir):
                 "screenshot": os.path.join(f["_dir"], s["screenshot"]) if s.get("screenshot") else None,
                 "n_steps": f["n_steps"],
                 "chaos_seen": sorted({c["kind"] for c in f["chaos"]}),
+                "trace": [{"i": st["i"], "url": st["url"], "action": st["action"],
+                           "label": (st.get("target") or {}).get("label"), "error": st["error"],
+                           "guards": [g["detail"] for g in st.get("guards", [])]} for st in f["steps"]],
             })
+        recov = Counter(g["guard"] for t in traces for st in t["steps"] for g in st.get("guards", []))
         out["tasks"].append({
-            "task": task_id, "runs": n, "passes": len(passes), "pass_rate": round(p, 2),
+            "task": task_id, "guard_events": dict(recov), "runs": n, "passes": len(passes), "pass_rate": round(p, 2),
             "flaky": 0 < len(passes) < n,
             "pass_rate_std": round((p * (1 - p) / n) ** 0.5, 2),
             "steps_mean": round(statistics.mean(steps), 1),
