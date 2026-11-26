@@ -49,3 +49,12 @@ def test_t08_answer_is_unique(db):
     con = sqlite3.connect(db)
     rows = con.execute("SELECT name, last_activity FROM leads WHERE stage='Contacted' ORDER BY last_activity").fetchall()
     assert rows[0][0] == "Hugo Bianchi" and rows[0][1] < rows[1][1]
+
+
+def test_custom_tasks_file(db):
+    import os
+    from tasks import tasks as T
+    if "x01_unassign_birch" not in T.BY_ID:
+        T.load_tasks_file(os.path.join(os.path.dirname(__file__), "..", "examples", "my_tasks.py"))
+    ok, why = T.check("x01_unassign_birch", db)
+    assert not ok and "still assigned" in why

@@ -20,7 +20,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 
 from agents.browser import ALL_GUARDS, BrowserEnv  # noqa: E402
-from tasks.tasks import BY_ID, TASKS, check  # noqa: E402
+from tasks.tasks import BY_ID, TASKS, check, load_tasks_file  # noqa: E402
 
 
 def http(method, url, data=None):
@@ -45,7 +45,25 @@ def start_server(db_path, port):
     raise RuntimeError("site did not start")
 
 
+def load_agent_class(spec):
+    """'my_agent.py:MyAgent' or 'package.module:MyAgent' -> class."""
+    import importlib
+    import importlib.util
+    mod_name, _, cls = spec.rpartition(":")
+    if mod_name.endswith(".py"):
+        s = importlib.util.spec_from_file_location("user_agent", mod_name)
+        mod = importlib.util.module_from_spec(s)
+        s.loader.exec_module(mod)
+    else:
+        mod = importlib.import_module(mod_name)
+    return getattr(mod, cls)
+
+
 def make_agent(args):
+    if ":" in args.agent:
+        agent = load_agent_class(args.agent)()
+        agent.name = getattr(agent, "name", args.agent)
+        return agent
     if args.agent == "scripted":
         from agents.scripted import ScriptedAgent
         return ScriptedAgent()
@@ -80,7 +98,7 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
             pass
         n_tabs_before = len(env.pages)
         result, error = env.act(action)
-        shot = env.screenshot(f"step_{i:02d}.png")
+        shot = env.screenshot(f"step_{i:02d}.jpg")
         steps.append({
             "i": i, "t_obs": t_obs - t0, "t_act": t_act - t0, "think_s": round(t_act - t_obs, 2),
             "url": obs["url_path"], "dom_hash": obs["dom_hash"], "tabs": len(obs["tabs"]),
@@ -103,9 +121,12 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
             "hit_step_limit": len(steps) == max_steps and steps[-1]["action"]["action"] != "done"}
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--agent", choices=["scripted", "claude", "gemini", "ollama"], default="scripted")
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="flakebench run")
+    ap.add_argument("--agent", default="scripted",
+                    help="scripted | gemini | ollama | claude | path/to/file.py:ClassName | module:ClassName")
+    ap.add_argument("--tasks-file", help="Python file defining TASKS = [Task(...)] to add to the built-in ones")
+    ap.add_argument("--min-pass-rate", type=float, default=None, help="exit 1 if the overall pass rate is below this (for CI)")
     ap.add_argument("--model", default=None, help="model id; defaults: claude-opus-5-5, gemini-3.5-flash-lite, qwen3:8b")
     ap.add_argument("--compact", action="store_true", help="claude: send only task + action log + current page (cheaper)")
     ap.add_argument("--rpm", type=float, default=None, help="max requests per minute (gemini default 14)")
@@ -119,8 +140,10 @@ def main():
     ap.add_argument("--no-chaos", action="store_true", help="control run with chaos disabled")
     ap.add_argument("--headed", action="store_true")
     ap.add_argument("--guards", default="", help="comma list of " + ",".join(ALL_GUARDS) + ", or 'all'")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
+    if args.tasks_file:
+        load_tasks_file(args.tasks_file)
     tasks = TASKS if args.tasks == "all" else [BY_ID[t] for t in args.tasks.split(",")]
     out = os.path.abspath(args.out or os.path.join(ROOT, "runs", time.strftime("%Y%m%d-%H%M%S") + f"-{args.agent}"))
     os.makedirs(out, exist_ok=True)
@@ -159,7 +182,13 @@ def main():
     if hasattr(agent, "usage"):
         meta["usage"] = agent.usage
         json.dump(meta, open(os.path.join(out, "meta.json"), "w"), indent=2)
-    print(f"\ntraces in {out}\nnext: python analysis/diverge.py {out} && python report/build.py {out}")
+    print(f"\ntraces in {out}\nnext: ./flakebench report {out}")
+    if args.min_pass_rate is not None:
+        rows = [json.loads(l) for l in open(os.path.join(out, "results.jsonl"))]
+        rate = sum(r["passed"] for r in rows) / max(1, len(rows))
+        print(f"pass rate {rate:.0%} (gate: {args.min_pass_rate:.0%})")
+        if rate < args.min_pass_rate:
+            sys.exit(1)
 
 
 if __name__ == "__main__":

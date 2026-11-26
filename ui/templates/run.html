@@ -1,0 +1,73 @@
+<!doctype html><html lang="en"><head>{% include "_head.html" %}<title>{{ info.agent }} · flakebench</title>
+<style>
+.cells { display:grid; gap:4px; }
+.cell { width:22px; height:22px; border-radius:5px; border:2px solid var(--grid); }
+.cell.p { background:var(--bar); border-color:var(--bar); }
+.cell.f { border-color:var(--bar); position:relative; }
+.cell.f::after { content:"×"; position:absolute; inset:0; display:grid; place-items:center; color:var(--bar); font-weight:700; font-size:14px; line-height:1; }
+.cell.now { border-color:var(--bar); animation:pulse 1.2s infinite; }
+.trow { display:grid; grid-template-columns:minmax(160px,240px) auto; gap:12px; align-items:center; padding:4px 0; }
+.trow .tn { font-family:ui-monospace,monospace; font-size:12.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.shot img { width:100%; border:1px solid var(--border); border-radius:8px; display:block; }
+pre.log { background:var(--code); border-radius:8px; padding:10px 12px; font-size:12px; overflow-x:auto; white-space:pre-wrap; margin:0; max-height:220px; }
+.bar2 { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+</style></head><body>
+<header class="top"><div class="in"><a class="brand" href="/">flakebench</a><span class="muted">/ {{ name }}</span></div></header>
+<main>
+<div class="bar2" style="justify-content:space-between">
+  <div><h1 style="margin:0">{{ info.agent }}</h1>
+  <p class="sub" style="margin:4px 0 0">Guards: {{ info.guards|join(', ') or 'none' }} · chaos {{ 'on' if info.chaos else 'off' }}</p></div>
+  <div class="bar2"><span id="status" class="chip"></span>
+    <form method="post" action="/runs/{{ name }}/stop" id="stopf" hidden><button class="btn ghost">Stop</button></form>
+    <a class="btn" id="rep" href="/runs/{{ name }}/report/" hidden>Open report</a></div>
+</div>
+<div class="tiles" style="margin-top:18px">
+  <div class="tile"><div class="v" id="t-done">0</div><div class="l">runs finished</div></div>
+  <div class="tile"><div class="v" id="t-rate">–</div><div class="l">pass rate so far</div></div>
+  <div class="tile"><div class="v" id="t-fail">0</div><div class="l">failures to explain</div></div>
+</div>
+<div class="grid2" style="grid-template-columns:1fr 1fr; margin-top:20px">
+  <div class="card"><h2>Runs by task</h2>
+    <div class="legend"><span><span class="run p"></span>passed</span><span><span class="run"></span>failed (×)</span><span>Hover for the checker's reason</span></div>
+    <div id="grid">{% for t in tasks %}<div class="trow"><div class="tn" title="{{ prompts.get(t, '') }}">{{ t }}</div>
+      <div class="cells" style="grid-template-columns:repeat({{ seeds }}, 22px)">{% for s in range(seeds) %}<span class="cell" id="c-{{ t }}-{{ s }}" title="seed {{ s }}: pending"></span>{% endfor %}</div></div>{% endfor %}</div>
+  </div>
+  <div class="card shot"><h2>Live view</h2><p class="small" id="shotlabel">Waiting for the first step…</p><img id="shot" alt="Latest screenshot from the agent's browser" hidden>
+    <h2 style="margin-top:18px">Log</h2><pre class="log" id="log"></pre></div>
+</div>
+{% if cmd %}<p class="small" style="margin-top:18px">Same run from a terminal: <code>{{ cmd }}</code></p>{% endif %}
+</main>
+<script>
+const name = {{ name|tojson }};
+let cur = null;
+async function poll() {
+  const r = await fetch('/api/runs/' + name).then(x => x.json());
+  const i = r.info;
+  document.getElementById('status').textContent = i.running ? 'running' : (i.exit_code && i.exit_code !== 0 ? 'stopped (exit ' + i.exit_code + ')' : 'finished');
+  document.getElementById('status').className = 'chip' + (i.running ? ' live' : '');
+  document.getElementById('stopf').hidden = !i.running;
+  document.getElementById('rep').hidden = !i.done;
+  document.getElementById('t-done').textContent = i.done + ' / ' + i.total;
+  document.getElementById('t-rate').textContent = i.pass_rate == null ? '–' : Math.round(i.pass_rate * 100) + '%';
+  document.getElementById('t-fail').textContent = i.done - i.passes;
+  for (const x of r.results) {
+    const c = document.getElementById(`c-${x.task}-${x.seed}`);
+    if (c) { c.className = 'cell ' + (x.passed ? 'p' : 'f'); c.title = `seed ${x.seed}: ${x.passed ? 'pass' : 'fail: ' + x.reason} (${x.n_steps} steps, ${x.duration_s}s)`; }
+  }
+  if (cur) cur.classList.remove('now');
+  if (i.running && r.latest_label) {
+    const [t, run] = r.latest_label.split('/');
+    cur = document.getElementById(`c-${t}-${run.replace('run', '')}`);
+    if (cur && !cur.classList.contains('p') && !cur.classList.contains('f')) cur.classList.add('now');
+  }
+  if (r.latest) {
+    const img = document.getElementById('shot');
+    img.src = `/runs/${name}/file/${r.latest}?t=${Date.now()}`; img.hidden = false;
+    document.getElementById('shotlabel').textContent = r.latest.replaceAll('/', ' · ');
+  }
+  document.getElementById('log').textContent = r.log.join('\n');
+  if (i.running) setTimeout(poll, 1500);
+}
+poll();
+</script>
+</body></html>

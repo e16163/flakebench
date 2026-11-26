@@ -1,4 +1,4 @@
-"""Ten outreach tasks. Each checker reads the site's SQLite DB after a run and
+"""Eleven outreach tasks. Each checker reads the site's SQLite DB after a run and
 returns (passed, reason). Checkers judge the final state only, never the path
 the agent took, and they fail runs that changed things they shouldn't have.
 """
@@ -149,6 +149,25 @@ TASKS = [
 ]
 
 BY_ID = {t.id: t for t in TASKS}
+
+
+def register(tasks):
+    """Add your own tasks (see examples/my_tasks.py). Ids must be unique."""
+    for t in tasks:
+        if t.id in BY_ID:
+            raise ValueError(f"duplicate task id {t.id}")
+        TASKS.append(t)
+        BY_ID[t.id] = t
+    return tasks
+
+
+def load_tasks_file(path):
+    """Import a Python file that defines TASKS = [Task(...), ...] and register them."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(f"user_tasks_{abs(hash(path))}", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return register(mod.TASKS)
 
 
 def check(task_id, db_path):

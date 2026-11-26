@@ -69,6 +69,18 @@ def bar_rows(items, max_v, fmt, right):
     return "\n".join(out)
 
 
+def copy_shot(src, dst):
+    """Copy a screenshot as a compressed JPEG so published reports stay small."""
+    if src.endswith(".jpg"):
+        shutil.copy(src, dst)
+        return
+    try:
+        from PIL import Image
+        Image.open(src).convert("RGB").save(dst, "JPEG", quality=60)
+    except ImportError:
+        shutil.copy(src, dst)
+
+
 def trace_html(f):
     items = []
     for st in f["trace"]:
@@ -115,8 +127,8 @@ def build(run_dir, reference=None):
         for f in t["failures"]:
             img = ""
             if f["screenshot"] and os.path.exists(os.path.join(run_dir, f["screenshot"])):
-                dst = f'{t["task"]}_s{f["seed"]}_step{f["divergence_step"]}.png'
-                shutil.copy(os.path.join(run_dir, f["screenshot"]), os.path.join(shots, dst))
+                dst = f'{t["task"]}_s{f["seed"]}_step{f["divergence_step"]}.jpg'
+                copy_shot(os.path.join(run_dir, f["screenshot"]), os.path.join(shots, dst))
                 img = f'<a href="shots/{dst}"><img loading="lazy" src="shots/{dst}" alt="Screenshot after the divergence step"></a>'
             conf = {True: "confirmed by chaos log", False: "not in chaos log", None: "no chaos involved"}[f["confirmed_by_chaos_log"]]
             act = json.dumps(f["action"], ensure_ascii=False)

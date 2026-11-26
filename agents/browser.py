@@ -202,7 +202,7 @@ class BrowserEnv:
     def screenshot(self, name):
         path = os.path.join(self.shot_dir, name)
         try:
-            self.page.screenshot(path=path)
+            self.page.screenshot(path=path, type="jpeg", quality=60)
             return path
         except PWError:
             return None

@@ -1,0 +1,34 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>{{ css|safe }}
+header.top { background:var(--surface); border-bottom:1px solid var(--border); }
+header.top .in { max-width:1180px; margin:0 auto; padding:14px 16px; display:flex; align-items:center; gap:14px; }
+header.top a.brand { font-weight:800; font-size:18px; color:var(--ink); text-decoration:none; letter-spacing:-.01em; }
+header.top .muted { color:var(--ink2); font-size:13px; }
+main { max-width:1180px; }
+a { color:var(--bar); }
+.grid2 { display:grid; grid-template-columns:380px 1fr; gap:20px; align-items:start; }
+@media (max-width:900px) { .grid2 { grid-template-columns:1fr; } }
+h2:first-child { margin-top:0; }
+fieldset { border:0; padding:0; margin:0 0 16px; }
+legend, .lbl { font-weight:650; font-size:13px; margin-bottom:6px; display:block; color:var(--ink); }
+.hint { color:var(--ink2); font-size:12.5px; }
+.opt { display:flex; gap:10px; align-items:flex-start; padding:8px 10px; border:1px solid var(--border); border-radius:8px; margin-bottom:6px; cursor:pointer; }
+.opt:has(input:checked) { border-color:var(--bar); box-shadow:0 0 0 1px var(--bar) inset; }
+.opt input { margin-top:3px; }
+input[type=text], input[type=password], input[type=number] { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:7px; background:var(--page); color:var(--ink); font:inherit; }
+.tasklist { max-height:220px; overflow:auto; border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
+.tasklist label { display:flex; gap:8px; font-size:13px; padding:3px 0; align-items:baseline; }
+.tasklist code { font-size:12px; }
+.btn { display:inline-block; background:var(--bar); color:#fff; border:0; border-radius:8px; padding:9px 16px; font:inherit; font-weight:600; cursor:pointer; text-decoration:none; }
+.btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--border); }
+.btn:disabled { opacity:.45; cursor:default; }
+.chip { display:inline-block; font-size:12px; padding:2px 9px; border-radius:99px; border:1px solid var(--border); color:var(--ink2); white-space:nowrap; }
+.chip.live { color:var(--bar); border-color:var(--bar); }
+.chip.live::before { content:""; display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--bar); margin-right:6px; animation:pulse 1.2s infinite; vertical-align:1px; }
+@keyframes pulse { 50% { opacity:.25; } }
+.prog { background:var(--track); height:8px; border-radius:4px; overflow:hidden; min-width:90px; }
+.prog > div { background:var(--bar); height:100%; }
+td.small, .small { font-size:12.5px; color:var(--ink2); }
+[hidden] { display:none !important; }
+.empty { color:var(--ink2); padding:24px; text-align:center; }
+</style>

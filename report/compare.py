@@ -72,9 +72,9 @@ def main():
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>flakebench results</title><style>{CSS}
-.row {{ grid-template-columns:minmax(220px,340px) 1fr 120px; }} td .track {{ min-width:60px; }}</style></head><body><main>
+.row {{ grid-template-columns:minmax(220px,340px) 1fr 120px; }} td.mono {{ background:none; }} td .track {{ min-width:60px; }}</style></head><body><main>
 <h1>flakebench results</h1>
-<p class="sub">Same 10 tasks, same seeds, same injected chaos. Only the agent and the guards change. Click a configuration for its full failure report.</p>
+<p class="sub">Same {len(task_ids)} tasks, same seeds, same injected chaos. Only the agent and the guards change. Click a configuration for its full failure report.</p>
 <h2>Pass rate by configuration</h2>
 <div class="card">{bars}</div>
 <h2>Pass rate by task</h2>

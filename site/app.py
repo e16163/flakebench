@@ -8,6 +8,7 @@ import json
 import os
 import random
 import sqlite3
+import sys
 import time
 from collections import defaultdict
 
@@ -16,6 +17,8 @@ from flask import Flask, abort, g, jsonify, redirect, render_template, request, 
 from seed import seed as seed_db
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+sys.path.insert(0, ROOT)
 DB_PATH = os.environ.get("FLAKEBENCH_DB", os.path.join(HERE, "pipeline.db"))
 PAGE_SIZE = 10
 OWNERS = ["Ana", "Marco", "Riley", "Unassigned"]
@@ -236,6 +239,121 @@ def event_edit(event_id):
         return redirect(url_for("calendar"))
     c = page_chaos("event", chaos_rng("event"))
     return render_template("event.html", e=dict(e), chaos=c)
+
+
+# ---------------------------------------------------------------- bring your own browser
+#
+# Any agent that drives its own browser can be graded without code changes:
+#   POST /api/episode/start {"task": "t01_qualify_priya", "seed": 3, "agent": "my-agent"}
+#       -> {"prompt": ..., "start_url": ...}; point your agent at start_url with the prompt
+#   POST /api/episode/finish
+#       -> {"passed": ..., "reason": ...}; a trace is written for the divergence analysis
+# A small recorder in every page (templates/base.html) logs clicks, edits, page loads
+# and tabs, so the trace comes from the site's side, not from the agent.
+
+EPISODE = {"active": False}
+
+
+def _tasks():
+    from tasks import tasks as T
+    f = os.environ.get("FLAKEBENCH_TASKS_FILE")
+    if f and not getattr(T, "_user_loaded", False):
+        T.load_tasks_file(f)
+        T._user_loaded = True
+    return T
+
+
+@app.get("/api/tasks")
+def api_tasks():
+    return jsonify([{"id": t.id, "prompt": t.prompt, "tags": list(t.tags)} for t in _tasks().TASKS])
+
+
+@app.post("/api/episode/start")
+def episode_start():
+    body = request.get_json(force=True, silent=True) or {}
+    T = _tasks()
+    task = T.BY_ID.get(body.get("task"))
+    if task is None:
+        return jsonify(error=f"unknown task {body.get('task')!r}", tasks=list(T.BY_ID)), 400
+    seed = int(body.get("seed", 0))
+    with app.test_request_context("/reset", method="POST",
+                                  data={"seed": seed, "chaos": "on" if body.get("chaos", True) else "off"}):
+        reset()
+    EPISODE.clear()
+    EPISODE.update(active=True, task=task.id, seed=seed, agent=body.get("agent", "external"),
+                   out=body.get("out") or os.path.join(ROOT, "runs", "external-" + time.strftime("%Y%m%d")),
+                   t0=time.time(), events=[], chaos=body.get("chaos", True))
+    return jsonify(prompt=task.prompt, start_url=request.host_url.rstrip("/") + "/leads", task=task.id, seed=seed)
+
+
+@app.post("/api/rec")
+def api_rec():
+    if EPISODE.get("active"):
+        try:
+            ev = json.loads(request.get_data(as_text=True) or "{}")
+        except ValueError:
+            ev = {}
+        ev["t"] = time.time() - EPISODE["t0"]
+        EPISODE["events"].append(ev)
+    return ("", 204)
+
+
+def _trace_from_events():
+    tabs, steps = [], []
+    for ev in EPISODE["events"]:
+        tab = ev.get("tab", "?")
+        if tab not in tabs:
+            tabs.append(tab)
+        if ev.get("type") not in ("click", "change"):
+            continue
+        kind = "click" if ev["type"] == "click" else ("select" if ev.get("tag") == "select" else "type")
+        action = {"action": kind}
+        if kind != "click":
+            action["text" if kind == "type" else "option"] = ev.get("value", "")
+        steps.append({
+            "i": len(steps), "t_obs": ev["t"], "t_act": ev["t"], "think_s": None, "url": ev.get("url", ""),
+            "dom_hash": "", "tabs": len(tabs), "active_tab": tabs.index(tab), "tabs_after": len(tabs),
+            "new_tab": bool(ev.get("new_tab")), "modal_at_observe": bool(ev.get("modal")),
+            "modal_at_act": bool(ev.get("modal")), "loading": bool(ev.get("loading")), "action": action,
+            "target": {"tag": ev.get("tag"), "label": ev.get("label")},
+            "reasoning": "", "result": None if ev.get("on_overlay") else "ok.",
+            "error": "click landed on a blocking dialog (intercepts pointer events)" if ev.get("on_overlay") else None,
+            "guards": [], "error_log": None, "screenshot": None,
+        })
+    steps.append({"i": len(steps), "t_obs": time.time() - EPISODE["t0"], "t_act": time.time() - EPISODE["t0"],
+                  "think_s": None, "url": "", "dom_hash": "", "tabs": len(tabs), "active_tab": 0,
+                  "tabs_after": len(tabs), "new_tab": False, "modal_at_observe": False, "modal_at_act": False,
+                  "loading": False, "action": {"action": "done"}, "target": None, "reasoning": "", "result": "done",
+                  "error": None, "guards": [], "error_log": None, "screenshot": None})
+    return steps
+
+
+@app.post("/api/episode/finish")
+def episode_finish():
+    if not EPISODE.get("active"):
+        return jsonify(error="no episode running; POST /api/episode/start first"), 400
+    T = _tasks()
+    close_db(None)
+    passed, reason = T.check(EPISODE["task"], DB_PATH)
+    steps = _trace_from_events()
+    chaos = [dict(r) | {"detail": json.loads(r["detail"]), "t": r["ts"] - EPISODE["t0"]}
+             for r in db().execute("SELECT ts, page, kind, detail FROM chaos_log ORDER BY id").fetchall()]
+    rec = {"task": EPISODE["task"], "seed": EPISODE["seed"], "passed": passed, "reason": reason,
+           "n_steps": len(steps), "duration_s": round(time.time() - EPISODE["t0"], 1), "agent": EPISODE["agent"],
+           "steps": steps, "chaos": chaos, "hit_step_limit": False, "source": "recorder"}
+    out = EPISODE["out"]
+    run_dir = os.path.join(out, rec["task"], f"run{rec['seed']}")
+    os.makedirs(run_dir, exist_ok=True)
+    json.dump(rec, open(os.path.join(run_dir, "trace.json"), "w"), indent=1)
+    with open(os.path.join(out, "results.jsonl"), "a") as fh:
+        fh.write(json.dumps({k: rec[k] for k in ("task", "seed", "passed", "reason", "n_steps", "duration_s")}) + "\n")
+    meta = os.path.join(out, "meta.json")
+    if not os.path.exists(meta):
+        json.dump({"agent": EPISODE["agent"], "guards": [], "runs": None, "max_steps": None,
+                   "chaos": EPISODE["chaos"], "started": time.strftime("%Y-%m-%d %H:%M:%S"),
+                   "source": "recorder"}, open(meta, "w"), indent=2)
+    EPISODE["active"] = False
+    return jsonify(passed=passed, reason=reason, steps=len(steps), trace=run_dir)
 
 
 if __name__ == "__main__":

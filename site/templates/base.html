@@ -47,5 +47,41 @@
   };
 </script>
 {% endif %}
+<script>
+/* flakebench recorder: logs what any agent does on this page, so agents that drive
+   their own browser get full traces with no integration. */
+(function () {
+  var tab = sessionStorage.getItem('fb_tab');
+  if (!tab) { tab = Math.random().toString(36).slice(2, 8); sessionStorage.setItem('fb_tab', tab); }
+  function labelOf(e) {
+    if (e.getAttribute('aria-label')) return e.getAttribute('aria-label');
+    if (e.id) { var l = document.querySelector('label[for="' + e.id + '"]'); if (l) return l.innerText.trim(); }
+    return (e.innerText || e.value || e.name || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+  }
+  function state() {
+    var m = document.getElementById('whatsnew');
+    return { modal: !!m && getComputedStyle(m).display !== 'none', loading: !!document.querySelector('[aria-busy=true]') };
+  }
+  function send(ev) {
+    ev.tab = tab; ev.url = location.pathname + location.search;
+    var s = state(); ev.modal = s.modal; ev.loading = s.loading;
+    try { navigator.sendBeacon('/api/rec', JSON.stringify(ev)); } catch (e) {}
+  }
+  send({ type: 'load' });
+  document.addEventListener('click', function (event) {
+    var t = event.target;
+    var el = t.closest('a, button, input, select, textarea, [role=button]') || t;
+    var onOverlay = !!t.closest('#whatsnew') && !t.closest('#whatsnew-dismiss');
+    var a = t.closest('a');
+    send({ type: 'click', tag: el.tagName.toLowerCase(), label: labelOf(el), on_overlay: onOverlay,
+           new_tab: !!(a && a.target === '_blank') });
+  }, true);
+  document.addEventListener('change', function (event) {
+    var el = event.target;
+    var v = el.tagName === 'SELECT' ? (el.options[el.selectedIndex] || {}).text : (el.type === 'checkbox' ? String(el.checked) : el.value);
+    send({ type: 'change', tag: el.tagName.toLowerCase(), label: labelOf(el), value: (v || '').slice(0, 200) });
+  }, true);
+})();
+</script>
 </body>
 </html>
