@@ -18,44 +18,81 @@ from tasks.tasks import BY_ID  # noqa: E402
 
 E = html.escape
 
+# Design tokens. Everything visual reads from these, so matching a new look is a token change.
+FONT_LINK = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
+             '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+             '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">')
+FOOTER = ('<footer class="foot"><span><b>flakebench</b> · reliability testing for browser agents</span>'
+          '<span>Built for Polar · <a href="https://github.com/e16163/flakebench">source</a></span></footer>')
+HEADER = ('<header class="bar"><a class="wm" href="https://github.com/e16163/flakebench">flakebench</a>'
+          '<a class="btn-pill" href="https://github.com/e16163/flakebench#quick-start">Run it yourself</a></header>')
 CSS = """
-:root { --surface:#ffffff; --page:#f6f7f9; --ink:#191919; --ink2:#666666; --grid:#e3e5e8;
-  --bar:#257de0; --track:#eef1f5; --pass:#257de0; --border:#e3e5e8; --code:#f2f3f5; }
+:root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif; --display:"Saans","Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  --page:#ffffff; --surface:#ffffff; --side:#fafafa; --raised:#f3f3f3; --ink:#191919; --ink2:#717171; --ink3:#a0a0a0;
+  --border:#1919190f; --border2:#19191914; --grid:#19191908; --track:#f3f3f3; --code:#f3f3f3;
+  --accent:#2f6eeb; --accent-soft:#ebf2ff; --bar:var(--accent); --pass:var(--accent); --fail:#e40015;
+  --btn:#191919; --btn-ink:#ffffff; --r-sm:8px; --r:12px; --r-lg:16px;
+  --shadow:none; --shadow-lg:0 1px 2px #1919190a,0 8px 24px #19191908; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --surface:#191919; --page:#111213; --ink:#efefef; --ink2:#9c9c9c; --grid:#2c2d30;
-  --bar:#338ced; --track:#26282b; --pass:#338ced; --border:#2c2d30; --code:#222326; } }
-:root[data-theme="dark"] { --surface:#191919; --page:#111213; --ink:#efefef; --ink2:#9c9c9c; --grid:#2c2d30;
-  --bar:#338ced; --track:#26282b; --pass:#338ced; --border:#2c2d30; --code:#222326; }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--page); color:var(--ink); font:15px/1.5 system-ui,-apple-system,sans-serif; }
-main { max-width:1040px; margin:0 auto; padding:32px 16px 64px; }
-h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:19px; margin:36px 0 12px; }
-.sub { color:var(--ink2); margin:0 0 20px; }
+  --page:#141414; --surface:#191919; --side:#191919; --raised:#232323; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
+  --border:#ffffff0f; --border2:#ffffff1a; --grid:#ffffff0a; --track:#2d2d2d; --code:#232323;
+  --accent:#4f8afb; --accent-soft:#0c1d40; --fail:#f84b4b; --btn:#f3f3f3; --btn-ink:#191919;
+  --shadow-lg:0 8px 24px #00000066; } }
+:root[data-theme="dark"] { --page:#141414; --surface:#191919; --side:#191919; --raised:#232323; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
+  --border:#ffffff0f; --border2:#ffffff1a; --grid:#ffffff0a; --track:#2d2d2d; --code:#232323;
+  --accent:#4f8afb; --accent-soft:#0c1d40; --fail:#f84b4b; --btn:#f3f3f3; --btn-ink:#191919;
+  --shadow-lg:0 8px 24px #00000066; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--page); color:var(--ink); font:14px/20px var(--font); letter-spacing:-.002em; -webkit-font-smoothing:antialiased; }
+a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px; }
+a:hover { text-decoration-color:var(--ink2); }
+main { max-width:1080px; margin:0 auto; padding:40px 20px 48px; }
+h1 { font-family:var(--display); font-size:40px; line-height:1.04; font-weight:500; letter-spacing:-.02em; margin:0 0 14px; }
+h2 { font-family:var(--display); font-size:22px; line-height:28px; font-weight:500; letter-spacing:-.01em; margin:56px 0 14px; display:flex; align-items:baseline; gap:12px; }
+h2 .num { font:500 13px var(--font); color:var(--ink3); font-variant-numeric:tabular-nums; }
+.label { font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--ink2); }
+.eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:var(--ink2); background:var(--surface); border:1px solid var(--border2); border-radius:99px; padding:4px 12px 4px 5px; margin-bottom:18px; box-shadow:var(--shadow-lg); }
+.eyebrow b { background:var(--accent-soft); color:var(--accent); font-weight:600; font-size:12px; border-radius:99px; padding:1px 8px; text-transform:uppercase; letter-spacing:.02em; }
+.sub { color:var(--ink2); font-weight:500; margin:0 0 20px; max-width:720px; }
 .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
-.tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
-.tile .v { font-size:28px; font-weight:700; } .tile .v.s { font-size:18px; line-height:1.3; padding:5px 0; } .tile .l { color:var(--ink2); font-size:13px; }
-.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; }
-.row { display:grid; grid-template-columns:minmax(200px,300px) 1fr 110px; gap:12px; align-items:center; padding:6px 0; }
-.row .name { font-size:13.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.track { background:var(--track); height:14px; border-radius:0 4px 4px 0; position:relative; }
-.fill { background:var(--bar); height:14px; border-radius:0 4px 4px 0; }
+.tile { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--shadow); }
+.tile .v { font-family:var(--display); font-size:26px; line-height:32px; font-weight:500; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.tile .v.s { font-size:17px; line-height:1.3; padding:6px 0; } .tile .l { color:var(--ink2); font-size:12.5px; margin-top:2px; }
+.card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r-lg); padding:18px 20px; box-shadow:var(--shadow); }
+.row { display:grid; grid-template-columns:minmax(200px,300px) 1fr 110px; gap:14px; align-items:center; padding:7px 0; }
+.row + .row { border-top:1px solid var(--grid); }
+.row .name { font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.track { background:var(--track); height:8px; border-radius:99px; position:relative; overflow:hidden; }
+.fill { background:var(--bar); height:8px; border-radius:99px; }
 .runs { display:flex; gap:4px; justify-content:flex-end; }
-.run { width:14px; height:14px; border-radius:3px; border:2px solid var(--pass); }
-.run.p { background:var(--pass); }
-.val { font-variant-numeric:tabular-nums; color:var(--ink2); font-size:13px; text-align:right; }
-.legend { color:var(--ink2); font-size:13px; display:flex; gap:16px; align-items:center; margin-bottom:8px; }
-.legend .run { display:inline-block; vertical-align:-2px; margin-right:4px; }
-table { width:100%; border-collapse:collapse; font-size:13.5px; }
-th,td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--grid); }
-th { color:var(--ink2); font-weight:600; } td.n { text-align:right; font-variant-numeric:tabular-nums; }
-.fail { display:grid; grid-template-columns:300px 1fr; gap:16px; margin-bottom:12px; }
-.fail img { width:100%; border:1px solid var(--border); border-radius:6px; display:block; }
-.fail code, .mono { font-family:ui-monospace,monospace; font-size:12.5px; background:var(--code); padding:1px 5px; border-radius:4px; }
-.tag { display:inline-block; font-size:12px; padding:1px 8px; border-radius:99px; border:1px solid var(--border); color:var(--ink2); margin-right:6px; }
+.run { width:12px; height:12px; border-radius:4px; border:1.5px solid var(--ink3); }
+.run.p { background:var(--pass); border-color:var(--pass); }
+.val { font-variant-numeric:tabular-nums; color:var(--ink2); font-size:12.5px; text-align:right; }
+.legend { color:var(--ink2); font-size:12.5px; display:flex; gap:16px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
+.legend .run { display:inline-block; vertical-align:-2px; margin-right:5px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--grid); }
+tbody tr:last-child td { border-bottom:0; }
+th { color:var(--ink3); font-weight:500; font-size:12px; white-space:nowrap; } td.n { text-align:right; font-variant-numeric:tabular-nums; }
+.fail { display:grid; grid-template-columns:320px 1fr; gap:20px; margin-bottom:12px; }
+.frame { border:1px solid var(--border); border-radius:var(--r); overflow:hidden; background:var(--raised); box-shadow:var(--shadow-lg); }
+.frame::before { content:""; display:block; height:22px; border-bottom:1px solid var(--border);
+  background:radial-gradient(circle at 13px 11px,#ff5f57 3.5px,transparent 4px),radial-gradient(circle at 27px 11px,#febc2e 3.5px,transparent 4px),radial-gradient(circle at 41px 11px,#28c840 3.5px,transparent 4px),var(--side); }
+.frame img { width:100%; display:block; }
+.fail code, .mono, code { font-family:var(--mono); font-size:12px; background:var(--code); padding:1px 6px; border-radius:6px; }
+.tag { display:inline-block; font-size:12px; font-weight:500; padding:2px 10px; border-radius:99px; background:var(--raised); color:var(--ink2); margin:0 6px 4px 0; }
+.tag.cause { background:var(--accent-soft); color:var(--accent); }
 .k { color:var(--ink2); }
-details summary { cursor:pointer; color:var(--ink2); margin-top:8px; }
+details summary { cursor:pointer; color:var(--ink2); margin-top:10px; font-weight:500; }
+header.bar { max-width:1080px; margin:0 auto; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+header.bar .wm { font-weight:500; font-size:17px; letter-spacing:-.02em; text-decoration:none; }
+.btn-pill { background:var(--btn); color:var(--btn-ink); border-radius:99px; padding:6px 13px; font-weight:500; font-size:14px; text-decoration:none; }
+.btn-pill:hover { opacity:.88; }
+.foot { max-width:1080px; margin:24px auto 0; padding:24px 20px 40px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--ink3); font-size:12.5px; border-top:1px solid var(--border); }
+.foot b { color:var(--ink2); font-weight:600; } .foot a { color:var(--ink2); }
 @media (max-width:700px) { .row { grid-template-columns:1fr 90px; } .row .track { grid-column:1 / -1; order:3; }
-  .fail { grid-template-columns:1fr; } }
+  .fail { grid-template-columns:1fr; } h1 { font-size:24px; } }
 """
 
 
@@ -129,13 +166,13 @@ def build(run_dir, reference=None):
             if f["screenshot"] and os.path.exists(os.path.join(run_dir, f["screenshot"])):
                 dst = f'{t["task"]}_s{f["seed"]}_step{f["divergence_step"]}.jpg'
                 copy_shot(os.path.join(run_dir, f["screenshot"]), os.path.join(shots, dst))
-                img = f'<a href="shots/{dst}"><img loading="lazy" src="shots/{dst}" alt="Screenshot after the divergence step"></a>'
+                img = f'<a class="frame" style="display:block" href="shots/{dst}"><img loading="lazy" src="shots/{dst}" alt="Screenshot after the divergence step"></a>'
             conf = {True: "confirmed by chaos log", False: "not in chaos log", None: "no chaos involved"}[f["confirmed_by_chaos_log"]]
             act = json.dumps(f["action"], ensure_ascii=False)
             tgt = f' on <code>{E(f["target"]["label"])}</code>' if f.get("target") else ""
             fails_html.append(f'''
 <div class="card fail"><div>{img}</div><div>
-  <div><span class="tag">{E(a["cause_labels"][f["cause"]])}</span><span class="tag">{conf}</span>{'<span class="tag">page differed from every passing run</span>' if f.get("page_differed") else ""}</div>
+  <div><span class="tag cause">{E(a["cause_labels"][f["cause"]])}</span><span class="tag">{conf}</span>{'<span class="tag">page differed from every passing run</span>' if f.get("page_differed") else ""}</div>
   <p style="margin:8px 0 4px"><b class="mono">{E(t["task"])}</b> · seed {f["seed"]} · split at step {f["divergence_step"]} of {f["n_steps"]}
   {"" if f["had_passing_reference"] else "<span class='k'>(no passing run to compare; first error used)</span>"}</p>
   <p style="margin:4px 0"><span class="k">Action:</span> <code>{E(act)}</code>{tgt}</p>
@@ -153,8 +190,9 @@ def build(run_dir, reference=None):
     usage = meta.get("usage")
     html_out = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>flakebench report</title><style>{CSS}</style></head><body><main>
-<h1>Where browser agents break</h1>
+<title>flakebench report</title>{FONT_LINK}<style>{CSS}</style></head><body>{HEADER}<main>
+<div class="eyebrow"><b>Report</b> {E(meta["agent"])} · {o["runs"]} runs</div>
+<h1>Where this agent breaks</h1>
 <p class="sub">Agent <span class="mono">{E(meta["agent"])}</span> · {o["runs"]} runs ({meta["runs"]} per task, seeds 0–{meta["runs"] - 1}) ·
 chaos {"on" if meta["chaos"] else "off"} · guards: {guard_names} · {E(meta["started"])}</p>
 <div class="tiles">
@@ -165,25 +203,25 @@ chaos {"on" if meta["chaos"] else "off"} · guards: {guard_names} · {E(meta["st
   <div class="tile"><div class="v s">{E(a["cause_labels"][top].split(" (")[0]) if top else "none"}</div><div class="l">top failure cause</div></div>
 </div>
 
-<h2>Pass rate by task</h2>
+<h2><span class="num">01</span>Pass rate by task</h2>
 <div class="card">
 <div class="legend"><span><span class="run p"></span>run passed</span><span><span class="run"></span>run failed</span><span>Hover a square for the checker's reason.</span></div>
 {pr_rows}
 </div>
 
-<h2>Why runs failed</h2>
+<h2><span class="num">02</span>Why runs failed</h2>
 <p class="sub">Each failing run is aligned with the passing runs of the same task. The cause is read at the first step where it splits from all of them, then checked against what the site actually injected.</p>
 <div class="card">{cause_rows or "<p>No failures.</p>"}</div>
 
-<h2>Per-task numbers</h2>
+<h2><span class="num">03</span>Per-task numbers</h2>
 <div class="card" style="overflow-x:auto"><table>
 <thead><tr><th>Task</th><th>Prompt</th><th>Passed</th><th>95% CI</th><th>Steps (mean ± sd)</th><th>Time (mean ± sd)</th><th>Max tabs</th></tr></thead>
 <tbody>{table}</tbody></table></div>
 
-<h2>Every failure, at the step it split</h2>
+<h2><span class="num">04</span>Every failure, at the step it split</h2>
 {"".join(fails_html) or "<p>No failures.</p>"}
 {f'<p class="sub">Tokens: {usage["input"]:,} input ({usage["cache_read"]:,} from cache), {usage["output"]:,} output.</p>' if usage else ""}
-</main></body></html>"""
+</main>{FOOTER}</body></html>"""
     path = os.path.join(rep, "index.html")
     open(path, "w").write(html_out)
     return path

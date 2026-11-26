@@ -1,10 +1,12 @@
 <!doctype html><html lang="en"><head>{% include "_head.html" %}<title>flakebench</title></head><body>
-<header class="top"><div class="in"><a class="brand" href="/">flakebench</a>
-<span class="muted">Run a browser agent many times. See where runs split, why, and what fixes it.</span></div></header>
-<main>
+{% include "_side.html" %}
+<div class="app"><main>
+<div class="eyebrow"><b>New</b> Bring your own agent: any browser, any model</div>
+<h1>Which runs break, and why?</h1>
+<p class="sub">Run a browser agent many times on the same tasks with the same injected chaos. See the exact step where runs split, the cause, and which guard stops it.</p>
 <div class="grid2">
 <form class="card" method="post" action="/runs" id="newrun">
-  <h2>New run</h2>
+  <h2><span class="num">01</span>New run</h2>
   <fieldset><legend>Agent</legend>
   {% for k, a in agents.items() %}
     <label class="opt"><input type="radio" name="agent" value="{{ k }}" {% if loop.first %}checked{% endif %} data-key="{{ a.key or '' }}" data-model="{{ a.model }}">
@@ -25,13 +27,13 @@
     {% for g in guards %}<label class="opt"><input type="checkbox" name="guards" value="{{ g }}"><span><b>{{ g }}</b><br><span class="hint">{{ gdesc[g] }}</span></span></label>{% endfor %}
   </fieldset>
   <fieldset><label class="opt"><input type="checkbox" name="no_chaos" value="1"><span>Chaos off<br><span class="hint">Control run: proves the tasks are doable</span></span></label></fieldset>
-  <button class="btn" type="submit">Start run</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--border2);margin:4px -20px 0;padding:14px 20px 0"><span class="hint" id="estimate2"></span><button class="btn" type="submit">Start run <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button></div>
 </form>
 
 <div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <h2 style="margin:0">Runs</h2>
+      <h2 style="margin:0" id="runs"><span class="num">02</span>Runs</h2>
       <button class="btn ghost" id="cmp" disabled>Compare selected</button>
     </div>
     {% if runs %}
@@ -49,11 +51,11 @@
       </tr>
       {% endfor %}
       </tbody></table></div>
-    {% else %}<p class="empty">No runs yet. Start one on the left; the scripted baseline needs no key.</p>{% endif %}
+    {% else %}<p class="empty">No runs yet. Start one on the left. The scripted baseline needs no key.</p>{% endif %}
   </div>
 </div>
 </div>
-</main>
+</main>{{ footer|safe }}</div>
 <script>
 const form = document.getElementById('newrun');
 function sync() {
@@ -66,6 +68,7 @@ function sync() {
   const n = form.querySelectorAll('input[name=tasks]:checked').length * (+document.getElementById('runs').value || 0);
   const calls = a.value === 'scripted' ? '' : ` · about ${n * 12} model calls`;
   document.getElementById('estimate').textContent = `${n} runs${calls}`;
+  document.getElementById('estimate2').textContent = `${n} runs · ${a.parentElement.innerText.split('\n')[0]}`;
 }
 form.addEventListener('change', sync); form.addEventListener('input', sync); sync();
 document.getElementById('all').onclick = e => { e.preventDefault(); form.querySelectorAll('input[name=tasks]').forEach(c => c.checked = true); sync(); };

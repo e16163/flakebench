@@ -2,6 +2,8 @@
 
 **Run a browser agent many times on the same task. See the exact step where runs split, why they split, and which fix stops it.**
 
+The name: a *flaky* test passes on some runs and fails on others for no change in the code. Browser agents are flaky in the same way, and this is a bench(mark) for measuring it.
+
 Browser agents rarely fail on the hard part of a task. They fail on boring things: a dialog that shows up a second late, a list that re-sorts while the model is thinking, a link that opens a new tab, a page that is still loading. A single pass/fail number hides all of that, and so does a single run. flakebench makes it visible and measurable:
 
 - **A test site that misbehaves on purpose.** "Pipeline" is a small CRM (leads, inbox, compose, calendar). It injects realistic chaos from a seed and logs every injection, so any failure can be replayed exactly.

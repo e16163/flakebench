@@ -12,7 +12,7 @@ import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
-from report.build import CSS, build  # noqa: E402
+from report.build import CSS, FONT_LINK, FOOTER, HEADER, build  # noqa: E402
 from analysis.diverge import CAUSES, analyze  # noqa: E402
 
 E = html.escape
@@ -73,17 +73,18 @@ def main():
 
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>flakebench results</title><style>{CSS}
-.row {{ grid-template-columns:minmax(220px,340px) 1fr 120px; }} td.mono {{ background:none; }} td .track {{ min-width:60px; }}</style></head><body><main>
-<h1>flakebench results</h1>
+<title>flakebench results</title>{FONT_LINK}<style>{CSS}
+@media (min-width:701px) {{ .row {{ grid-template-columns:minmax(220px,340px) 1fr 130px; }} }} td.mono {{ background:none; }} td .track {{ min-width:60px; }}</style></head><body>{HEADER}<main>
+<div class="eyebrow"><b>Results</b> {len(cfgs)} configurations · {len(task_ids)} tasks</div>
+<h1>Same tasks, same chaos. What changes the pass rate?</h1>
 <p class="sub">Same {len(task_ids)} tasks, same seeds, same injected chaos. Only the agent and the guards change. Click a configuration for its full failure report.{(" Agent: <b>" + E(next(iter(agents))) + "</b>.") if len(agents) == 1 else ""}</p>
-<h2>Pass rate by configuration</h2>
+<h2><span class="num">01</span>Pass rate by configuration</h2>
 <div class="card">{bars}</div>
-<h2>Pass rate by task</h2>
+<h2><span class="num">02</span>Pass rate by task</h2>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Task</th>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>
-<h2>Failure causes</h2>
+<h2><span class="num">03</span>Failure causes</h2>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Cause</th>{head}</tr></thead><tbody>{crow}</tbody></table></div>
-</main></body></html>"""
+</main>{FOOTER}</body></html>"""
     open(os.path.join(args.out, "index.html"), "w").write(page)
     print(os.path.join(args.out, "index.html"))
 

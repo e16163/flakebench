@@ -19,11 +19,12 @@ from flask import Flask, abort, jsonify, redirect, render_template, request, sen
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, ROOT)
 from agents.browser import ALL_GUARDS  # noqa: E402
-from report.build import CSS  # noqa: E402
+from report.build import CSS, FONT_LINK, FOOTER  # noqa: E402
 from tasks.tasks import TASKS  # noqa: E402
 
 RUNS = os.path.join(ROOT, "runs")
 app = Flask(__name__)
+app.jinja_env.globals.update(font_link=FONT_LINK, footer=FOOTER)
 PROCS = {}  # run name -> Popen
 KEYS = {}   # env var -> value, memory only
 
@@ -77,14 +78,23 @@ def run_info(name):
             "exit_code": None if proc is None or running else proc.returncode, "source": meta.get("source")}
 
 
+def run_names():
+    return sorted((os.path.basename(p) for p in glob.glob(os.path.join(RUNS, "*")) if os.path.isdir(p)
+                   and not os.path.basename(p).startswith("_")),
+                  key=lambda n: os.path.getmtime(os.path.join(RUNS, n)), reverse=True)
+
+
+@app.context_processor
+def sidebar():
+    names = run_names()[:8]
+    return {"side_runs": [{"name": n, "running": n in PROCS and PROCS[n].poll() is None} for n in names]}
+
+
 @app.get("/")
 def index():
-    names = sorted((os.path.basename(p) for p in glob.glob(os.path.join(RUNS, "*")) if os.path.isdir(p)
-                    and not os.path.basename(p).startswith("_")),
-                   key=lambda n: os.path.getmtime(os.path.join(RUNS, n)), reverse=True)
-    runs = [run_info(n) for n in names]
+    runs = [run_info(n) for n in run_names()]
     keys_set = {k: bool(os.environ.get(k) or KEYS.get(k)) for k in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY")}
-    return render_template("index.html", css=CSS, runs=runs, tasks=TASKS, agents=AGENTS, guards=ALL_GUARDS,
+    return render_template("index.html", css=CSS, active="new", runs=runs, tasks=TASKS, agents=AGENTS, guards=ALL_GUARDS,
                            keys_set=keys_set)
 
 
@@ -141,7 +151,7 @@ def live(name):
     tasks = ui.get("tasks") or sorted({r["task"] for r in read_results(d)})
     seeds = ui.get("runs") or (max([r["seed"] for r in read_results(d)] or [0]) + 1)
     prompts = {t.id: t.prompt for t in TASKS}
-    return render_template("run.html", css=CSS, name=name, info=run_info(name), tasks=tasks, seeds=seeds,
+    return render_template("run.html", css=CSS, active="runs", name=name, info=run_info(name), tasks=tasks, seeds=seeds,
                            prompts=prompts, cmd=_pretty_cmd(ui.get("cmd", [])) if ui else "")
 
 
