@@ -1,82 +1,329 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>polarbench results</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"><style>
-:root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif; --display:"Saans","Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif;
-  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Workflow autopilot</title>
+<meta name="description" content="Record a browser task once, replay it without AI, and let autopilot fix only the step a site redesign broke.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
   --page:#ffffff; --surface:#ffffff; --side:#fafafa; --raised:#f3f3f3; --ink:#191919; --ink2:#717171; --ink3:#a0a0a0;
-  --border:#1919190f; --border2:#19191914; --grid:#19191908; --track:#f3f3f3; --code:#f3f3f3;
-  --accent:#2f6eeb; --accent-soft:#ebf2ff; --bar:var(--accent); --pass:var(--accent); --fail:#e40015;
-  --btn:#191919; --btn-ink:#ffffff; --r-sm:8px; --r:12px; --r-lg:16px;
-  --shadow:none; --shadow-lg:0 1px 2px #1919190a,0 8px 24px #19191908; }
+  --border:#1919190f; --border2:#19191914; --accent:#2f6eeb; --accent-soft:#ebf2ff; --ok:#16803c; --ok-soft:#e9f7ee;
+  --warn:#9a5b00; --warn-soft:#fff4e0; --fail:#e40015; --fail-soft:#fdecee; --btn:#191919; --btn-ink:#ffffff;
+  --r-sm:8px; --r:12px; --r-lg:16px; --shadow-lg:0 1px 2px #1919190a,0 8px 24px #19191908; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --page:#141414; --surface:#191919; --side:#191919; --raised:#232323; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
-  --border:#ffffff0f; --border2:#ffffff1a; --grid:#ffffff0a; --track:#2d2d2d; --code:#232323;
-  --accent:#4f8afb; --accent-soft:#0c1d40; --fail:#f84b4b; --btn:#f3f3f3; --btn-ink:#191919;
-  --shadow-lg:0 8px 24px #00000066; } }
+  --border:#ffffff0f; --border2:#ffffff1a; --accent:#4f8afb; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
+  --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; --shadow-lg:0 8px 24px #00000066; } }
 :root[data-theme="dark"] { --page:#141414; --surface:#191919; --side:#191919; --raised:#232323; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
-  --border:#ffffff0f; --border2:#ffffff1a; --grid:#ffffff0a; --track:#2d2d2d; --code:#232323;
-  --accent:#4f8afb; --accent-soft:#0c1d40; --fail:#f84b4b; --btn:#f3f3f3; --btn-ink:#191919;
-  --shadow-lg:0 8px 24px #00000066; }
+  --border:#ffffff0f; --border2:#ffffff1a; --accent:#4f8afb; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
+  --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; --shadow-lg:0 8px 24px #00000066; }
 * { box-sizing:border-box; }
-body { margin:0; background:var(--page); color:var(--ink); font:14px/20px var(--font); letter-spacing:-.002em; -webkit-font-smoothing:antialiased; }
-a { color:var(--ink); text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:3px; }
-a:hover { text-decoration-color:var(--ink2); }
-main { max-width:1080px; margin:0 auto; padding:40px 20px 48px; }
-h1 { font-family:var(--display); font-size:40px; line-height:1.04; font-weight:500; letter-spacing:-.02em; margin:0 0 14px; }
-h2 { font-family:var(--display); font-size:22px; line-height:28px; font-weight:500; letter-spacing:-.01em; margin:56px 0 14px; display:flex; align-items:baseline; gap:12px; }
-h2 .num { font:500 13px var(--font); color:var(--ink3); font-variant-numeric:tabular-nums; }
-.label { font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--ink2); }
-.eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:500; color:var(--ink2); background:var(--surface); border:1px solid var(--border2); border-radius:99px; padding:4px 12px 4px 5px; margin-bottom:18px; box-shadow:var(--shadow-lg); }
-.eyebrow b { background:var(--accent-soft); color:var(--accent); font-weight:600; font-size:12px; border-radius:99px; padding:1px 8px; text-transform:uppercase; letter-spacing:.02em; }
-.sub { color:var(--ink2); font-weight:500; margin:0 0 20px; max-width:720px; }
-.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
-.tile { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r-lg); padding:16px 18px; box-shadow:var(--shadow); }
-.tile .v { font-family:var(--display); font-size:26px; line-height:32px; font-weight:500; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
-.tile .v.s { font-size:17px; line-height:1.3; padding:6px 0; } .tile .l { color:var(--ink2); font-size:12.5px; margin-top:2px; }
-.card { background:var(--surface); border:1px solid var(--border2); border-radius:var(--r-lg); padding:18px 20px; box-shadow:var(--shadow); }
-.row { display:grid; grid-template-columns:minmax(200px,300px) 1fr 110px; gap:14px; align-items:center; padding:7px 0; }
-.row + .row { border-top:1px solid var(--grid); }
-.row .name { font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.track { background:var(--track); height:8px; border-radius:99px; position:relative; overflow:hidden; }
-.fill { background:var(--bar); height:8px; border-radius:99px; }
-.runs { display:flex; gap:4px; justify-content:flex-end; }
-.run { width:12px; height:12px; border-radius:4px; border:1.5px solid var(--ink3); }
-.run.p { background:var(--pass); border-color:var(--pass); }
-.val { font-variant-numeric:tabular-nums; color:var(--ink2); font-size:12.5px; text-align:right; }
-.legend { color:var(--ink2); font-size:12.5px; display:flex; gap:16px; align-items:center; margin-bottom:8px; flex-wrap:wrap; }
-.legend .run { display:inline-block; vertical-align:-2px; margin-right:5px; }
-table { width:100%; border-collapse:collapse; font-size:13px; }
-th,td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--grid); }
-tbody tr:last-child td { border-bottom:0; }
-th { color:var(--ink3); font-weight:500; font-size:12px; white-space:nowrap; } td.n { text-align:right; font-variant-numeric:tabular-nums; }
-.fail { display:grid; grid-template-columns:320px 1fr; gap:20px; margin-bottom:12px; }
-.frame { border:1px solid var(--border); border-radius:var(--r); overflow:hidden; background:var(--raised); box-shadow:var(--shadow-lg); }
-.frame::before { content:""; display:block; height:22px; border-bottom:1px solid var(--border);
-  background:radial-gradient(circle at 13px 11px,#ff5f57 3.5px,transparent 4px),radial-gradient(circle at 27px 11px,#febc2e 3.5px,transparent 4px),radial-gradient(circle at 41px 11px,#28c840 3.5px,transparent 4px),var(--side); }
-.frame img { width:100%; display:block; }
-.fail code, .mono, code { font-family:var(--mono); font-size:12px; background:var(--code); padding:1px 6px; border-radius:6px; }
-.tag { display:inline-block; font-size:12px; font-weight:500; padding:2px 10px; border-radius:99px; background:var(--raised); color:var(--ink2); margin:0 6px 4px 0; }
-.tag.cause { background:var(--accent-soft); color:var(--accent); }
-.k { color:var(--ink2); }
-details summary { cursor:pointer; color:var(--ink2); margin-top:10px; font-weight:500; }
-header.bar { max-width:1080px; margin:0 auto; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
-header.bar .wm { font-weight:500; font-size:17px; letter-spacing:-.02em; text-decoration:none; }
-.btn-pill { background:var(--btn); color:var(--btn-ink); border-radius:99px; padding:6px 13px; font-weight:500; font-size:14px; text-decoration:none; }
-.btn-pill:hover { opacity:.88; }
-.foot { max-width:1080px; margin:24px auto 0; padding:24px 20px 40px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:var(--ink3); font-size:12.5px; border-top:1px solid var(--border); }
-.foot b { color:var(--ink2); font-weight:600; } .foot a { color:var(--ink2); }
-@media (max-width:700px) { .row { grid-template-columns:1fr 90px; } .row .track { grid-column:1 / -1; order:3; }
-  .fail { grid-template-columns:1fr; } h1 { font-size:24px; } }
+body { margin:0; background:var(--page); color:var(--ink); font:14px/20px var(--font); -webkit-font-smoothing:antialiased; }
+a { color:var(--ink); text-underline-offset:3px; text-decoration-color:var(--ink3); }
+main { max-width:1160px; margin:0 auto; padding:40px 16px 56px; }
+h1 { font-size:40px; line-height:1.05; font-weight:500; letter-spacing:-.02em; margin:0 0 12px; }
+.sub { color:var(--ink2); font-size:15px; line-height:22px; max-width:640px; margin:0 0 24px; }
+.top { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; max-width:1160px; margin:0 auto; font-weight:600; }
+.top a { font-weight:500; color:var(--ink2); text-decoration:none; margin-left:18px; }
+.grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:16px; align-items:start; }
+.panel { border:1px solid var(--border2); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow-lg); overflow:hidden; }
+.phead { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border2); background:var(--side); flex-wrap:wrap; }
+.phead .t { font-weight:600; }
+.seg { display:inline-flex; border:1px solid var(--border2); border-radius:99px; padding:2px; background:var(--surface); }
+.seg button { border:0; background:none; font:500 13px var(--font); color:var(--ink2); padding:4px 12px; border-radius:99px; cursor:pointer; }
+.seg button[aria-pressed="true"] { background:var(--btn); color:var(--btn-ink); }
+.btn { font:500 13.5px var(--font); border-radius:99px; padding:8px 16px; cursor:pointer; border:1px solid var(--border2); background:var(--surface); color:var(--ink); }
+.btn.primary { background:var(--btn); color:var(--btn-ink); border-color:var(--btn); }
+.btn:disabled { opacity:.45; cursor:default; }
+.btn.rec { color:var(--fail); }
+.actions { display:flex; gap:8px; flex-wrap:wrap; padding:12px 14px; border-bottom:1px solid var(--border2); }
+.hint { padding:10px 14px; color:var(--ink2); font-size:13px; border-bottom:1px solid var(--border2); }
+.hint b { color:var(--ink); font-weight:600; }
+.wfname { display:flex; align-items:center; gap:8px; }
+.badge { font:600 11.5px var(--font); border-radius:99px; padding:1px 8px; background:var(--accent-soft); color:var(--accent); }
+ol.steps { list-style:none; margin:0; padding:6px 0; counter-reset:s; }
+ol.steps li { display:grid; grid-template-columns:22px 1fr; gap:8px; padding:8px 14px; counter-increment:s; }
+ol.steps li::before { content:counter(s); color:var(--ink3); font-variant-numeric:tabular-nums; font-size:12.5px; padding-top:1px; }
+ol.steps li.on { background:var(--accent-soft); }
+.st { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; }
+.chip { font:600 11.5px var(--font); border-radius:99px; padding:1px 8px; white-space:nowrap; }
+.chip.replay { background:var(--raised); color:var(--ink2); } .chip.free { background:var(--ok-soft); color:var(--ok); }
+.chip.ai { background:var(--warn-soft); color:var(--warn); } .chip.fail { background:var(--fail-soft); color:var(--fail); }
+.why { color:var(--ink2); font-size:12.5px; grid-column:2; }
+.result { margin:0; padding:12px 14px; border-top:1px solid var(--border2); font-size:13.5px; }
+.result.ok { color:var(--ok); } .result.bad { color:var(--fail); }
+.empty { color:var(--ink3); padding:14px; }
+/* the demo CRM */
+#crm { position:relative; min-height:440px; background:#f7f7f8; color:#1d1d1f; font:14px/20px var(--font); }
+#crm.busy { pointer-events:none; }
+.c-nav { background:#16161a; color:#fff; padding:10px 16px; display:flex; gap:18px; font-size:13.5px; align-items:center; }
+.c-nav b { margin-right:6px; } .c-nav span { color:#9a9aa3; }
+.c-body { padding:16px; }
+.c-card { background:#fff; border:1px solid #e4e4e8; border-radius:10px; padding:14px; }
+.c-row { display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid #efeff2; gap:10px; }
+.c-row:last-child { border-bottom:0; }
+.c-row .m { color:#77777f; font-size:13px; }
+.c-pill { font-size:12px; border-radius:99px; padding:1px 8px; background:#eef0f4; color:#4a4a52; white-space:nowrap; }
+.c-link { color:#2949c6; cursor:pointer; text-decoration:underline; text-underline-offset:2px; background:none; border:0; font:inherit; padding:0; }
+.c-btn { font:500 13.5px var(--font); background:#3b5bdb; color:#fff; border:0; border-radius:7px; padding:7px 14px; cursor:pointer; }
+.c-btn.alt { background:#fff; color:#1d1d1f; border:1px solid #d6d6dc; }
+.c-btn.sel { background:#1d1d1f; color:#fff; border-color:#1d1d1f; }
+.c-pager { display:flex; justify-content:space-between; align-items:center; margin-top:12px; color:#77777f; font-size:13px; }
+.c-field { margin:12px 0; } .c-field label { display:block; font-weight:600; font-size:13px; margin-bottom:4px; }
+.c-field select { font:14px var(--font); padding:6px 8px; border:1px solid #cfcfd6; border-radius:7px; min-width:200px; background:#fff; color:#1d1d1f; }
+.c-stages { display:flex; gap:6px; flex-wrap:wrap; }
+.c-toast { background:#e9f7ee; color:#16803c; border-radius:7px; padding:6px 10px; margin-bottom:10px; font-weight:500; }
+.c-veil { position:absolute; inset:0; background:#16161a66; display:flex; align-items:flex-start; justify-content:center; padding-top:90px; }
+.c-modal { background:#fff; border-radius:12px; padding:18px; width:300px; box-shadow:0 10px 30px #0003; }
+.c-modal h4 { margin:0 0 6px; font-size:15px; }
+.c-modal p { margin:0 0 12px; color:#55555c; font-size:13.5px; }
+#crm .hl { outline:3px solid #f5a524; outline-offset:2px; border-radius:6px; }
+.rec-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--fail); margin-right:6px; animation:p 1s infinite; }
+@keyframes p { 50% { opacity:.3; } }
+.how { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:28px; }
+.how div { border-top:1px solid var(--border2); padding-top:12px; color:var(--ink2); font-size:13.5px; }
+.how b { display:block; color:var(--ink); font-weight:600; margin-bottom:4px; }
+footer { max-width:1160px; margin:0 auto; padding:20px 16px 40px; color:var(--ink2); font-size:13px; border-top:1px solid var(--border2); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+@media (max-width:860px) { .grid { grid-template-columns:1fr; } .how { grid-template-columns:1fr; } h1 { font-size:32px; } }
+@media (prefers-reduced-motion: reduce) { .rec-dot { animation:none; } }
+</style></head>
+<body>
+<div class="top"><span>Workflow autopilot</span><nav><a href="https://github.com/e16163/flakebench">Source</a></nav></div>
+<main>
+<h1>Do a browser task once. Autopilot does it from then on.</h1>
+<p class="sub">Autopilot saves the steps of a task that worked, replays them without AI, and only asks the AI when a site change breaks a step. Then it saves the fix, so the next run needs no AI again. Try it on the demo CRM below.</p>
 
-@media (min-width:701px) { .row { grid-template-columns:minmax(220px,340px) 1fr 130px; } } td.mono { background:none; } td .track { min-width:60px; }</style></head><body><header class="bar"><a class="wm" href="https://github.com/e16163/polarbench">polarbench</a><a class="btn-pill" href="https://github.com/e16163/polarbench#quick-start">Run it yourself</a></header><main>
-<a class="card" href="autopilot/" style="display:block; text-decoration:none; margin-bottom:28px"><span class="eyebrow"><b>New</b> Workflow autopilot</span><p style="margin:10px 0 0; font-weight:500">Saved workflows that replay without AI, fix renamed buttons and moved records for free, and call a model only for the step a redesign broke. See the results &rarr;</p></a>
-<div class="eyebrow"><b>Results</b> 7 configurations · 11 tasks</div>
-<h1>Same tasks, same chaos. What changes the pass rate?</h1>
-<p class="sub">Same 11 tasks, same seeds, same injected chaos. Only the agent and the guards change. Click a configuration for its full failure report. Agent: <b>scripted-baseline</b>.</p>
-<h2><span class="num">01</span>Pass rate by configuration</h2>
-<div class="card"><div class="row" title="10/55 runs passed"><div class="name"><a href="scripted-none/index.html">scripted-baseline · no guards</a></div><div class="track"><div class="fill" style="width:18.0%"></div></div><div class="val">18% (10/55)<br><span style="font-size:12px">95% CI 10%–30%</span></div></div><div class="row" title="16/55 runs passed"><div class="name"><a href="scripted-settle/index.html">scripted-baseline · guard: settle</a></div><div class="track"><div class="fill" style="width:29.0%"></div></div><div class="val">29% (16/55)<br><span style="font-size:12px">95% CI 19%–42%</span></div></div><div class="row" title="10/55 runs passed"><div class="name"><a href="scripted-reresolve/index.html">scripted-baseline · guard: reresolve</a></div><div class="track"><div class="fill" style="width:18.0%"></div></div><div class="val">18% (10/55)<br><span style="font-size:12px">95% CI 10%–30%</span></div></div><div class="row" title="26/55 runs passed"><div class="name"><a href="scripted-overlay/index.html">scripted-baseline · guard: overlay</a></div><div class="track"><div class="fill" style="width:47.0%"></div></div><div class="val">47% (26/55)<br><span style="font-size:12px">95% CI 35%–60%</span></div></div><div class="row" title="10/55 runs passed"><div class="name"><a href="scripted-follow_tab/index.html">scripted-baseline · guard: follow_tab</a></div><div class="track"><div class="fill" style="width:18.0%"></div></div><div class="val">18% (10/55)<br><span style="font-size:12px">95% CI 10%–30%</span></div></div><div class="row" title="55/55 runs passed"><div class="name"><a href="scripted-all/index.html">scripted-baseline · all guards</a></div><div class="track"><div class="fill" style="width:100.0%"></div></div><div class="val">100% (55/55)<br><span style="font-size:12px">95% CI 93%–100%</span></div></div><div class="row" title="55/55 runs passed"><div class="name"><a href="scripted-nochaos/index.html">scripted-baseline · no guards · chaos off</a></div><div class="track"><div class="fill" style="width:100.0%"></div></div><div class="val">100% (55/55)<br><span style="font-size:12px">95% CI 93%–100%</span></div></div></div>
-<h2><span class="num">02</span>Pass rate by task</h2>
-<div class="card" style="overflow-x:auto"><table><thead><tr><th>Task</th><th class="n">no guards</th><th class="n">guard: settle</th><th class="n">guard: reresolve</th><th class="n">guard: overlay</th><th class="n">guard: follow_tab</th><th class="n">all guards</th><th class="n">no guards · chaos off</th></tr></thead><tbody><tr><td class="mono">t01_qualify_priya</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t02_assign_helix</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t03_reply_pricing</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t04_intro_quartz</td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t05_schedule_arcadia</td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t06_archive_newsletters</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">4/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:80%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t07_lose_tomas</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">4/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:80%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t08_oldest_contacted</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">3/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:60%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t09_move_lumen</td><td class="n">3/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:60%"></div></div></td><td class="n">3/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:60%"></div></div></td><td class="n">3/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:60%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">3/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:60%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t10_note_q1</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">2/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:40%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr><tr><td class="mono">t11_followups</td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">0/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:0%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td><td class="n">5/5<div class="track" style="height:6px;margin-top:4px"><div class="fill" style="height:6px;width:100%"></div></div></td></tr></tbody></table></div>
-<h2><span class="num">03</span>Failure causes</h2>
-<div class="card" style="overflow-x:auto"><table><thead><tr><th>Cause</th><th class="n">no guards</th><th class="n">guard: settle</th><th class="n">guard: reresolve</th><th class="n">guard: overlay</th><th class="n">guard: follow_tab</th><th class="n">all guards</th><th class="n">no guards · chaos off</th></tr></thead><tbody><tr><td>Modal blocked the click</td><td class="n">32</td><td class="n">34</td><td class="n">34</td><td class="n">9</td><td class="n">33</td><td class="n">0</td><td class="n">0</td></tr><tr><td>Stale element (list re-rendered while the agent was thinking)</td><td class="n">4</td><td class="n">4</td><td class="n">0</td><td class="n">4</td><td class="n">4</td><td class="n">0</td><td class="n">0</td></tr><tr><td>Acted on the wrong tab after a link opened a new one</td><td class="n">1</td><td class="n">1</td><td class="n">3</td><td class="n">8</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr><tr><td>Acted before content loaded</td><td class="n">8</td><td class="n">0</td><td class="n">8</td><td class="n">8</td><td class="n">8</td><td class="n">0</td><td class="n">0</td></tr></tbody></table></div>
-</main><footer class="foot"><span><b>polarbench</b> · reliability testing for browser agents</span><span>Built for Polar · <a href="https://github.com/e16163/polarbench">source</a></span></footer></body></html>
+
+<div class="grid">
+  <section class="panel" aria-label="Demo CRM">
+    <div class="phead"><span class="t">Pipeline <span style="color:var(--ink2);font-weight:500">demo CRM</span></span>
+      <div class="seg" role="group" aria-label="Site version">
+        <button id="v1" aria-pressed="true">Original site</button><button id="v2" aria-pressed="false">Redesigned site</button>
+      </div></div>
+    <div id="crm"></div>
+  </section>
+
+  <section class="panel" aria-label="Autopilot">
+    <div class="phead"><span class="wfname"><span class="t" id="wf-name"></span><span class="badge" id="wf-ver"></span></span></div>
+    <div class="hint" id="hint"></div>
+    <div class="actions">
+      <button class="btn primary" id="run">Run workflow</button>
+      <button class="btn" id="record">Record your own</button>
+      <button class="btn" id="reset">Reset demo</button>
+    </div>
+    <ol class="steps" id="steps"></ol>
+    <p class="result" id="result" hidden></p>
+  </section>
+</div>
+
+<div class="how">
+  <div><b>1. Record once</b>When an agent or a person finishes a task, autopilot saves each step: what was clicked, and what it was called.</div>
+  <div><b>2. Replay for free</b>Later runs repeat the saved steps directly. Small changes such as a renamed button, a pop-up, or a record that moved to another page are fixed without AI.</div>
+  <div><b>3. Heal only what broke</b>If a step really changed, the AI fixes that one step and autopilot saves a new version. Every run is checked against the result it should have. (In this demo the AI fix is scripted, so it works with no setup.)</div>
+</div>
+</main>
+<footer><span>Workflow autopilot for browser agents · built for Polar</span><a href="https://github.com/e16163/flakebench">Source on GitHub</a></footer>
+
+<script>
+"use strict";
+const PER_PAGE = 5, STAGES = ["New", "Contacted", "Qualified", "Won", "Lost"], OWNERS = ["Riley", "Uma", "Sam"];
+const BASE = [["Ana Costa","Brightline"],["Leo Park","Cobalt AI"],["Mia Chen","Driftwood"],["Omar Haddad","Ember Labs"],["Grace Liu","Helix Robotics"],
+  ["Tomás Ruiz","Lumen Health"],["Priya Raman","Northwind Labs"],["Felix Wagner","Quartz"],["Nina Berg","Arcadia"],["Kai Moore","Fjord"],["Sara Ali","Juniper"],["Ivan Petrov","Kestrel"]];
+const NEW = [["Zoe Hart","Atlas"],["Ravi Nair","Beacon"],["Ella Brooks","Cinder"],["Hugo Laurent","Delta Six"],["June Kim","Evergreen"],["Max Weber","Fable"]];
+const COPY = { // the redesign renames things
+  1: { next:"Next", prev:"Previous", save:"Save", owner:"Owner", back:"All leads" },
+  2: { next:"Next page", prev:"Previous page", save:"Save changes", owner:"Assigned to", back:"Back to leads" } };
+
+function seed(v) {
+  const base = BASE.map((x, i) => ({ id:i + 1, name:x[0], co:x[1], stage:i % 3 ? "Contacted" : "New", owner:OWNERS[i % 3] }));
+  const extra = NEW.map((x, i) => ({ id:101 + i, name:x[0], co:x[1], stage:"New", owner:"Sam" }));
+  return v === 2 ? extra.concat(base) : base; // six new leads sort first, so old ones move pages
+}
+const PRESET = { name:"Move Priya Raman to Qualified", steps:[
+  { type:"click", kind:"button", label:"Next" },
+  { type:"click", kind:"link", label:"Priya Raman", href:"/leads/7" },
+  { type:"select", field:"Stage", value:"Qualified" },
+  { type:"click", kind:"button", label:"Save" } ], expect:{ name:"Priya Raman", stage:"Qualified" } };
+
+let S = {}; // site state
+let wf = { versions:[clone(PRESET)] };
+let recording = null, busy = false, runs = 0, runsTotal = 0;
+
+function clone(x) { return JSON.parse(JSON.stringify(x)); }
+function resetSite(v) { S = { v, db:seed(v), view:"list", page:0, lead:null, draft:null, toast:false, popup:v === 2 }; render(); }
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+function el(kind, label, act, cls, extra = "") {
+  const tag = kind === "link" ? "button" : "button";
+  return `<${tag} class="${cls}" data-kind="${kind}" data-label="${esc(label)}" data-act="${esc(act)}" ${extra}>${esc(label)}</${tag}>`;
+}
+function render() {
+  const c = COPY[S.v]; let h = `<div class="c-nav"><b>Pipeline</b><span>Leads</span><span>Inbox</span><span>Calendar</span></div><div class="c-body">`;
+  if (S.view === "list") {
+    const rows = S.db.slice(S.page * PER_PAGE, S.page * PER_PAGE + PER_PAGE), pages = Math.ceil(S.db.length / PER_PAGE);
+    h += `<div class="c-card">` + rows.map(l => `<div class="c-row"><span>${el("link", l.name, "open:" + l.id, "c-link", `data-href="/leads/${l.id}"`)}
+      <span class="m"> · ${esc(l.co)}</span></span><span class="c-pill">${esc(l.stage)}</span></div>`).join("") + `</div>
+      <div class="c-pager">${S.page > 0 ? el("button", c.prev, "prev", "c-btn alt") : "<span></span>"}<span>Page ${S.page + 1} of ${pages}</span>
+      ${S.page < pages - 1 ? el("button", c.next, "next", "c-btn alt") : "<span></span>"}</div>`;
+  } else {
+    const l = S.db.find(x => x.id === S.lead), d = S.draft;
+    h += `<div style="margin-bottom:10px">${el("link", "← " + c.back, "back", "c-link")}</div><div class="c-card">`;
+    if (S.toast) h += `<div class="c-toast">Saved</div>`;
+    h += `<div style="font-weight:600;font-size:17px">${esc(l.name)}</div><div class="m" style="color:#77777f">${esc(l.co)}</div>`;
+    if (S.v === 1) h += `<div class="c-field"><label for="f-stage">Stage</label><select id="f-stage" data-kind="select" data-label="Stage">` +
+      STAGES.map(s => `<option${s === d.stage ? " selected" : ""}>${s}</option>`).join("") + `</select></div>`;
+    else h += `<div class="c-field"><label>Stage</label><div class="c-stages">` +
+      STAGES.map(s => el("button", s, "stage:" + s, "c-btn alt" + (s === d.stage ? " sel" : ""), `aria-pressed="${s === d.stage}"`)).join("") + `</div></div>`;
+    h += `<div class="c-field"><label for="f-owner">${c.owner}</label><select id="f-owner" data-kind="select" data-label="${c.owner}">` +
+      OWNERS.map(o => `<option${o === d.owner ? " selected" : ""}>${o}</option>`).join("") + `</select></div>` + el("button", c.save, "save", "c-btn") + `</div>`;
+  }
+  h += `</div>`;
+  if (S.popup && S.view === "list") h += `<div class="c-veil"><div class="c-modal" role="dialog" aria-label="What's new"><h4>What's new in Pipeline</h4>
+    <p>A fresh look, and leads you add now show up first.</p>${el("button", "Got it", "dismiss", "c-btn")}</div></div>`;
+  $("crm").innerHTML = h;
+}
+function act(a) {
+  S.toast = false;
+  if (a === "next") S.page++; else if (a === "prev") S.page--; else if (a === "dismiss") S.popup = false;
+  else if (a === "back") { S.view = "list"; }
+  else if (a.startsWith("open:")) { S.lead = +a.slice(5); const l = S.db.find(x => x.id === S.lead); S.draft = { stage:l.stage, owner:l.owner }; S.view = "lead"; }
+  else if (a.startsWith("stage:")) S.draft.stage = a.slice(6);
+  else if (a === "save") { Object.assign(S.db.find(x => x.id === S.lead), S.draft); S.toast = true; }
+  render();
+}
+function setSelect(sel, value) { const f = sel.dataset.label === "Stage" ? "stage" : "owner"; S.draft[f] = value; S.toast = false; render(); }
+
+// people clicking in the CRM (and recording)
+$("crm").addEventListener("click", e => {
+  const t = e.target.closest("[data-act]"); if (!t || busy) return;
+  if (recording && t.dataset.act !== "dismiss") {
+    const s = { type:"click", kind:t.dataset.kind, label:t.dataset.label }; if (t.dataset.href) s.href = t.dataset.href;
+    if (t.dataset.act.startsWith("stage:")) { recording.steps.push({ type:"select", field:"Stage", value:t.dataset.label }); }
+    else recording.steps.push(s);
+    if (t.dataset.act.startsWith("open:")) recording.lead = +t.dataset.act.slice(5);
+  }
+  act(t.dataset.act); if (recording) drawSteps(recording.steps.map(s => ({ s })));
+});
+$("crm").addEventListener("change", e => {
+  const t = e.target; if (t.dataset.kind !== "select" || busy) return;
+  if (recording) { recording.steps.push({ type:"select", field:t.dataset.label, value:t.value }); }
+  setSelect(t, t.value); if (recording) drawSteps(recording.steps.map(s => ({ s })));
+});
+
+// --- autopilot: find a saved step on the current page ---
+const nodes = () => [...$("crm").querySelectorAll("[data-kind]")];
+const sim = (a, b) => a.startsWith(b) || b.startsWith(a) || a.includes(b) || b.includes(a);
+function locate(step) {
+  const all = nodes();
+  if (step.type === "select") {
+    let m = all.filter(n => n.dataset.kind === "select" && n.dataset.label === step.field && [...n.options].some(o => o.value === step.value));
+    if (m.length === 1) return { node:m[0], how:"replay" };
+    m = all.filter(n => n.dataset.kind === "select" && [...n.options].some(o => o.value === step.value));
+    if (m.length === 1) return { node:m[0], how:"free", why:`matched field '${m[0].dataset.label}' instead of '${step.field}'` };
+    return null;
+  }
+  const same = all.filter(n => n.dataset.kind === step.kind);
+  let m = same.filter(n => n.dataset.label === step.label && (!step.href || n.dataset.href === step.href));
+  if (m.length === 1) return { node:m[0], how:"replay" };
+  m = same.filter(n => (step.href && n.dataset.href === step.href) || (!step.href && sim(n.dataset.label, step.label)));
+  if (m.length === 1) return { node:m[0], how:"free", why:`matched '${m[0].dataset.label}' instead of '${step.label}'` };
+  return null;
+}
+// the healer: in the real tool this is one model call; here it is a scripted stand-in
+function heal(step) {
+  const want = step.type === "select" ? step.value : step.label;
+  const all = nodes();
+  const b = all.filter(n => n.dataset.kind === "button" && n.dataset.label === want);
+  if (b.length === 1) return { node:b[0], how:"ai", why:`AI: click '${want}' (the dropdown is now a row of buttons)`, fixed:{ type:"click", kind:"button", label:want } };
+  const s = all.filter(n => n.dataset.kind === "select" && [...n.options].some(o => o.value === want));
+  if (s.length === 1) return { node:s[0], how:"ai", why:`AI: choose '${want}' in '${s[0].dataset.label}' (the buttons are now a dropdown)`, fixed:{ type:"select", field:s[0].dataset.label, value:want } };
+  return null;
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+async function doStep(r) {
+  r.node.classList.add("hl"); await wait(420);
+  if (r.node.dataset.kind === "select") setSelect(r.node, r.value); else act(r.node.dataset.act);
+  await wait(260);
+}
+
+async function run() {
+  if (busy || recording) return;
+  busy = true; $("crm").classList.add("busy"); setButtons(); $("result").hidden = true;
+  const cur = wf.versions[wf.versions.length - 1], steps = cur.steps, out = steps.map(s => ({ s }));
+  resetSite(S.v); let ai = 0, changed = false; const next = clone(cur);
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i], o = out[i]; o.on = true; drawSteps(out); await wait(250);
+    const notes = [];
+    if (S.popup && S.view === "list") { const g = nodes().find(n => n.dataset.act === "dismiss"); await doStep({ node:g }); notes.push("closed a pop-up that covered the page"); }
+    let r = locate(s), pages = 0;
+    while (!r && s.href && nodes().some(n => n.dataset.act === "next")) { await doStep({ node:nodes().find(n => n.dataset.act === "next") }); pages++; r = locate(s); }
+    if (r && pages) { r.how = "free"; r.why = `wasn't on that page any more; found it ${pages} page${pages > 1 ? "s" : ""} later`; }
+    if (!r) { r = heal(s); if (r) { ai++; next.steps[i] = r.fixed; changed = true; } }
+    if (!r) { o.how = "fail"; o.why = "couldn't find this step; a person needs to look"; o.on = false; drawSteps(out); break; }
+    if (r.how === "free" && !pages) { next.steps[i] = s.type === "select" ? { ...s, field:r.node.dataset.label } : { ...s, label:r.node.dataset.label }; changed = true; }
+    r.value = s.type === "select" ? s.value : undefined;
+    if (r.how === "ai" && r.fixed.type === "select") r.value = r.fixed.value;
+    o.how = r.how; o.why = [...notes, r.why].filter(Boolean).join("; ");
+    await doStep(r); o.on = false; drawSteps(out);
+  }
+  const done = out.every(o => o.how && o.how !== "fail");
+  const lead = S.db.find(l => l.name === cur.expect.name);
+  const ok = done && lead && Object.keys(cur.expect).every(k => lead[k] === cur.expect[k]) && S.toast;
+  if (ok && changed) wf.versions.push(next);
+  const res = $("result"); res.hidden = false; res.className = "result " + (ok ? "ok" : "bad");
+  const checks = Object.entries(cur.expect).filter(([k]) => k !== "name").map(([k, v]) => `${k} is ${v}`).join(", ");
+  res.textContent = ok ? `✓ Verified: ${cur.expect.name}'s ${checks}, and the page says "Saved". ${ai ? "Used AI for " + ai + " step" + (ai > 1 ? "s" : "") + "." : "No AI needed."}` +
+    (changed ? ` Saved the fixes as v${wf.versions.length}.` : "")
+    : "✗ The run didn't reach the expected result, so nothing was saved.";
+  busy = false; $("crm").classList.remove("busy"); runs++; runsTotal++; draw();
+}
+
+function drawSteps(out) {
+  const label = s => s.type === "select" ? `Set '${s.field}' to ${s.value}` : `Click '${s.label}'`;
+  const chip = { replay:["replay", "Replayed"], free:["free", "Fixed for free"], ai:["ai", "Healed by AI"], fail:["fail", "Stuck"] };
+  $("steps").innerHTML = out.length ? out.map(o => `<li class="${o.on ? "on" : ""}"><div class="st"><span>${esc(label(o.s))}</span>` +
+    (o.how ? `<span class="chip ${chip[o.how][0]}">${chip[o.how][1]}</span>` : "") + `</div>` +
+    (o.why ? `<div class="why">${esc(o.why)}</div>` : "") + `</li>`).join("") : `<li class="empty" style="display:block">Click through the CRM on the left. Each click is saved as a step.</li>`;
+}
+function hint() {
+  if (recording) return `<span class="rec-dot"></span><b>Recording.</b> Open a lead, change its stage or owner, then click Save. Press <b>Save workflow</b> when you're done.`;
+  const v = wf.versions.length, last = runsTotal;
+  if (!last) return `<b>Step 1.</b> Press <b>Run workflow</b>. Autopilot repeats the saved steps on the original site.`;
+  if (S.v === 1 && v === 1) return `<b>Step 2.</b> Switch to <b>Redesigned site</b>: buttons get renamed, new leads push old ones to later pages, and the stage dropdown becomes buttons. Then run it again.`;
+  if (S.v === 2 && v === 1) return `<b>Step 3.</b> Press <b>Run workflow</b> on the redesigned site and watch which steps are fixed for free and which one needs AI.`;
+  return `<b>Step 4.</b> Run it again: the fixed version replays with no AI calls. Or switch sites, or record your own workflow.`;
+}
+function setButtons() {
+  $("run").disabled = busy || !!recording;
+  $("record").textContent = recording ? "Save workflow" : "Record your own"; $("record").classList.toggle("rec", !!recording);
+  $("record").disabled = busy; $("reset").disabled = busy; $("v1").disabled = $("v2").disabled = busy;
+}
+function draw() {
+  const cur = wf.versions[wf.versions.length - 1];
+  $("wf-name").textContent = cur.name; $("wf-ver").textContent = "v" + wf.versions.length;
+  $("hint").innerHTML = hint(); setButtons();
+  if (!busy && !recording && !runs) drawSteps(cur.steps.map(s => ({ s })));
+}
+function setVersion(v) { if (busy) return; $("v1").setAttribute("aria-pressed", v === 1); $("v2").setAttribute("aria-pressed", v === 2); resetSite(v); draw(); }
+$("v1").onclick = () => setVersion(1); $("v2").onclick = () => setVersion(2);
+$("run").onclick = run;
+$("reset").onclick = () => { if (busy) return; recording = null; wf = { versions:[clone(PRESET)] }; runs = 0; runsTotal = 0; $("result").hidden = true; setVersion(1); };
+$("record").onclick = () => {
+  if (busy) return;
+  if (!recording) { recording = { steps:[], v:S.v, lead:null }; resetSite(S.v); S.popup = false; render(); $("result").hidden = true; drawSteps([]); draw(); return; }
+  const r = recording; recording = null;
+  const before = seed(r.v).find(l => l.id === r.lead), after = S.db.find(l => l.id === r.lead);
+  const res = $("result"); res.hidden = false;
+  if (!before || !S.toast || (before.stage === after.stage && before.owner === after.owner)) {
+    res.className = "result bad"; res.textContent = "Nothing was saved: open a lead, change its stage or owner, and click Save before saving the workflow."; runs = 0; draw(); return;
+  }
+  const expect = { name:after.name }; if (before.stage !== after.stage) expect.stage = after.stage; if (before.owner !== after.owner) expect.owner = after.owner;
+  const what = [expect.stage && `stage to ${expect.stage}`, expect.owner && `owner to ${expect.owner}`].filter(Boolean).join(" and ");
+  wf = { versions:[{ name:`Set ${after.name}'s ${what}`, steps:r.steps, expect }] }; runs = 0;
+  res.className = "result ok"; res.textContent = `Saved your workflow with ${r.steps.length} steps. Run it, then switch sites and run it again.`;
+  resetSite(S.v); draw();
+};
+resetSite(1); draw();
+</script>
+</body></html>

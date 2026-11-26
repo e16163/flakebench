@@ -32,7 +32,7 @@ Steps that send, reply, archive or delete are marked, so a product can ask befor
 
 **Real model numbers (Gemini, free tier): in progress.** They will replace the dry run below.
 
-**Dry run with stand-ins (no model at all).** The agent is the scripted macro and the healer is the scripted stand-in, which knows two generic repairs. This proves the mechanics end to end; it is not evidence about models. 11 tasks × 3 seeds, chaos on. Full page: [`docs/autopilot/index.html`](docs/autopilot/index.html).
+**Dry run with stand-ins (no model at all).** The agent is the scripted macro and the healer is the scripted stand-in, which knows two generic repairs. This proves the mechanics end to end; it is not evidence about models. 11 tasks × 3 seeds, chaos on.
 
 | How it ran | Site | Correct | Steps needing a model, per run | Runs with no model | Verified |
 | --- | --- | --- | --- | --- | --- |
@@ -49,7 +49,7 @@ Autopilot is measured on polarbench's test site. "Pipeline" is a small CRM that 
 
 ## Test bench results
 
-Full reports with every failure, its screenshot and its trace: [`docs/index.html`](docs/index.html) (published at https://e16163.github.io/polarbench/ once GitHub Pages is on for `main` / `docs`).
+Build the full reports, with every failure, its screenshot and its trace, with `./polarbench report` and `./polarbench compare`. The published site, https://e16163.github.io/flakebench/, is an in-browser autopilot demo.
 
 Scripted baseline agent (a recorded macro with simulated model latency), 11 tasks × 5 seeds, same chaos schedule in every row:
 
