@@ -20,11 +20,11 @@
   </tbody>
 </table>
 <div class="pager">
-  {% if page > 1 %}<a href="/leads?page={{ page - 1 }}&stage={{ stage }}">Prev</a>{% endif %}
+  {% if page > 1 %}<a href="/leads?page={{ page - 1 }}&stage={{ stage }}">{{ "Previous page" if v2 else "Prev" }}</a>{% endif %}
   {% for p in range(1, pages + 1) %}
     {% if p == page %}<span class="cur">{{ p }}</span>{% else %}<a href="/leads?page={{ p }}&stage={{ stage }}">{{ p }}</a>{% endif %}
   {% endfor %}
-  {% if page < pages %}<a href="/leads?page={{ page + 1 }}&stage={{ stage }}">Next</a>{% endif %}
+  {% if page < pages %}<a href="/leads?page={{ page + 1 }}&stage={{ stage }}">{{ "Next page" if v2 else "Next" }}</a>{% endif %}
   <span class="muted" style="border:0;background:none">Page {{ page }} of {{ pages }}</span>
 </div>
 {% if chaos.reorder_ms %}

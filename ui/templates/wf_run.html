@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><head>{% include "_head.html" %}<title>Run · {{ wf_id }}</title>
+{% if running %}<meta http-equiv="refresh" content="2">{% endif %}
+<style>
+.st { display:grid; grid-template-columns:28px 1fr 130px; gap:12px; padding:11px 0; align-items:start; }
+.st + .st { border-top:1px solid var(--grid); }
+.st .n { color:var(--ink3); font-size:12.5px; text-align:right; padding-top:2px; font-variant-numeric:tabular-nums; }
+.st .d { font-weight:500; }
+.st ul { margin:4px 0 0; padding-left:16px; color:var(--ink2); font-size:12.5px; }
+.st .ai { color:var(--accent); }
+.badge { justify-self:end; font-size:12px; font-weight:500; padding:2px 10px; border-radius:99px; white-space:nowrap; }
+.b-replayed { background:var(--raised); color:var(--ink2); }
+.b-auto_fixed { background:var(--raised); color:var(--ink); box-shadow:0 0 0 1px var(--border2) inset; }
+.b-healed { background:var(--accent-soft); color:var(--accent); }
+.b-skipped { color:var(--ink3); }
+.b-failed { background:#e400151a; color:var(--fail); }
+.b-waiting { background:var(--raised); color:var(--ink); }
+.chk { font-size:12.5px; color:var(--ink2); margin-top:4px; }
+.chk .y { color:var(--accent); } .chk .x { color:var(--fail); }
+.verdict { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 20px; }
+</style></head><body>
+{% include "_side.html" %}
+<div class="app"><main>
+<div class="crumbs"><a href="/workflows">Workflows</a> / <a href="/workflows/{{ wf_id }}">{{ wf_id }}</a> / {{ run }}</div>
+{% if not res %}
+  <h1 style="font-size:30px">{{ summary.goal }}</h1>
+  <p class="sub">{% if running %}<span class="chip live">running</span> Replaying the saved steps…{% else %}This run didn't finish. Log below.{% endif %}</p>
+  <pre class="code">{{ tail|join('\n') }}</pre>
+{% else %}
+  {% set c = res.counts or {} %}
+  <h1 style="font-size:30px">{{ res.goal }}</h1>
+  <div class="verdict">
+    {% if res.verified %}<span class="chip live" style="animation:none">Verified</span>{% elif res.status == 'passed' %}<span class="chip">Done, not verified</span>{% else %}<span class="chip" style="color:var(--fail)">Stopped</span>{% endif %}
+    <span class="small">workflow v{{ res.version }} on site version {{ res.site_version }}{% if res.saved_version %} · saved as <a href="/workflows/{{ wf_id }}?v={{ res.saved_version }}">v{{ res.saved_version }}</a>{% endif %}</span>
+  </div>
+  <div class="tiles">
+    <div class="tile"><div class="v">{{ res.ai_calls }}</div><div class="l">AI calls{% if summary.agent_steps %} (the agent used {{ summary.agent_steps }} the first time){% endif %}</div></div>
+    <div class="tile"><div class="v">{{ c.replayed or 0 }}</div><div class="l">steps replayed as recorded</div></div>
+    <div class="tile"><div class="v">{{ c.auto_fixed or 0 }}</div><div class="l">fixed for free</div></div>
+    <div class="tile"><div class="v">{{ c.healed or 0 }}</div><div class="l">healed by AI</div></div>
+    <div class="tile"><div class="v">{{ res.duration_s }}s</div><div class="l">run time</div></div>
+  </div>
+  {% if res.reason %}<p class="hint" style="margin-top:14px">{{ res.reason }}</p>{% endif %}
+  {% if res.review %}<p class="hint">{{ res.review }}</p>{% endif %}
+  <div class="grid2" style="margin-top:20px; grid-template-columns:1.2fr 1fr">
+    <div class="card"><h2 style="margin-top:0">Steps</h2>
+      {% for s in res.steps %}<div class="st"><div class="n">{{ s.n }}</div>
+        <div><div class="d">{{ s.desc }}</div>
+          {% if s.fixes or s.healed_actions or s.heal_notes %}<ul>{% for f in s.fixes %}<li>{{ f }}</li>{% endfor %}
+            {% for a in s.healed_actions %}<li class="ai">AI: {{ a }}</li>{% endfor %}
+            {% for h in s.heal_notes %}<li class="ai">AI: {{ h }}</li>{% endfor %}</ul>{% endif %}
+          {% if s.checks %}<div class="chk">{% for name, ok in s.checks %}<span class="{{ 'y' if ok else 'x' }}">{{ '✓' if ok else '✗' }}</span> {{ name }}{% if not loop.last %} &nbsp; {% endif %}{% endfor %}</div>{% endif %}
+          {% if s.approval %}<div class="chk">needs a person's OK in product: {{ s.approval }}</div>{% endif %}
+        </div>
+        <span class="badge b-{{ s.status }}">{{ {'replayed': 'Replayed', 'auto_fixed': 'Fixed for free', 'healed': 'Healed by AI', 'skipped': 'Skipped', 'failed': 'Failed', 'waiting': 'Waiting for OK'}[s.status] }}{% if s.ai_calls %} · {{ s.ai_calls }}{% endif %}</span></div>{% endfor %}
+    </div>
+    <div class="card"><h2 style="margin-top:0">Final page</h2>{% if shot %}<div class="frame"><img src="{{ shot }}" alt="The page when the run ended"></div>{% endif %}
+      <p class="hint" style="margin-top:12px">Ground truth from the test site's checker: {% if res.passed %}<span style="color:var(--accent)">correct</span>{% else %}<span style="color:var(--fail)">wrong</span> ({{ res.check }}){% endif %}. In product there is no checker; the "checked" steps are what tells you it worked.</p></div>
+  </div>
+{% endif %}
+</main>{{ footer|safe }}</div>
+</body></html>

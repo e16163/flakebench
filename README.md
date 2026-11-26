@@ -1,21 +1,53 @@
-# polarbench
+# polarbench: workflow autopilot for browser agents
 
-**Run a browser agent many times on the same task. See the exact step where runs split, why they split, and which fix stops it.**
+**Run a saved browser workflow without paying for AI every time. Record the first run that works, replay it for free, and bring the model back only for the step a site redesign broke.**
 
-An independent reliability bench for Polar-style browser agents. It is not made by or affiliated with Polar.
+An independent project built for Polar-style browser agents. It is not made by or affiliated with Polar.
 
-Browser agents rarely fail on the hard part of a task. They fail on boring things: a dialog that shows up a second late, a list that re-sorts while the model is thinking, a link that opens a new tab, a page that is still loading. A single pass/fail number hides all of that, and so does a single run. polarbench makes it visible and measurable:
+## The problem
 
-- **A test site that misbehaves on purpose.** "Pipeline" is a small CRM (leads, inbox, compose, calendar). It injects realistic chaos from a seed and logs every injection, so any failure can be replayed exactly.
-- **11 realistic tasks with strict checkers.** Each checker reads the database and grades the final state, including side effects ("you also reassigned Grace Liu").
-- **A runner** that runs any agent N times per task and records every action, DOM hash, open tab, screenshot and full Playwright error.
-- **Divergence analysis.** Failing runs are aligned with passing runs. The first step where a failing run leaves every passing path gets a cause label, and the label is checked against the site's chaos log.
-- **Guards: the fixes.** Four browser-side fixes, each aimed at one failure class. They work with any model, and you can switch them on one at a time to measure each.
-- **A dashboard** to start runs, watch them live and read the reports, plus a CLI and a CI gate.
+Polar lets you "save any task as a workflow. Run it on a schedule, or when something happens." Today every one of those runs is a full agent run. A daily workflow repeats the same clicks on the same pages, but it pays for them as new agent work every time: "Credits are used when Polar runs agent work. Longer tasks use more," and when credits run out, "any scheduled workflows skip their runs" ([pricing](https://polarbrowser.com/pricing)). Polar's own [Frontier Problems](https://polarbrowser.com/blog/frontier-problems) post asks the same questions: "Most tasks that our users use Polar for do not require AGI level intelligence. How can we optimize more for speed?", and how to build agents that "self-manage and self-verify".
 
-![Dashboard: start runs, watch them live, compare configurations](docs/img/dashboard.jpg)
+Nothing on Polar's public pages describes replaying recorded steps, caching or self-repair of saved workflows (checked Nov 26, 2026). Workflows are saved prompts that rerun the agent.
 
-## Results so far
+## What autopilot does
+
+1. **Record.** The first passing run of a task becomes workflow v1. Errored steps, waits and tab switches are dropped. Each element is saved as a fingerprint (label, link, field name, role, group, options), and each save or send keeps what the page showed right after it.
+2. **Replay with no AI.** Later runs repeat the steps directly. Pop-ups, slow pages, new tabs and re-sorting lists are handled in the browser. A renamed button ("Save" to "Save changes") or a record that moved to a later page is fixed for free. If two elements look equally right, it refuses to guess.
+3. **Heal only what broke.** When a step no longer fits the page, a model gets only that step, with the goal, the steps already done and the steps still to come. It either does the step another way (the stage dropdown is now a row of buttons) or opens what hides it (a form behind a "New event" button). Then replay takes over again. The budget is 8 AI calls. After that, a full agent finishes the task, and the run is flagged for review instead of saved.
+4. **Verify.** After every save or send, the page must show what the recording saw: the values that stuck, a status line like "Saved", rows that disappeared. If a check fails, it stops and says why.
+5. **Save a new version.** A run that healed or re-matched anything and passed every check saves v2, so the next run is free again. Every version is kept, and rollback is one click.
+
+Steps that send, reply, archive or delete are marked, so a product can ask before them the way Polar does today. Typed text becomes a named input, so a "follow up" note can be any note.
+
+```bash
+./polarbench ui                       # Workflows page: record, run, versions, rollback
+./polarbench autopilot bench          # the four-row comparison below, no API key needed
+./polarbench autopilot bench --agent gemini --healer gemini --runs 3 --out runs/bench-gemini   # free Gemini key
+```
+
+![A run on the redesigned site: renamed buttons fixed for free, one step healed by AI, every save checked](docs/img/autopilot-run.jpg)
+
+## Results
+
+**Real model numbers (Gemini, free tier): in progress.** They will replace the dry run below.
+
+**Dry run with stand-ins (no model at all).** The agent is the scripted macro and the healer is the scripted stand-in, which knows two generic repairs. This proves the mechanics end to end; it is not evidence about models. 11 tasks × 3 seeds, chaos on. Full page: [`docs/autopilot/index.html`](docs/autopilot/index.html).
+
+| How it ran | Site | Correct | Steps needing a model, per run | Runs with no model | Verified |
+| --- | --- | --- | --- | --- | --- |
+| Agent every time | as recorded | 33/33 | 8.5 | 0/33 | – |
+| **Autopilot** | as recorded | **33/33** | **0** | **33/33** | 33/33 |
+| Agent every time | after redesign | 6/33 | 4.1 | 0/33 | – |
+| **Autopilot** | after redesign | **33/33** | **0.2** | **30/33** | 33/33 |
+
+After the redesign, 3 workflows needed a model once (2 calls for the stage buttons, 1 to open the hidden form), saved version 2, and replayed for free after that. 8 more re-matched renamed elements or moved records for free and saved version 2 too. "Verified but wrong" (autopilot's own check passed, the site's checker failed): 0 of 66. Replay ran about 3× faster than the agent per run.
+
+## The test bench underneath
+
+Autopilot is measured on polarbench's test site. "Pipeline" is a small CRM that misbehaves on purpose: pop-ups, slow loads, new tabs and re-sorting lists, all seeded and logged. `/reset?version=2` turns on a redesign: renamed buttons and fields, six new leads so records move pages, a stage picker that is buttons instead of a dropdown, and the new-event form hidden behind a button. The bench below it runs any agent many times per task and finds the step where runs split, and why.
+
+## Test bench results
 
 Full reports with every failure, its screenshot and its trace: [`docs/index.html`](docs/index.html) (published at https://e16163.github.io/polarbench/ once GitHub Pages is on for `main` / `docs`).
 
@@ -187,6 +219,16 @@ Environmental labels are checked against the chaos log for that run, and the rep
 
 ## Limitations
 
+Autopilot:
+
+- **It pays off on repeat work, not one-off research.** A workflow that reads new content and writes something new every run (drafting, summarizing) still needs the model for that part. Autopilot saves the navigation around it, not the thinking.
+- **The redesign is ours.** Version 2 of the test site was written to cover common kinds of change (renames, moved records, a new widget, a hidden form). Real redesigns can be bigger; then healing fails, the full agent finishes, and the workflow is flagged for re-recording.
+- **Checks only see the page.** Verification compares what the page shows after a save with what it showed in the recording. A change the page never shows can't be checked. The benchmark also reports "verified but wrong" against the site's own checker, so this gap is measured, not assumed.
+- **Logins, 2FA and captchas are out of scope.** Replay runs in the same browser session the agent would.
+- **Approvals are marked, not enforced, in this demo.** Steps that send or delete carry a flag and the replay engine has an approval hook; the dashboard and benchmark approve automatically.
+
+Test bench:
+
 - **The site is synthetic.** It is built to reproduce failure modes seen on real sites, and the guards were tested against the same site. They use only generic signals, but they need validating on real apps before anyone trusts the gains.
 - **The scripted agent never re-plans,** so it exaggerates how much the environment matters. An LLM agent can notice a dialog and close it on its own. Its failure mix will differ, and measuring that is the point of the LLM runs.
 - **5 runs per task is a small sample.** The confidence intervals are wide. Use `--runs 10` or more before drawing per-task conclusions.
@@ -196,7 +238,8 @@ Environmental labels are checked against the chaos log for that run, and the rep
 ## Layout
 
 ```
-polarbench        CLI: ui, run, report, compare, serve, tasks, gate
+polarbench        CLI: ui, autopilot, run, report, compare, serve, tasks, gate
+autopilot/        record, match, replay + heal + verify, versioned store, healers, bench, results page
 site/             Flask + SQLite CRM, chaos injection, reset, episode API, page recorder
 tasks/            11 tasks + checkers; register() / load_tasks_file() for your own
 agents/           browser env + guards, agent interface, scripted, Claude, Gemini/Ollama

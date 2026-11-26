@@ -6,6 +6,6 @@
   <label for="title">Title</label><input id="title" name="title" value="{{ e.title }}">
   <label for="date">Date</label><input id="date" name="date" type="date" value="{{ e.date }}">
   <label for="start_time">Start time</label><input id="start_time" name="start_time" type="time" value="{{ e.start_time }}">
-  <div><button type="submit">Save event</button></div>
+  <div><button type="submit">{{ "Update event" if v2 else "Save event" }}</button></div>
 </form></div>
 {% endblock %}

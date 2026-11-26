@@ -62,8 +62,23 @@ FIXED = {
 
 N_LEADS = 47
 
+# Added in site version 2. Their names sort first, so every other lead moves
+# down six rows and lands on a different page than it did in version 1.
+V2_LEADS = [
+    (48, "Aaron Holt", "Orbit Retail", "Founder", "New", "Ana", "2026-11-25"),
+    (49, "Abby Marsh", "Ferro Systems", "CTO", "New", "Marco", "2026-11-25"),
+    (50, "Adele Fox", "Sable Security", "Data Lead", "New", "Ana", "2026-11-25"),
+    (51, "Ahmed Rana", "Tidal Energy", "Ops Manager", "New", "Marco", "2026-11-25"),
+    (52, "Alice Ng", "Birch Capital", "Product Manager", "New", "Ana", "2026-11-25"),
+    (53, "Amir Saleh", "Juniper Bio", "Head of Growth", "New", "Marco", "2026-11-25"),
+]
 
-def _leads():
+
+def _email(name, company):
+    return name.lower().replace(" ", ".").replace("á", "a") + "@" + company.lower().split()[0] + ".com"
+
+
+def _leads(version=1):
     rng = random.Random(42)
     rows = []
     used = {v[0] for v in FIXED.values()}
@@ -83,9 +98,10 @@ def _leads():
             stage = rng.choice(["New", "Qualified", "Meeting", "Won", "Lost"])
             owner = rng.choice(OWNERS)
             last = f"2026-11-{rng.randint(1, 24):02d}"
-        email = name.lower().replace(" ", ".").replace("á", "a") + "@" + \
-            company.lower().split()[0] + ".com"
-        rows.append((i, name, company, email, title, stage, owner, last, ""))
+        rows.append((i, name, company, _email(name, company), title, stage, owner, last, ""))
+    if version == 2:
+        for i, name, company, title, stage, owner, last in V2_LEADS:
+            rows.append((i, name, company, _email(name, company), title, stage, owner, last, ""))
     return rows
 
 
@@ -116,10 +132,10 @@ EVENTS = [
 ]
 
 
-def seed(db_path):
+def seed(db_path, version=1):
     con = sqlite3.connect(db_path)
     con.executescript(SCHEMA)
-    con.executemany("INSERT INTO leads VALUES (?,?,?,?,?,?,?,?,?)", _leads())
+    con.executemany("INSERT INTO leads VALUES (?,?,?,?,?,?,?,?,?)", _leads(version))
     con.executemany(
         "INSERT INTO messages (id, folder, from_addr, to_addr, subject, body, is_read, created_at) "
         "VALUES (?,?,?,?,?,?,?,?)", MESSAGES)

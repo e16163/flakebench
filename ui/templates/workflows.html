@@ -1,0 +1,60 @@
+<!doctype html><html lang="en"><head>{% include "_head.html" %}<title>Workflows · polarbench</title>
+<style>
+.wf { display:grid; grid-template-columns:1fr auto; gap:6px 16px; align-items:center; padding:14px 0; }
+.wf + .wf { border-top:1px solid var(--grid); }
+.wf .g { font-weight:500; } .wf .g a { text-decoration:none; }
+.wf .m { grid-column:1; color:var(--ink2); font-size:12.5px; display:flex; gap:12px; flex-wrap:wrap; }
+.wf .r { grid-row:1 / span 2; grid-column:2; display:flex; gap:8px; align-items:center; }
+.ap { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:2px 10px; border-radius:99px; background:var(--accent-soft); color:var(--accent); }
+.ap::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+.how { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:8px 0 28px; }
+.how div { border:1px solid var(--border2); border-radius:var(--r); padding:12px 14px; background:var(--surface); }
+.how b { display:block; font-weight:500; margin-bottom:2px; } .how span { color:var(--ink2); font-size:12.5px; }
+@media (max-width:700px) { .wf { grid-template-columns:1fr; } .wf .r { grid-row:auto; grid-column:1; } }
+</style></head><body>
+{% include "_side.html" %}
+<div class="app"><main>
+<span class="eyebrow"><b>New</b> Workflow autopilot</span>
+<h1 style="margin-top:14px">Workflows</h1>
+<p class="sub">Run a task once with the agent. After that it replays like a recording: no AI calls, so no credits. When a site changes, AI fixes only the step that broke, the result is checked, and the fixed workflow is saved as a new version.</p>
+<div class="how">
+  <div><b>Replayed</b><span>Same element, same page. Free.</span></div>
+  <div><b>Fixed for free</b><span>Pop-ups, slow loads, new tabs, renamed buttons, records on another page.</span></div>
+  <div><b>Healed by AI</b><span>Only the step that no longer fits. Then replay takes over again.</span></div>
+  <div><b>Verified</b><span>After every save or send, the page must show what the first run saw.</span></div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Saved workflows</h2>
+  {% for w in items %}
+  <div class="wf">
+    <div class="g"><a href="/workflows/{{ w.id }}">{{ w.goal }}</a></div>
+    <div class="m"><span class="ap">Autopilot</span><span>v{{ w.version }}{% if w.n_versions > 1 %} of {{ w.n_versions }}{% endif %}</span>
+      <span>{{ w.steps }} steps</span>
+      {% if w.last %}<span>last run {{ 'passed' if w.last.passed else 'failed' }} · {{ w.last.ai_calls }} AI call{{ '' if w.last.ai_calls == 1 else 's' }}</span>
+      <span>{{ w.ai_free }} of {{ w.n_runs }} runs used no AI</span>{% else %}<span>not run yet</span>{% endif %}
+      {% if w.needs_ok %}<span>asks before sending</span>{% endif %}</div>
+    <div class="r">
+      <form method="post" action="/workflows/{{ w.id }}/run"><input type="hidden" name="site_version" value="1"><input type="hidden" name="healer" value="none"><button class="btn ghost" title="Replay on the site as recorded, no AI">Run</button></form>
+      <form method="post" action="/workflows/{{ w.id }}/run"><input type="hidden" name="site_version" value="2"><input type="hidden" name="healer" value="scripted"><button class="btn ghost" title="Replay on the redesigned test site, with the stand-in healer">Run on changed site</button></form>
+    </div>
+  </div>
+  {% else %}
+  <p class="empty">No workflows yet. Record them from a test run below.</p>
+  {% endfor %}
+</div>
+
+<div class="card" style="margin-top:20px">
+  <h2 style="margin-top:0">Record workflows</h2>
+  {% if recordable %}
+  <form method="post" action="/workflows/record" class="bar2" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+    <select class="sel" name="run" style="max-width:420px">{% for r in recordable %}<option value="{{ r.name }}">{{ r.name }} ({{ r.tasks }} task{{ '' if r.tasks == 1 else 's' }} passed)</option>{% endfor %}</select>
+    <button class="btn">Save passing runs as workflows</button>
+  </form>
+  <p class="hint" style="margin-top:10px">The first passing run of each task becomes version 1. Errored steps, waits and tab switches are dropped.</p>
+  {% else %}
+  <p class="hint">Run a test first (<a href="/bench#newrun">New test</a>), or from a terminal: <code>./polarbench autopilot demo</code>.</p>
+  {% endif %}
+</div>
+</main>{{ footer|safe }}</div>
+</body></html>

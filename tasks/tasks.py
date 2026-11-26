@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "site"))
 from seed import _leads  # noqa: E402
 
-SEED_LEADS = {r[0]: r for r in _leads()}
+SEED_LEADS = {r[0]: r for r in _leads(version=2)}  # a superset of version 1
 # column index in a seed row
 COL = {"stage": 5, "owner": 6, "notes": 8}
 

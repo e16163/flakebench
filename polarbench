@@ -2,6 +2,7 @@
 """polarbench command line.
 
   ./polarbench ui                                   dashboard at http://localhost:8800
+  ./polarbench autopilot record|run|list|show|rollback|demo   saved workflows (see -h)
   ./polarbench run --agent gemini --guards all      run tasks (see ./polarbench run -h)
   ./polarbench report runs/<dir>                    build runs/<dir>/report/index.html
   ./polarbench compare runs/a runs/b --out docs/x   side-by-side page
@@ -24,6 +25,10 @@ def main():
         print(__doc__)
         return
     cmd, rest = sys.argv[1], sys.argv[2:]
+    if cmd == "autopilot":
+        from autopilot.cli import main as ap_main
+        ap_main(rest)
+        return
     if cmd == "run":
         from runner.run import main as run_main
         return run_main(rest)
@@ -53,9 +58,10 @@ def main():
     if cmd == "ui":
         ap = argparse.ArgumentParser(prog="polarbench ui")
         ap.add_argument("--port", type=int, default=8800)
+        ap.add_argument("--workflows", help="workflow store folder (default: workflows/)")
         a = ap.parse_args(rest)
         from ui.app import serve
-        return serve(a.port)
+        return serve(a.port, a.workflows)
     if cmd == "tasks":
         from tasks.tasks import TASKS
         for t in TASKS:

@@ -74,8 +74,27 @@ def make_agent(args):
     return ClaudeAgent(model=args.model or "claude-opus-5-5", effort=args.effort, compact=args.compact)
 
 
-def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_off):
-    http("POST", base + "/reset", {"seed": seed, "chaos": "off" if chaos_off else "on"})
+def page_lines(text, limit=150):
+    """Short distinct lines of page text, kept in traces so autopilot can tell what a step changed."""
+    out = []
+    for l in (text or "").splitlines():
+        l = l.strip()
+        if l and len(l) <= 160 and l not in out:
+            out.append(l)
+    return out[:limit]
+
+
+def target_of(e):
+    """Everything needed to find this element again on a later visit (no per-page ids)."""
+    if not e:
+        return None
+    t = {k: e[k] for k in ("tag", "label", "href", "type", "options") if e.get(k) is not None}
+    t.update(e.get("extra") or {})
+    return t
+
+
+def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_off, site_version=1):
+    http("POST", base + "/reset", {"seed": seed, "chaos": "off" if chaos_off else "on", "version": site_version})
     env.new_session(run_dir)
     agent.reset(task, seed)
     steps, last_result, t0 = [], None, time.time()
@@ -104,7 +123,9 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
             "url": obs["url_path"], "dom_hash": obs["dom_hash"], "tabs": len(obs["tabs"]),
             "active_tab": env.active, "tabs_after": len(env.pages), "new_tab": len(env.pages) > n_tabs_before,
             "modal_at_observe": obs["modal_visible"], "modal_at_act": modal_at_act, "loading": obs["loading"],
-            "action": action, "target": ({"tag": target["tag"], "label": target["label"]} if target else None),
+            "action": action, "target": target_of(target), "lines": page_lines(obs["text"]),
+            "fields": [{"target": target_of(e), "value": e.get("value")} for e in obs["elements"]
+                       if e["tag"] in ("input", "select", "textarea") and e.get("type") != "hidden"][:60],
             "reasoning": (reasoning or "")[:400], "result": result, "error": error,
             "guards": env.guard_events[g0:], "error_log": env.last_error_log,
             "screenshot": os.path.relpath(shot, run_dir) if shot else None,
@@ -116,7 +137,8 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
     chaos = http("GET", base + "/api/chaos")
     for c in chaos:
         c["t"] = c.pop("ts") - t0
-    return {"task": task.id, "seed": seed, "passed": passed, "reason": reason, "n_steps": len(steps),
+    return {"task": task.id, "seed": seed, "site_version": site_version, "passed": passed, "reason": reason,
+            "n_steps": len(steps),
             "duration_s": round(time.time() - t0, 1), "agent": agent.name, "steps": steps, "chaos": chaos,
             "hit_step_limit": len(steps) == max_steps and steps[-1]["action"]["action"] != "done"}
 
@@ -138,6 +160,8 @@ def main(argv=None):
     ap.add_argument("--port", type=int, default=5055)
     ap.add_argument("--out", default=None)
     ap.add_argument("--no-chaos", action="store_true", help="control run with chaos disabled")
+    ap.add_argument("--site-version", type=int, default=1, choices=(1, 2),
+                    help="2 = the redesigned site (renamed buttons, moved records, new widgets)")
     ap.add_argument("--headed", action="store_true")
     ap.add_argument("--guards", default="", help="comma list of " + ",".join(ALL_GUARDS) + ", or 'all'")
     args = ap.parse_args(argv)
@@ -153,7 +177,7 @@ def main(argv=None):
     guards = ALL_GUARDS if args.guards == "all" else tuple(g for g in args.guards.split(",") if g)
     env = BrowserEnv(base, headless=not args.headed, guards=guards)
     meta = {"agent": agent.name, "guards": list(guards), "runs": args.runs, "max_steps": args.max_steps,
-            "chaos": not args.no_chaos, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
+            "chaos": not args.no_chaos, "site_version": args.site_version, "started": time.strftime("%Y-%m-%d %H:%M:%S")}
     if not (args.resume and os.path.exists(os.path.join(out, "meta.json"))):
         json.dump(meta, open(os.path.join(out, "meta.json"), "w"), indent=2)
     try:
@@ -164,12 +188,13 @@ def main(argv=None):
                     if args.resume and os.path.exists(os.path.join(run_dir, "trace.json")):
                         continue
                     try:
-                        rec = run_once(env, agent, task, seed, base, db_path, run_dir, args.max_steps, args.no_chaos)
+                        rec = run_once(env, agent, task, seed, base, db_path, run_dir, args.max_steps, args.no_chaos,
+                                       args.site_version)
                     except Exception as e:
                         if type(e).__name__ == "RateLimited":
                             print(f"\nStopped: {e}\nFinished runs are saved. Rerun the same command with --resume "
                                   "once the quota resets (usually midnight Pacific).")
-                            return
+                            return "rate_limited"
                         raise
                     json.dump(rec, open(os.path.join(run_dir, "trace.json"), "w"), indent=1)
                     fh.write(json.dumps({k: rec[k] for k in ("task", "seed", "passed", "reason", "n_steps", "duration_s")}) + "\n")

@@ -38,7 +38,16 @@ OBSERVE_JS = r"""
     const tag = e.tagName.toLowerCase();
     const item = {id, tag, label: labelOf(e)};
     if (tag === 'a') item.href = e.getAttribute('href') + (e.target === '_blank' ? ' (opens new tab)' : '');
-    if (tag === 'input') { item.type = e.type; item.value = e.type === 'checkbox' ? String(e.checked) : e.value; }
+    if (tag === 'input') { item.type = e.type; item.value = (e.type === 'checkbox' || e.type === 'radio') ? String(e.checked) : e.value; }
+    if (tag === 'button') item.type = e.type;
+    // extra identity, not shown to the model: used by autopilot to find the same element again
+    const extra = {};
+    if (e.name) extra.name = e.name;
+    if (e.id) extra.dom_id = e.id;
+    if (e.getAttribute('role')) extra.role = e.getAttribute('role');
+    const grp = e.closest('fieldset, [role=radiogroup], form, table, nav');
+    if (grp) extra.group = grp.tagName.toLowerCase() + (grp.getAttribute('aria-label') ? ':' + grp.getAttribute('aria-label') : '');
+    item.extra = extra;
     if (tag === 'textarea') item.value = e.value;
     if (tag === 'select') { item.value = e.options[e.selectedIndex]?.text; item.options = [...e.options].map(o => o.text); }
     out.push(item);
@@ -64,7 +73,7 @@ def chromium_path():
 
 def element_line(e):
     s = f"[{e['id']}] {e['tag']}"
-    if e.get("type"):
+    if e.get("type") and e["tag"] != "button":
         s += f" type={e['type']}"
     s += f' "{e["label"]}"'
     if e.get("href"):

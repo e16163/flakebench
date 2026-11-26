@@ -4,6 +4,20 @@
 <div class="card">
   <h2>{{ lead.name }}</h2>
   <p class="muted">{{ lead.title }} at {{ lead.company }} · {{ lead.email }}</p>
+  {% if v2 %}
+  {# version 2: redesigned form. Notes first and renamed, stage is a row of buttons, Save is "Save changes". #}
+  {% if saved %}<p class="ok">Changes saved</p>{% endif %}
+  <form method="post">
+    <label for="notes">Internal notes</label>
+    <textarea id="notes" name="notes" rows="4">{{ lead.notes }}</textarea>
+    <fieldset class="seg" role="radiogroup" aria-label="Pipeline stage"><legend>Pipeline stage</legend>
+      {% for s in stages %}<input type="radio" id="stage-{{ loop.index }}" name="stage" value="{{ s }}" {% if s == lead.stage %}checked{% endif %}><label for="stage-{{ loop.index }}">{{ s }}</label>{% endfor %}
+    </fieldset>
+    <label for="owner">Owner</label>
+    <select id="owner" name="owner">{% for o in owners %}<option {% if o == lead.owner %}selected{% endif %}>{{ o }}</option>{% endfor %}</select>
+    <div><button type="submit">Save changes</button></div>
+  </form>
+  {% else %}
   {% if saved %}<p class="ok">Saved</p>{% endif %}
   <form method="post">
     <label for="stage">Stage</label>
@@ -14,5 +28,6 @@
     <textarea id="notes" name="notes" rows="4">{{ lead.notes }}</textarea>
     <div><button type="submit">Save</button></div>
   </form>
+  {% endif %}
 </div>
 {% endblock %}

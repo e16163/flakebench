@@ -28,7 +28,11 @@ STAGES = ["New", "Contacted", "Qualified", "Meeting", "Won", "Lost"]
 DEFAULT_CHAOS = {"modal": 0.3, "reorder": 0.35, "newtab": 0.4, "slow_max_ms": 2500}
 
 app = Flask(__name__)
-STATE = {"seed": 0, "chaos": dict(DEFAULT_CHAOS), "enabled": True}
+# version=2 is the same CRM after a redesign: renamed buttons, a relabeled field,
+# six more leads (so records move to later pages), stage picked with buttons
+# instead of a dropdown, and the new-event form behind a "New event" button.
+# Saved workflows recorded on version 1 have to cope with it.
+STATE = {"seed": 0, "chaos": dict(DEFAULT_CHAOS), "enabled": True, "version": 1}
 LOADS = defaultdict(int)
 
 
@@ -89,10 +93,17 @@ def reset():
     for k in DEFAULT_CHAOS:
         if k in request.values:
             STATE["chaos"][k] = float(request.values[k])
+    STATE["version"] = 2 if str(request.values.get("version", "1")) == "2" else 1
     LOADS.clear()
     close_db(None)
-    seed_db(DB_PATH)
-    return jsonify(ok=True, seed=STATE["seed"], chaos=STATE["chaos"], enabled=STATE["enabled"])
+    seed_db(DB_PATH, version=STATE["version"])
+    return jsonify(ok=True, seed=STATE["seed"], chaos=STATE["chaos"], enabled=STATE["enabled"],
+                   version=STATE["version"])
+
+
+@app.context_processor
+def site_version():
+    return {"v2": STATE["version"] == 2}
 
 
 @app.get("/api/chaos")
@@ -277,7 +288,8 @@ def episode_start():
         return jsonify(error=f"unknown task {body.get('task')!r}", tasks=list(T.BY_ID)), 400
     seed = int(body.get("seed", 0))
     with app.test_request_context("/reset", method="POST",
-                                  data={"seed": seed, "chaos": "on" if body.get("chaos", True) else "off"}):
+                                  data={"seed": seed, "chaos": "on" if body.get("chaos", True) else "off",
+                                        "version": body.get("version", 1)}):
         reset()
     EPISODE.clear()
     EPISODE.update(active=True, task=task.id, seed=seed, agent=body.get("agent", "external"),

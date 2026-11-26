@@ -5,7 +5,8 @@
 {% for e in events %}<tr><td>{{ e.date }}</td><td>{{ e.start_time }}</td><td>{{ e.title }}</td><td>{{ e.lead_name or '' }}</td>
   <td><a href="/calendar/{{ e.id }}">Edit</a></td></tr>{% endfor %}
 </tbody></table>
-<div class="card" style="margin-top:16px">
+{% if v2 %}<button type="button" id="new-event" onclick="document.getElementById('event-form').hidden=false; this.hidden=true">New event</button>{% endif %}
+<div class="card" id="event-form" style="margin-top:16px" {% if v2 %}hidden{% endif %}>
   <h3>New event</h3>
   <form method="post">
     <label for="title">Title</label><input id="title" name="title">

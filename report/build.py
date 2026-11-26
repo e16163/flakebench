@@ -22,7 +22,7 @@ E = html.escape
 FONT_LINK = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
              '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
              '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">')
-FOOTER = ('<footer class="foot"><span><b>polarbench</b> · reliability testing for browser agents</span>'
+FOOTER = ('<footer class="foot"><span><b>polarbench</b> · workflow autopilot and reliability testing for browser agents</span>'
           '<span>Built for Polar · <a href="https://github.com/e16163/polarbench">source</a></span></footer>')
 HEADER = ('<header class="bar"><a class="wm" href="https://github.com/e16163/polarbench">polarbench</a>'
           '<a class="btn-pill" href="https://github.com/e16163/polarbench#quick-start">Run it yourself</a></header>')

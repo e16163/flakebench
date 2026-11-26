@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head>{% include "_head.html" %}<title>{{ wf.id }} · Workflows</title>
+<style>
+ol.steps { list-style:none; padding:0; margin:0; counter-reset:s; }
+ol.steps li { counter-increment:s; display:grid; grid-template-columns:28px 1fr auto; gap:10px; padding:8px 0; align-items:baseline; }
+ol.steps li + li { border-top:1px solid var(--grid); }
+ol.steps li::before { content:counter(s); color:var(--ink3); font-variant-numeric:tabular-nums; font-size:12.5px; text-align:right; }
+ol.steps .v { color:var(--ink2); font-size:12.5px; }
+.flags { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+.ver { display:grid; grid-template-columns:44px 1fr auto; gap:10px; padding:9px 0; align-items:baseline; }
+.ver + .ver { border-top:1px solid var(--grid); }
+.ver .c { font-size:12.5px; color:var(--ink2); }
+.ap { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:2px 10px; border-radius:99px; background:var(--accent-soft); color:var(--accent); }
+.ok { color:var(--accent); } .bad { color:var(--fail); }
+</style></head><body>
+{% include "_side.html" %}
+<div class="app"><main>
+<div class="crumbs"><a href="/workflows">Workflows</a> / {{ wf.id }}</div>
+<h1 style="font-size:30px">{{ wf.goal }}</h1>
+<p class="sub"><span class="ap">Autopilot</span> &nbsp;Version {{ idx.current }} is live · recorded from {{ wf.source.agent }} ({{ wf.source.agent_steps }} agent steps, now {{ steps|length }} replay steps)</p>
+
+<div class="card" style="margin-bottom:20px">
+  <form method="post" action="/workflows/{{ wf.id }}/run" style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:12px; align-items:end" class="runf">
+    <div><span class="lbl">Site</span><select class="sel" name="site_version"><option value="1">As recorded (version 1)</option><option value="2">After a redesign (version 2)</option></select></div>
+    <div><span class="lbl">If a step no longer fits</span><select class="sel" name="healer" id="healer">{% for k, h in healers.items() %}<option value="{{ k }}">{{ h[0] }}</option>{% endfor %}</select></div>
+    <div id="keybox" hidden><span class="lbl">API key (kept in memory only)</span><input type="password" name="api_key" autocomplete="off"></div>
+    <div><button class="btn">Run now</button></div>
+  </form>
+</div>
+
+<div class="grid2 half">
+<div class="card"><h2 style="margin-top:0">Steps <span class="small" style="font-weight:400">version {{ shown }}{% if shown != idx.current %} (not live){% endif %}</span></h2>
+  <ol class="steps">{% for s in steps %}<li><div>{{ s.desc }}{% if s.value %} <span class="v">"{{ s.value }}"</span>{% endif %}</div>
+    <div class="flags">{% if s.nav %}<span class="chip" title="Paging. Skipped or extended when records move.">paging</span>{% endif %}
+      {% if s.commit %}<span class="chip" title="Checked after it runs">checked</span>{% endif %}
+      {% if s.confirm %}<span class="chip" title="Needs a person's OK in product">asks first</span>{% endif %}
+      {% if s.healed %}<span class="chip live" style="animation:none" title="Added by an AI fix">from AI fix</span>{% endif %}</div></li>{% endfor %}</ol>
+  {% if wf.params %}<p class="hint" style="margin-top:12px">Inputs: {% for k, v in wf.params.items() %}<code>{{ k }}</code> = "{{ v }}"{% if not loop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+</div>
+<div>
+<div class="card"><h2 style="margin-top:0">Versions</h2>
+  {% for v in idx.versions|reverse %}<div class="ver"><b>v{{ v.version }}</b><div><div>{{ v.changes }}</div><div class="c">{{ v.created }} · {{ v.steps }} steps</div></div>
+    <div>{% if v.version == idx.current %}<span class="chip">live</span>{% else %}<form method="post" action="/workflows/{{ wf.id }}/rollback" style="display:inline"><input type="hidden" name="to" value="{{ v.version }}"><button class="btn ghost" style="padding:4px 12px">Make live</button></form>{% endif %}
+      <a class="small" href="?v={{ v.version }}">view</a></div></div>{% endfor %}
+</div>
+<div class="card" style="margin-top:20px"><h2 style="margin-top:0">Runs</h2>
+  {% if runs %}<table><thead><tr><th>When</th><th>Site</th><th>Result</th><th>AI calls</th><th></th></tr></thead><tbody>
+  {% for r in runs %}<tr><td class="small">{{ r.at }}</td><td class="small">v{{ r.site_version }}</td>
+    <td>{% if r.passed %}<span class="ok">passed</span>{% else %}<span class="bad">failed</span>{% endif %}{% if r.saved_version %} · saved v{{ r.saved_version }}{% endif %}</td>
+    <td class="n">{{ r.ai_calls }}</td><td>{% if r.link %}<a class="small" href="{{ r.link }}">open</a>{% endif %}</td></tr>{% endfor %}
+  </tbody></table>{% else %}<p class="hint">Not run yet.</p>{% endif %}
+</div>
+</div>
+</div>
+</main>{{ footer|safe }}</div>
+<script>
+const keyed = {gemini: 1, claude: 1};
+const h = document.getElementById('healer');
+const sync = () => document.getElementById('keybox').hidden = !keyed[h.value];
+h.onchange = sync; sync();
+</script>
+<style>@media (max-width:900px) { .runf { grid-template-columns:1fr !important; } }</style>
+</body></html>

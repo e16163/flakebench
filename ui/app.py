@@ -25,6 +25,8 @@ from tasks.tasks import TASKS  # noqa: E402
 RUNS = os.path.join(ROOT, "runs")
 app = Flask(__name__)
 app.jinja_env.globals.update(font_link=FONT_LINK, footer=FOOTER)
+from ui.workflows import bp as workflows_bp  # noqa: E402
+app.register_blueprint(workflows_bp)
 PROCS = {}  # run name -> Popen
 KEYS = {}   # env var -> value, memory only
 
@@ -82,7 +84,7 @@ def run_info(name):
 
 def run_names():
     return sorted((os.path.basename(p) for p in glob.glob(os.path.join(RUNS, "*")) if os.path.isdir(p)
-                   and not os.path.basename(p).startswith("_")),
+                   and not os.path.basename(p).startswith(("_", "wf-", "autopilot-", "bench-"))),
                   key=lambda n: os.path.getmtime(os.path.join(RUNS, n)), reverse=True)
 
 
@@ -93,6 +95,11 @@ def sidebar():
 
 
 @app.get("/")
+def home():
+    return redirect(url_for("workflows.workflows"))
+
+
+@app.get("/bench")
 def index():
     runs = [run_info(n) for n in run_names()]
     keys_set = {k: bool(os.environ.get(k) or KEYS.get(k)) for k in ("GEMINI_API_KEY", "ANTHROPIC_API_KEY")}
@@ -237,7 +244,9 @@ def compare_file(key, p):
     return send_from_directory(os.path.join(RUNS, "_compare", key), p)
 
 
-def serve(port=8800):
+def serve(port=8800, workflows=None):
+    if workflows:
+        app.config["WF_STORE"] = os.path.abspath(workflows)
     os.makedirs(RUNS, exist_ok=True)
     print(f"polarbench dashboard: http://localhost:{port}")
     app.run(host="127.0.0.1", port=port, debug=False, threaded=True)
