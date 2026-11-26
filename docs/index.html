@@ -1,218 +1,229 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Workflow autopilot</title>
-<meta name="description" content="Record a browser task once, replay it without AI, and let autopilot fix only the step a site redesign broke.">
+<meta name="description" content="Saved browser workflows that run on autopilot and fix themselves when a page changes.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
-  --page:#ffffff; --surface:#ffffff; --side:#fafafa; --raised:#f3f3f3; --ink:#191919; --ink2:#717171; --ink3:#a0a0a0;
+:root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif;
+  --desk:#e9e9ec; --chrome:#f3f3f3; --surface:#ffffff; --hover:#1919190a; --ink:#191919; --ink2:#717171; --ink3:#a0a0a0;
   --border:#1919190f; --border2:#19191914; --accent:#2f6eeb; --accent-soft:#ebf2ff; --ok:#16803c; --ok-soft:#e9f7ee;
-  --warn:#9a5b00; --warn-soft:#fff4e0; --fail:#e40015; --fail-soft:#fdecee; --btn:#191919; --btn-ink:#ffffff;
-  --r-sm:8px; --r:12px; --r-lg:16px; --shadow-lg:0 1px 2px #1919190a,0 8px 24px #19191908; }
+  --warn:#9a5b00; --warn-soft:#fff4e0; --fail:#e40015; --fail-soft:#fdecee; --btn:#191919; --btn-ink:#ffffff; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --page:#141414; --surface:#191919; --side:#191919; --raised:#232323; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
+  --desk:#0b0b0c; --chrome:#1c1c1e; --surface:#141414; --hover:#ffffff0d; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
   --border:#ffffff0f; --border2:#ffffff1a; --accent:#4f8afb; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
-  --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; --shadow-lg:0 8px 24px #00000066; } }
-:root[data-theme="dark"] { --page:#141414; --surface:#191919; --side:#191919; --raised:#232323; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
+  --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; } }
+:root[data-theme="dark"] { --desk:#0b0b0c; --chrome:#1c1c1e; --surface:#141414; --hover:#ffffff0d; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
   --border:#ffffff0f; --border2:#ffffff1a; --accent:#4f8afb; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
-  --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; --shadow-lg:0 8px 24px #00000066; }
+  --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; }
 * { box-sizing:border-box; }
-body { margin:0; background:var(--page); color:var(--ink); font:14px/20px var(--font); -webkit-font-smoothing:antialiased; }
-a { color:var(--ink); text-underline-offset:3px; text-decoration-color:var(--ink3); }
-main { max-width:1160px; margin:0 auto; padding:40px 16px 56px; }
-h1 { font-size:40px; line-height:1.05; font-weight:500; letter-spacing:-.02em; margin:0 0 12px; }
-.sub { color:var(--ink2); font-size:15px; line-height:22px; max-width:640px; margin:0 0 24px; }
-.top { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; max-width:1160px; margin:0 auto; font-weight:600; }
-.top a { font-weight:500; color:var(--ink2); text-decoration:none; margin-left:18px; }
-.grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:16px; align-items:start; }
-.panel { border:1px solid var(--border2); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow-lg); overflow:hidden; }
-.phead { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border2); background:var(--side); flex-wrap:wrap; }
-.phead .t { font-weight:600; }
-.seg { display:inline-flex; border:1px solid var(--border2); border-radius:99px; padding:2px; background:var(--surface); }
-.seg button { border:0; background:none; font:500 13px var(--font); color:var(--ink2); padding:4px 12px; border-radius:99px; cursor:pointer; }
-.seg button[aria-pressed="true"] { background:var(--btn); color:var(--btn-ink); }
-.btn { font:500 13.5px var(--font); border-radius:99px; padding:8px 16px; cursor:pointer; border:1px solid var(--border2); background:var(--surface); color:var(--ink); }
-.btn.primary { background:var(--btn); color:var(--btn-ink); border-color:var(--btn); }
-.btn:disabled { opacity:.45; cursor:default; }
-.btn.rec { color:var(--fail); }
-.actions { display:flex; gap:8px; flex-wrap:wrap; padding:12px 14px; border-bottom:1px solid var(--border2); }
-.hint { padding:10px 14px; color:var(--ink2); font-size:13px; border-bottom:1px solid var(--border2); }
-.hint b { color:var(--ink); font-weight:600; }
-.wfname { display:flex; align-items:center; gap:8px; }
-.badge { font:600 11.5px var(--font); border-radius:99px; padding:1px 8px; background:var(--accent-soft); color:var(--accent); }
-ol.steps { list-style:none; margin:0; padding:6px 0; counter-reset:s; }
-ol.steps li { display:grid; grid-template-columns:22px 1fr; gap:8px; padding:8px 14px; counter-increment:s; }
-ol.steps li::before { content:counter(s); color:var(--ink3); font-variant-numeric:tabular-nums; font-size:12.5px; padding-top:1px; }
-ol.steps li.on { background:var(--accent-soft); }
-.st { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; }
-.chip { font:600 11.5px var(--font); border-radius:99px; padding:1px 8px; white-space:nowrap; }
-.chip.replay { background:var(--raised); color:var(--ink2); } .chip.free { background:var(--ok-soft); color:var(--ok); }
-.chip.ai { background:var(--warn-soft); color:var(--warn); } .chip.fail { background:var(--fail-soft); color:var(--fail); }
-.why { color:var(--ink2); font-size:12.5px; grid-column:2; }
-.result { margin:0; padding:12px 14px; border-top:1px solid var(--border2); font-size:13.5px; }
-.result.ok { color:var(--ok); } .result.bad { color:var(--fail); }
-.empty { color:var(--ink3); padding:14px; }
-/* the demo CRM */
-#crm { position:relative; min-height:440px; background:#f7f7f8; color:#1d1d1f; font:14px/20px var(--font); }
-#crm.busy { pointer-events:none; }
-.c-nav { background:#16161a; color:#fff; padding:10px 16px; display:flex; gap:18px; font-size:13.5px; align-items:center; }
-.c-nav b { margin-right:6px; } .c-nav span { color:#9a9aa3; }
-.c-body { padding:16px; }
-.c-card { background:#fff; border:1px solid #e4e4e8; border-radius:10px; padding:14px; }
-.c-row { display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid #efeff2; gap:10px; }
+html, body { height:100%; }
+body { margin:0; background:var(--desk); color:var(--ink); font:14px/20px var(--font); -webkit-font-smoothing:antialiased; display:flex; padding:16px; }
+button { font:inherit; color:inherit; }
+.win { flex:1; display:grid; grid-template-columns:208px minmax(0,1fr) 340px; grid-template-rows:44px minmax(0,1fr); background:var(--chrome);
+  border:1px solid var(--border2); border-radius:14px; overflow:hidden; box-shadow:0 1px 2px #1919190a,0 12px 40px #19191914; min-height:600px; }
+.strip { grid-column:1 / -1; display:flex; align-items:flex-end; gap:6px; padding:0 12px; }
+.lights { display:flex; gap:7px; align-self:center; width:196px; }
+.lights i { width:12px; height:12px; border-radius:50%; background:#ff5f57; } .lights i+i { background:#febc2e; } .lights i+i+i { background:#28c840; }
+.tab { display:flex; align-items:center; gap:8px; height:34px; padding:0 14px; border-radius:10px 10px 0 0; color:var(--ink2); font-size:13px; max-width:240px; white-space:nowrap; overflow:hidden; }
+.tab.on { background:var(--surface); color:var(--ink); }
+.fav { width:14px; height:14px; border-radius:4px; background:#7048e8; flex:none; }
+.nav { padding:8px 10px; overflow:auto; }
+.nav .it { display:flex; align-items:center; gap:10px; padding:6px 8px; border-radius:8px; }
+.nav .it svg { width:16px; height:16px; color:var(--ink2); flex:none; }
+.nav .it.on { background:var(--hover); }
+.nav .sec { display:flex; justify-content:space-between; align-items:center; color:var(--ink2); font-size:12.5px; margin:18px 8px 6px; }
+.nav .sec button { border:0; background:none; color:var(--ink2); cursor:pointer; font-size:16px; line-height:1; padding:0 2px; border-radius:6px; }
+.nav .sec button:hover { color:var(--ink); background:var(--hover); }
+.nav .wf { display:flex; align-items:center; gap:8px; width:100%; text-align:left; border:0; background:none; padding:5px 8px; border-radius:8px; color:var(--ink2); cursor:pointer; }
+.nav .wf span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nav .wf.on { color:var(--ink); background:var(--hover); }
+.ap { width:6px; height:6px; border-radius:50%; background:var(--ok); flex:none; }
+.page { display:flex; flex-direction:column; background:var(--surface); border-radius:12px 0 0 0; border:1px solid var(--border2); border-width:1px 0 0 1px; min-width:0; }
+.bar { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--border); }
+.bar svg { width:16px; height:16px; color:var(--ink3); flex:none; }
+.url { flex:1; display:flex; align-items:center; background:var(--chrome); border-radius:99px; padding:6px 14px; color:var(--ink2); font-size:13px; min-width:0; overflow:hidden; white-space:nowrap; }
+.url b { color:var(--ink); font-weight:400; }
+.side { background:var(--surface); border-left:1px solid var(--border2); border-top:1px solid var(--border2); display:flex; flex-direction:column; min-height:0; }
+.shead { padding:14px 14px 10px; }
+.shead .row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.shead .t { font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; border-radius:99px; padding:2px 9px; background:var(--ok-soft); color:var(--ok); white-space:nowrap; }
+.pill.rec { background:var(--fail-soft); color:var(--fail); } .pill.run { background:var(--accent-soft); color:var(--accent); }
+.meta { color:var(--ink2); font-size:12.5px; margin-top:2px; }
+.ctrl { display:flex; gap:8px; padding:0 14px 12px; }
+.b { border-radius:12px; padding:7px 14px; cursor:pointer; border:1px solid var(--border2); background:var(--surface); font-weight:500; }
+.b.pri { background:var(--btn); color:var(--btn-ink); border-color:var(--btn); }
+.b:disabled { opacity:.45; cursor:default; }
+.tabs { display:flex; gap:4px; padding:0 14px; border-bottom:1px solid var(--border); }
+.tabs button { border:0; background:none; padding:8px 4px; margin-right:10px; color:var(--ink2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500; }
+.tabs button[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--ink); }
+.list { list-style:none; margin:0; padding:6px 0; overflow:auto; flex:1; }
+.list li { display:grid; grid-template-columns:20px 1fr; gap:10px; padding:9px 14px; }
+.ic { width:18px; height:18px; border-radius:50%; border:1.5px solid var(--border2); display:grid; place-items:center; font-size:11px; font-weight:600; color:var(--ink3); margin-top:1px; }
+li.replay .ic { background:var(--ink); border-color:var(--ink); color:var(--surface); }
+li.free .ic { background:var(--ok); border-color:var(--ok); color:#fff; }
+li.ai .ic { background:var(--warn); border-color:var(--warn); color:#fff; }
+li.fail .ic { background:var(--fail); border-color:var(--fail); color:#fff; }
+li.now .ic { border-color:var(--accent); border-top-color:transparent; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.what { color:var(--ink); } .why { color:var(--ink2); font-size:12.5px; line-height:18px; margin-top:2px; }
+.tag { font-size:11.5px; font-weight:600; border-radius:99px; padding:0 7px; margin-left:6px; white-space:nowrap; }
+.tag.free { background:var(--ok-soft); color:var(--ok); } .tag.ai { background:var(--warn-soft); color:var(--warn); } .tag.fail { background:var(--fail-soft); color:var(--fail); }
+.when { color:var(--ink3); font-size:12px; float:right; margin-left:8px; }
+.empty { color:var(--ink3); padding:14px; font-size:13px; display:block !important; }
+.foot { padding:12px 14px; border-top:1px solid var(--border); font-size:13px; color:var(--ink2); }
+.foot:empty { display:none; }
+.foot.ok { color:var(--ok); } .foot.bad { color:var(--fail); }
+/* the page open in the tab */
+#site { position:relative; flex:1; background:#fafafb; color:#1d1d1f; font:14px/20px var(--font); overflow:auto; }
+#site.busy { pointer-events:none; }
+.c-nav { background:#fff; border-bottom:1px solid #e7e7ec; padding:10px 16px; display:flex; gap:18px; font-size:13.5px; align-items:center; }
+.c-nav b { margin-right:6px; } .c-nav span { color:#77777f; }
+.c-body { padding:16px; max-width:720px; }
+.c-card { background:#fff; border:1px solid #e7e7ec; border-radius:14px; padding:14px; }
+.c-row { display:flex; justify-content:space-between; padding:9px 4px; border-bottom:1px solid #f0f0f3; gap:10px; }
 .c-row:last-child { border-bottom:0; }
 .c-row .m { color:#77777f; font-size:13px; }
-.c-pill { font-size:12px; border-radius:99px; padding:1px 8px; background:#eef0f4; color:#4a4a52; white-space:nowrap; }
-.c-link { color:#2949c6; cursor:pointer; text-decoration:underline; text-underline-offset:2px; background:none; border:0; font:inherit; padding:0; }
-.c-btn { font:500 13.5px var(--font); background:#3b5bdb; color:#fff; border:0; border-radius:7px; padding:7px 14px; cursor:pointer; }
-.c-btn.alt { background:#fff; color:#1d1d1f; border:1px solid #d6d6dc; }
+.c-pill { font-size:12px; border-radius:99px; padding:1px 8px; background:#f0eefc; color:#5a3fc0; white-space:nowrap; }
+.c-link { color:#5a3fc0; cursor:pointer; text-decoration:underline; text-underline-offset:2px; background:none; border:0; font:inherit; padding:0; }
+.c-btn { font:500 13.5px var(--font); background:#7048e8; color:#fff; border:0; border-radius:99px; padding:7px 14px; cursor:pointer; }
+.c-btn.alt { background:#fff; color:#1d1d1f; border:1px solid #d9d9e0; }
 .c-btn.sel { background:#1d1d1f; color:#fff; border-color:#1d1d1f; }
 .c-pager { display:flex; justify-content:space-between; align-items:center; margin-top:12px; color:#77777f; font-size:13px; }
 .c-field { margin:12px 0; } .c-field label { display:block; font-weight:600; font-size:13px; margin-bottom:4px; }
-.c-field select { font:14px var(--font); padding:6px 8px; border:1px solid #cfcfd6; border-radius:7px; min-width:200px; background:#fff; color:#1d1d1f; }
+.c-field select { font:14px var(--font); padding:6px 8px; border:1px solid #d3d3db; border-radius:8px; min-width:200px; background:#fff; color:#1d1d1f; }
 .c-stages { display:flex; gap:6px; flex-wrap:wrap; }
-.c-toast { background:#e9f7ee; color:#16803c; border-radius:7px; padding:6px 10px; margin-bottom:10px; font-weight:500; }
-.c-veil { position:absolute; inset:0; background:#16161a66; display:flex; align-items:flex-start; justify-content:center; padding-top:90px; }
-.c-modal { background:#fff; border-radius:12px; padding:18px; width:300px; box-shadow:0 10px 30px #0003; }
-.c-modal h4 { margin:0 0 6px; font-size:15px; }
-.c-modal p { margin:0 0 12px; color:#55555c; font-size:13.5px; }
-#crm .hl { outline:3px solid #f5a524; outline-offset:2px; border-radius:6px; }
-.rec-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--fail); margin-right:6px; animation:p 1s infinite; }
-@keyframes p { 50% { opacity:.3; } }
-.how { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:28px; }
-.how div { border-top:1px solid var(--border2); padding-top:12px; color:var(--ink2); font-size:13.5px; }
-.how b { display:block; color:var(--ink); font-weight:600; margin-bottom:4px; }
-footer { max-width:1160px; margin:0 auto; padding:20px 16px 40px; color:var(--ink2); font-size:13px; border-top:1px solid var(--border2); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
-@media (max-width:860px) { .grid { grid-template-columns:1fr; } .how { grid-template-columns:1fr; } h1 { font-size:32px; } }
-@media (prefers-reduced-motion: reduce) { .rec-dot { animation:none; } }
+.c-toast { background:#e9f7ee; color:#16803c; border-radius:8px; padding:6px 10px; margin-bottom:10px; font-weight:500; }
+.c-veil { position:absolute; inset:0; background:#16161a55; display:flex; align-items:flex-start; justify-content:center; padding-top:80px; }
+.c-modal { background:#fff; border-radius:14px; padding:18px; width:290px; box-shadow:0 10px 30px #0003; }
+.c-modal h4 { margin:0 0 6px; font-size:15px; } .c-modal p { margin:0 0 12px; color:#55555c; font-size:13.5px; }
+#site .hl { outline:3px solid var(--accent); outline-offset:2px; border-radius:8px; }
+@media (max-width:1000px) { .win { grid-template-columns:minmax(0,1fr) 320px; } .nav, .lights { display:none; } }
+@media (max-width:720px) { body { padding:0; } .win { border-radius:0; grid-template-columns:1fr; grid-template-rows:44px auto auto; }
+  .side { border-left:0; } #site { min-height:440px; } .tab:not(.on) { display:none; } }
+@media (prefers-reduced-motion: reduce) { li.now .ic { animation:none; } }
 </style></head>
 <body>
-<div class="top"><span>Workflow autopilot</span><nav><a href="https://github.com/e16163/flakebench">Source</a></nav></div>
-<main>
-<h1>Do a browser task once. Autopilot does it from then on.</h1>
-<p class="sub">Autopilot saves the steps of a task that worked, replays them without AI, and only asks the AI when a site change breaks a step. Then it saves the fix, so the next run needs no AI again. Try it on the demo CRM below.</p>
-
-
-<div class="grid">
-  <section class="panel" aria-label="Demo CRM">
-    <div class="phead"><span class="t">Pipeline <span style="color:var(--ink2);font-weight:500">demo CRM</span></span>
-      <div class="seg" role="group" aria-label="Site version">
-        <button id="v1" aria-pressed="true">Original site</button><button id="v2" aria-pressed="false">Redesigned site</button>
-      </div></div>
-    <div id="crm"></div>
-  </section>
-
-  <section class="panel" aria-label="Autopilot">
-    <div class="phead"><span class="wfname"><span class="t" id="wf-name"></span><span class="badge" id="wf-ver"></span></span></div>
-    <div class="hint" id="hint"></div>
-    <div class="actions">
-      <button class="btn primary" id="run">Run workflow</button>
-      <button class="btn" id="record">Record your own</button>
-      <button class="btn" id="reset">Reset demo</button>
+<div class="win">
+  <div class="strip">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="tab on"><span class="fav"></span><span id="tab-title">Leads · Pipeline</span></div>
+    <div class="tab">Inbox</div>
+  </div>
+  <nav class="nav" aria-label="Browser">
+    <div class="it"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 13h10M4 10.5 11 3.5l1.5 1.5-7 7H4z"/></svg>New task</div>
+    <div class="it"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>Search</div>
+    <div class="it on"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h8l-2-2M13 11H5l2 2"/></svg>Workflows</div>
+    <div class="sec">Workflows<button id="record" title="Record a new workflow" aria-label="Record a new workflow">+</button></div>
+    <div id="wf-list"></div>
+  </nav>
+  <section class="page" aria-label="Current tab">
+    <div class="bar">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 5 8l5 5"/></svg>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 3 5 5-5 5"/></svg>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 3v3h-3"/></svg>
+      <div class="url" id="url"></div>
     </div>
-    <ol class="steps" id="steps"></ol>
-    <p class="result" id="result" hidden></p>
+    <div id="site"></div>
   </section>
+  <aside class="side" aria-label="Workflow">
+    <div class="shead"><div class="row"><span class="t" id="wf-name"></span><span class="pill" id="wf-state"></span></div><div class="meta" id="wf-meta"></div></div>
+    <div class="ctrl"><button class="b pri" id="run">Run now</button><button class="b" id="stop" hidden>Save workflow</button></div>
+    <div class="tabs" role="tablist"><button role="tab" id="tab-steps" aria-selected="true">Steps</button><button role="tab" id="tab-runs" aria-selected="false">Runs</button></div>
+    <ol class="list" id="list" aria-live="polite"></ol>
+    <div class="foot" id="foot"></div>
+  </aside>
 </div>
-
-<div class="how">
-  <div><b>1. Record once</b>When an agent or a person finishes a task, autopilot saves each step: what was clicked, and what it was called.</div>
-  <div><b>2. Replay for free</b>Later runs repeat the saved steps directly. Small changes such as a renamed button, a pop-up, or a record that moved to another page are fixed without AI.</div>
-  <div><b>3. Heal only what broke</b>If a step really changed, the AI fixes that one step and autopilot saves a new version. Every run is checked against the result it should have. (In this demo the AI fix is scripted, so it works with no setup.)</div>
-</div>
-</main>
-<footer><span>Workflow autopilot for browser agents · built for Polar</span><a href="https://github.com/e16163/flakebench">Source on GitHub</a></footer>
 
 <script>
 "use strict";
 const PER_PAGE = 5, STAGES = ["New", "Contacted", "Qualified", "Won", "Lost"], OWNERS = ["Riley", "Uma", "Sam"];
-const BASE = [["Ana Costa","Brightline"],["Leo Park","Cobalt AI"],["Mia Chen","Driftwood"],["Omar Haddad","Ember Labs"],["Grace Liu","Helix Robotics"],
-  ["Tomás Ruiz","Lumen Health"],["Priya Raman","Northwind Labs"],["Felix Wagner","Quartz"],["Nina Berg","Arcadia"],["Kai Moore","Fjord"],["Sara Ali","Juniper"],["Ivan Petrov","Kestrel"]];
-const NEW = [["Zoe Hart","Atlas"],["Ravi Nair","Beacon"],["Ella Brooks","Cinder"],["Hugo Laurent","Delta Six"],["June Kim","Evergreen"],["Max Weber","Fable"]];
-const COPY = { // the redesign renames things
-  1: { next:"Next", prev:"Previous", save:"Save", owner:"Owner", back:"All leads" },
-  2: { next:"Next page", prev:"Previous page", save:"Save changes", owner:"Assigned to", back:"Back to leads" } };
+const LEADS = [["Zoe Hart","Atlas"],["Ravi Nair","Beacon"],["Ella Brooks","Cinder"],["Hugo Laurent","Delta Six"],["June Kim","Evergreen"],["Max Weber","Fable"],
+  ["Ana Costa","Brightline"],["Leo Park","Cobalt AI"],["Mia Chen","Driftwood"],["Omar Haddad","Ember Labs"],["Grace Liu","Helix Robotics"],["Tomás Ruiz","Lumen Health"],
+  ["Priya Raman","Northwind Labs"],["Felix Wagner","Quartz"],["Nina Berg","Arcadia"],["Kai Moore","Fjord"],["Sara Ali","Juniper"],["Ivan Petrov","Kestrel"]];
+const COPY = { next:"Next page", prev:"Previous page", save:"Save changes", owner:"Assigned to", back:"Back to leads" };
+const seed = () => LEADS.map((x, i) => ({ id:i + 1, name:x[0], co:x[1], stage:i < 6 ? "New" : i % 3 ? "Contacted" : "New", owner:OWNERS[i % 3] }));
 
-function seed(v) {
-  const base = BASE.map((x, i) => ({ id:i + 1, name:x[0], co:x[1], stage:i % 3 ? "Contacted" : "New", owner:OWNERS[i % 3] }));
-  const extra = NEW.map((x, i) => ({ id:101 + i, name:x[0], co:x[1], stage:"New", owner:"Sam" }));
-  return v === 2 ? extra.concat(base) : base; // six new leads sort first, so old ones move pages
-}
-const PRESET = { name:"Move Priya Raman to Qualified", steps:[
-  { type:"click", kind:"button", label:"Next" },
-  { type:"click", kind:"link", label:"Priya Raman", href:"/leads/7" },
-  { type:"select", field:"Stage", value:"Qualified" },
-  { type:"click", kind:"button", label:"Save" } ], expect:{ name:"Priya Raman", stage:"Qualified" } };
+// saved before the site's latest update, so a few of its steps no longer match the page
+const flows = [
+  { name:"Qualify Priya Raman", ver:1, expect:{ name:"Priya Raman", stage:"Qualified" }, steps:[
+    { type:"click", kind:"button", label:"Next" },
+    { type:"click", kind:"link", label:"Priya Raman", href:"/leads/13" },
+    { type:"select", field:"Stage", value:"Qualified" },
+    { type:"click", kind:"button", label:"Save" } ],
+    runs:[{ when:"Yesterday, 9:02 AM", text:"Ran on autopilot", how:"replay" }, { when:"Mon, 9:00 AM", text:"Recorded", how:"replay" }] },
+  { name:"Reassign Kai Moore to Uma", ver:1, expect:{ name:"Kai Moore", owner:"Uma" }, steps:[
+    { type:"click", kind:"button", label:"Next" },
+    { type:"click", kind:"link", label:"Kai Moore", href:"/leads/16" },
+    { type:"select", field:"Owner", value:"Uma" },
+    { type:"click", kind:"button", label:"Save" } ],
+    runs:[{ when:"Tue, 4:15 PM", text:"Recorded", how:"replay" }] } ];
 
-let S = {}; // site state
-let wf = { versions:[clone(PRESET)] };
-let recording = null, busy = false, runs = 0, runsTotal = 0;
-
-function clone(x) { return JSON.parse(JSON.stringify(x)); }
-function resetSite(v) { S = { v, db:seed(v), view:"list", page:0, lead:null, draft:null, toast:false, popup:v === 2 }; render(); }
+let S = {}, cur = 0, recording = null, busy = false, out = null, foot = null, view = "steps";
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const now = () => "Today, " + new Date().toLocaleTimeString([], { hour:"numeric", minute:"2-digit" });
+function openSite(popup) { S = { db:seed(), view:"list", page:0, lead:null, draft:null, toast:false, popup }; render(); }
 
 function el(kind, label, act, cls, extra = "") {
-  const tag = kind === "link" ? "button" : "button";
-  return `<${tag} class="${cls}" data-kind="${kind}" data-label="${esc(label)}" data-act="${esc(act)}" ${extra}>${esc(label)}</${tag}>`;
+  return `<button class="${cls}" data-kind="${kind}" data-label="${esc(label)}" data-act="${esc(act)}" ${extra}>${esc(label)}</button>`;
 }
 function render() {
-  const c = COPY[S.v]; let h = `<div class="c-nav"><b>Pipeline</b><span>Leads</span><span>Inbox</span><span>Calendar</span></div><div class="c-body">`;
-  if (S.view === "list") {
+  const l = S.view === "lead" && S.db.find(x => x.id === S.lead);
+  $("site").classList.toggle("busy", busy);
+  $("url").innerHTML = `<b>pipeline.app</b>${l ? "/leads/" + l.id : "/leads" + (S.page ? "?page=" + (S.page + 1) : "")}`;
+  $("tab-title").textContent = l ? `${l.name} · Pipeline` : "Leads · Pipeline";
+  let h = `<div class="c-nav"><b>Pipeline</b><span>Leads</span><span>Inbox</span><span>Calendar</span></div><div class="c-body">`;
+  if (!l) {
     const rows = S.db.slice(S.page * PER_PAGE, S.page * PER_PAGE + PER_PAGE), pages = Math.ceil(S.db.length / PER_PAGE);
-    h += `<div class="c-card">` + rows.map(l => `<div class="c-row"><span>${el("link", l.name, "open:" + l.id, "c-link", `data-href="/leads/${l.id}"`)}
-      <span class="m"> · ${esc(l.co)}</span></span><span class="c-pill">${esc(l.stage)}</span></div>`).join("") + `</div>
-      <div class="c-pager">${S.page > 0 ? el("button", c.prev, "prev", "c-btn alt") : "<span></span>"}<span>Page ${S.page + 1} of ${pages}</span>
-      ${S.page < pages - 1 ? el("button", c.next, "next", "c-btn alt") : "<span></span>"}</div>`;
+    h += `<div class="c-card">` + rows.map(x => `<div class="c-row"><span>${el("link", x.name, "open:" + x.id, "c-link", `data-href="/leads/${x.id}"`)}
+      <span class="m"> · ${esc(x.co)}</span></span><span class="c-pill">${esc(x.stage)}</span></div>`).join("") + `</div>
+      <div class="c-pager">${S.page > 0 ? el("button", COPY.prev, "prev", "c-btn alt") : "<span></span>"}<span>Page ${S.page + 1} of ${pages}</span>
+      ${S.page < pages - 1 ? el("button", COPY.next, "next", "c-btn alt") : "<span></span>"}</div>`;
   } else {
-    const l = S.db.find(x => x.id === S.lead), d = S.draft;
-    h += `<div style="margin-bottom:10px">${el("link", "← " + c.back, "back", "c-link")}</div><div class="c-card">`;
+    const d = S.draft;
+    h += `<div style="margin-bottom:10px">${el("link", "← " + COPY.back, "back", "c-link")}</div><div class="c-card">`;
     if (S.toast) h += `<div class="c-toast">Saved</div>`;
-    h += `<div style="font-weight:600;font-size:17px">${esc(l.name)}</div><div class="m" style="color:#77777f">${esc(l.co)}</div>`;
-    if (S.v === 1) h += `<div class="c-field"><label for="f-stage">Stage</label><select id="f-stage" data-kind="select" data-label="Stage">` +
-      STAGES.map(s => `<option${s === d.stage ? " selected" : ""}>${s}</option>`).join("") + `</select></div>`;
-    else h += `<div class="c-field"><label>Stage</label><div class="c-stages">` +
-      STAGES.map(s => el("button", s, "stage:" + s, "c-btn alt" + (s === d.stage ? " sel" : ""), `aria-pressed="${s === d.stage}"`)).join("") + `</div></div>`;
-    h += `<div class="c-field"><label for="f-owner">${c.owner}</label><select id="f-owner" data-kind="select" data-label="${c.owner}">` +
-      OWNERS.map(o => `<option${o === d.owner ? " selected" : ""}>${o}</option>`).join("") + `</select></div>` + el("button", c.save, "save", "c-btn") + `</div>`;
+    h += `<div style="font-weight:600;font-size:17px">${esc(l.name)}</div><div style="color:#77777f">${esc(l.co)}</div>
+      <div class="c-field"><label>Stage</label><div class="c-stages">` +
+      STAGES.map(s => el("button", s, "stage:" + s, "c-btn alt" + (s === d.stage ? " sel" : ""), `aria-pressed="${s === d.stage}"`)).join("") + `</div></div>
+      <div class="c-field"><label for="f-owner">${COPY.owner}</label><select id="f-owner" data-kind="select" data-label="${COPY.owner}">` +
+      OWNERS.map(o => `<option${o === d.owner ? " selected" : ""}>${o}</option>`).join("") + `</select></div>` + el("button", COPY.save, "save", "c-btn") + `</div>`;
   }
   h += `</div>`;
-  if (S.popup && S.view === "list") h += `<div class="c-veil"><div class="c-modal" role="dialog" aria-label="What's new"><h4>What's new in Pipeline</h4>
-    <p>A fresh look, and leads you add now show up first.</p>${el("button", "Got it", "dismiss", "c-btn")}</div></div>`;
-  $("crm").innerHTML = h;
+  if (S.popup && S.view === "list") h += `<div class="c-veil"><div class="c-modal" role="dialog" aria-label="What's new"><h4>Pipeline has a new look</h4>
+    <p>Leads you add now show up first.</p>${el("button", "Got it", "dismiss", "c-btn")}</div></div>`;
+  $("site").innerHTML = h;
 }
 function act(a) {
   S.toast = false;
   if (a === "next") S.page++; else if (a === "prev") S.page--; else if (a === "dismiss") S.popup = false;
-  else if (a === "back") { S.view = "list"; }
+  else if (a === "back") S.view = "list";
   else if (a.startsWith("open:")) { S.lead = +a.slice(5); const l = S.db.find(x => x.id === S.lead); S.draft = { stage:l.stage, owner:l.owner }; S.view = "lead"; }
   else if (a.startsWith("stage:")) S.draft.stage = a.slice(6);
   else if (a === "save") { Object.assign(S.db.find(x => x.id === S.lead), S.draft); S.toast = true; }
   render();
 }
-function setSelect(sel, value) { const f = sel.dataset.label === "Stage" ? "stage" : "owner"; S.draft[f] = value; S.toast = false; render(); }
+function setSelect(sel, value) { S.draft.owner = value; S.toast = false; render(); }
 
-// people clicking in the CRM (and recording)
-$("crm").addEventListener("click", e => {
+// someone using the page (and maybe recording)
+$("site").addEventListener("click", e => {
   const t = e.target.closest("[data-act]"); if (!t || busy) return;
   if (recording && t.dataset.act !== "dismiss") {
-    const s = { type:"click", kind:t.dataset.kind, label:t.dataset.label }; if (t.dataset.href) s.href = t.dataset.href;
-    if (t.dataset.act.startsWith("stage:")) { recording.steps.push({ type:"select", field:"Stage", value:t.dataset.label }); }
-    else recording.steps.push(s);
+    const s = { type:"click", kind:t.dataset.kind, label:t.dataset.label }; if (t.dataset.href) s.href = t.dataset.href; recording.steps.push(s);
     if (t.dataset.act.startsWith("open:")) recording.lead = +t.dataset.act.slice(5);
   }
-  act(t.dataset.act); if (recording) drawSteps(recording.steps.map(s => ({ s })));
+  act(t.dataset.act); if (recording) draw();
 });
-$("crm").addEventListener("change", e => {
+$("site").addEventListener("change", e => {
   const t = e.target; if (t.dataset.kind !== "select" || busy) return;
-  if (recording) { recording.steps.push({ type:"select", field:t.dataset.label, value:t.value }); }
-  setSelect(t, t.value); if (recording) drawSteps(recording.steps.map(s => ({ s })));
+  if (recording) recording.steps.push({ type:"select", field:t.dataset.label, value:t.value });
+  setSelect(t, t.value); if (recording) draw();
 });
 
-// --- autopilot: find a saved step on the current page ---
-const nodes = () => [...$("crm").querySelectorAll("[data-kind]")];
+// autopilot: find a saved step on the page as it is now
+const nodes = () => [...$("site").querySelectorAll("[data-kind]")];
 const sim = (a, b) => a.startsWith(b) || b.startsWith(a) || a.includes(b) || b.includes(a);
 function locate(step) {
   const all = nodes();
@@ -220,110 +231,109 @@ function locate(step) {
     let m = all.filter(n => n.dataset.kind === "select" && n.dataset.label === step.field && [...n.options].some(o => o.value === step.value));
     if (m.length === 1) return { node:m[0], how:"replay" };
     m = all.filter(n => n.dataset.kind === "select" && [...n.options].some(o => o.value === step.value));
-    if (m.length === 1) return { node:m[0], how:"free", why:`matched field '${m[0].dataset.label}' instead of '${step.field}'` };
+    if (m.length === 1) return { node:m[0], how:"free", why:`'${step.field}' is now '${m[0].dataset.label}'` };
     return null;
   }
   const same = all.filter(n => n.dataset.kind === step.kind);
   let m = same.filter(n => n.dataset.label === step.label && (!step.href || n.dataset.href === step.href));
   if (m.length === 1) return { node:m[0], how:"replay" };
   m = same.filter(n => (step.href && n.dataset.href === step.href) || (!step.href && sim(n.dataset.label, step.label)));
-  if (m.length === 1) return { node:m[0], how:"free", why:`matched '${m[0].dataset.label}' instead of '${step.label}'` };
+  if (m.length === 1) return { node:m[0], how:"free", why:`'${step.label}' is now '${m[0].dataset.label}'` };
   return null;
 }
-// the healer: in the real tool this is one model call; here it is a scripted stand-in
+// shortcut: the AI fix is scripted so the page works with no API key; the real feature makes one model call here
 function heal(step) {
-  const want = step.type === "select" ? step.value : step.label;
-  const all = nodes();
+  const want = step.type === "select" ? step.value : step.label, all = nodes();
   const b = all.filter(n => n.dataset.kind === "button" && n.dataset.label === want);
-  if (b.length === 1) return { node:b[0], how:"ai", why:`AI: click '${want}' (the dropdown is now a row of buttons)`, fixed:{ type:"click", kind:"button", label:want } };
+  if (b.length === 1) return { node:b[0], how:"ai", why:`${step.field || "This"} is now a row of buttons; clicked '${want}'`, fixed:{ type:"click", kind:"button", label:want } };
   const s = all.filter(n => n.dataset.kind === "select" && [...n.options].some(o => o.value === want));
-  if (s.length === 1) return { node:s[0], how:"ai", why:`AI: choose '${want}' in '${s[0].dataset.label}' (the buttons are now a dropdown)`, fixed:{ type:"select", field:s[0].dataset.label, value:want } };
+  if (s.length === 1) return { node:s[0], how:"ai", why:`Now a dropdown; chose '${want}'`, fixed:{ type:"select", field:s[0].dataset.label, value:want }, value:want };
   return null;
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));
 async function doStep(r) {
-  r.node.classList.add("hl"); await wait(420);
+  r.node.classList.add("hl"); await wait(450);
   if (r.node.dataset.kind === "select") setSelect(r.node, r.value); else act(r.node.dataset.act);
-  await wait(260);
+  await wait(250);
 }
 
 async function run() {
   if (busy || recording) return;
-  busy = true; $("crm").classList.add("busy"); setButtons(); $("result").hidden = true;
-  const cur = wf.versions[wf.versions.length - 1], steps = cur.steps, out = steps.map(s => ({ s }));
-  resetSite(S.v); let ai = 0, changed = false; const next = clone(cur);
+  const w = flows[cur], steps = w.steps, next = [];
+  busy = true; foot = null; view = "steps"; out = steps.map(s => ({ s })); openSite(!!w.popup); draw();
+  let ai = 0, fixed = 0;
   for (let i = 0; i < steps.length; i++) {
-    const s = steps[i], o = out[i]; o.on = true; drawSteps(out); await wait(250);
+    const s = steps[i], o = out[i]; o.how = "now"; draw(); await wait(200);
     const notes = [];
-    if (S.popup && S.view === "list") { const g = nodes().find(n => n.dataset.act === "dismiss"); await doStep({ node:g }); notes.push("closed a pop-up that covered the page"); }
+    if (S.popup && S.view === "list") { await doStep({ node:nodes().find(n => n.dataset.act === "dismiss") }); notes.push("Closed a pop-up"); }
     let r = locate(s), pages = 0;
     while (!r && s.href && nodes().some(n => n.dataset.act === "next")) { await doStep({ node:nodes().find(n => n.dataset.act === "next") }); pages++; r = locate(s); }
-    if (r && pages) { r.how = "free"; r.why = `wasn't on that page any more; found it ${pages} page${pages > 1 ? "s" : ""} later`; }
-    if (!r) { r = heal(s); if (r) { ai++; next.steps[i] = r.fixed; changed = true; } }
-    if (!r) { o.how = "fail"; o.why = "couldn't find this step; a person needs to look"; o.on = false; drawSteps(out); break; }
-    if (r.how === "free" && !pages) { next.steps[i] = s.type === "select" ? { ...s, field:r.node.dataset.label } : { ...s, label:r.node.dataset.label }; changed = true; }
-    r.value = s.type === "select" ? s.value : undefined;
-    if (r.how === "ai" && r.fixed.type === "select") r.value = r.fixed.value;
-    o.how = r.how; o.why = [...notes, r.why].filter(Boolean).join("; ");
-    await doStep(r); o.on = false; drawSteps(out);
+    if (r && pages) { r.how = "free"; r.why = `Moved ${pages} page${pages > 1 ? "s" : ""} further down; found it`; }
+    if (!r) { o.why = "Fixing with AI…"; draw(); await wait(800); r = heal(s); if (r) ai++; }
+    if (!r) { o.how = "fail"; o.why = "Couldn't find this on the page"; draw(); break; }
+    for (let k = 0; k < pages; k++) next.push({ type:"click", kind:"button", label:COPY.next }); // remember the extra paging
+    next.push(r.fixed || (r.how === "free" && !pages ? (s.type === "select" ? { ...s, field:r.node.dataset.label } : { ...s, label:r.node.dataset.label }) : s));
+    if (s.type === "select" && r.value === undefined) r.value = s.value;
+    o.how = r.how === "replay" && notes.length ? "free" : r.how; o.why = [...notes, r.why].filter(Boolean).join(". ");
+    if (o.how !== "replay") fixed++;
+    await doStep(r); draw();
   }
-  const done = out.every(o => o.how && o.how !== "fail");
-  const lead = S.db.find(l => l.name === cur.expect.name);
-  const ok = done && lead && Object.keys(cur.expect).every(k => lead[k] === cur.expect[k]) && S.toast;
-  if (ok && changed) wf.versions.push(next);
-  const res = $("result"); res.hidden = false; res.className = "result " + (ok ? "ok" : "bad");
-  const checks = Object.entries(cur.expect).filter(([k]) => k !== "name").map(([k, v]) => `${k} is ${v}`).join(", ");
-  res.textContent = ok ? `✓ Verified: ${cur.expect.name}'s ${checks}, and the page says "Saved". ${ai ? "Used AI for " + ai + " step" + (ai > 1 ? "s" : "") + "." : "No AI needed."}` +
-    (changed ? ` Saved the fixes as v${wf.versions.length}.` : "")
-    : "✗ The run didn't reach the expected result, so nothing was saved.";
-  busy = false; $("crm").classList.remove("busy"); runs++; runsTotal++; draw();
+  const lead = S.db.find(l => l.name === w.expect.name);
+  const ok = out.every(o => o.how !== "fail" && o.how !== "now") && lead && S.toast && Object.keys(w.expect).every(k => lead[k] === w.expect[k]);
+  const checks = Object.entries(w.expect).filter(([k]) => k !== "name").map(([k, v]) => `${k} is ${v}`).join(", ");
+  const changed = ok && JSON.stringify(next) !== JSON.stringify(steps);
+  if (ok && changed) { w.steps = next; w.ver++; }
+  w.popup = false;
+  const text = !ok ? "Stopped and needs you" : fixed ? `Fixed ${fixed} step${fixed > 1 ? "s" : ""} itself${ai ? `, ${ai} with AI` : ""}` : "Ran on autopilot";
+  w.runs.unshift({ when:now(), text, how:!ok ? "fail" : ai ? "ai" : fixed ? "free" : "replay" });
+  foot = ok ? { ok:true, text:`✓ ${w.expect.name}'s ${checks}` + (changed ? `. Saved as version ${w.ver}.` : ".") } : { ok:false, text:"Stopped. The workflow wasn't changed." };
+  busy = false; render(); draw();
 }
 
-function drawSteps(out) {
-  const label = s => s.type === "select" ? `Set '${s.field}' to ${s.value}` : `Click '${s.label}'`;
-  const chip = { replay:["replay", "Replayed"], free:["free", "Fixed for free"], ai:["ai", "Healed by AI"], fail:["fail", "Stuck"] };
-  $("steps").innerHTML = out.length ? out.map(o => `<li class="${o.on ? "on" : ""}"><div class="st"><span>${esc(label(o.s))}</span>` +
-    (o.how ? `<span class="chip ${chip[o.how][0]}">${chip[o.how][1]}</span>` : "") + `</div>` +
-    (o.why ? `<div class="why">${esc(o.why)}</div>` : "") + `</li>`).join("") : `<li class="empty" style="display:block">Click through the CRM on the left. Each click is saved as a step.</li>`;
-}
-function hint() {
-  if (recording) return `<span class="rec-dot"></span><b>Recording.</b> Open a lead, change its stage or owner, then click Save. Press <b>Save workflow</b> when you're done.`;
-  const v = wf.versions.length, last = runsTotal;
-  if (!last) return `<b>Step 1.</b> Press <b>Run workflow</b>. Autopilot repeats the saved steps on the original site.`;
-  if (S.v === 1 && v === 1) return `<b>Step 2.</b> Switch to <b>Redesigned site</b>: buttons get renamed, new leads push old ones to later pages, and the stage dropdown becomes buttons. Then run it again.`;
-  if (S.v === 2 && v === 1) return `<b>Step 3.</b> Press <b>Run workflow</b> on the redesigned site and watch which steps are fixed for free and which one needs AI.`;
-  return `<b>Step 4.</b> Run it again: the fixed version replays with no AI calls. Or switch sites, or record your own workflow.`;
-}
-function setButtons() {
-  $("run").disabled = busy || !!recording;
-  $("record").textContent = recording ? "Save workflow" : "Record your own"; $("record").classList.toggle("rec", !!recording);
-  $("record").disabled = busy; $("reset").disabled = busy; $("v1").disabled = $("v2").disabled = busy;
-}
+function slug(n) { return "/" + n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function draw() {
-  const cur = wf.versions[wf.versions.length - 1];
-  $("wf-name").textContent = cur.name; $("wf-ver").textContent = "v" + wf.versions.length;
-  $("hint").innerHTML = hint(); setButtons();
-  if (!busy && !recording && !runs) drawSteps(cur.steps.map(s => ({ s })));
-}
-function setVersion(v) { if (busy) return; $("v1").setAttribute("aria-pressed", v === 1); $("v2").setAttribute("aria-pressed", v === 2); resetSite(v); draw(); }
-$("v1").onclick = () => setVersion(1); $("v2").onclick = () => setVersion(2);
-$("run").onclick = run;
-$("reset").onclick = () => { if (busy) return; recording = null; wf = { versions:[clone(PRESET)] }; runs = 0; runsTotal = 0; $("result").hidden = true; setVersion(1); };
-$("record").onclick = () => {
-  if (busy) return;
-  if (!recording) { recording = { steps:[], v:S.v, lead:null }; resetSite(S.v); S.popup = false; render(); $("result").hidden = true; drawSteps([]); draw(); return; }
-  const r = recording; recording = null;
-  const before = seed(r.v).find(l => l.id === r.lead), after = S.db.find(l => l.id === r.lead);
-  const res = $("result"); res.hidden = false;
-  if (!before || !S.toast || (before.stage === after.stage && before.owner === after.owner)) {
-    res.className = "result bad"; res.textContent = "Nothing was saved: open a lead, change its stage or owner, and click Save before saving the workflow."; runs = 0; draw(); return;
+  const w = flows[cur];
+  $("wf-list").innerHTML = flows.map((f, i) => `<button class="wf${i === cur && !recording ? " on" : ""}" data-i="${i}"><span class="ap"></span><span>${esc(slug(f.name))}</span></button>`).join("");
+  $("wf-name").textContent = recording ? "New workflow" : w.name;
+  const st = $("wf-state");
+  st.className = "pill" + (recording ? " rec" : busy ? " run" : "");
+  st.textContent = recording ? "Recording" : busy ? "Running" : "Autopilot on";
+  $("wf-meta").textContent = recording ? "pipeline.app" : `pipeline.app · version ${w.ver} · ${w.steps.length} steps`;
+  $("run").hidden = !!recording; $("run").disabled = busy;
+  $("stop").hidden = !recording;
+  $("record").disabled = busy;
+  $("tab-steps").setAttribute("aria-selected", view === "steps"); $("tab-runs").setAttribute("aria-selected", view === "runs");
+  const label = s => s.type === "select" ? `${s.field}: ${s.value}` : `Click ${s.label}`;
+  const tag = { free:"Fixed", ai:"Fixed with AI", fail:"Stuck" }, icon = { replay:"✓", free:"✓", ai:"✓", fail:"!", now:"" };
+  let html;
+  if (view === "runs" && !recording) html = w.runs.map(r => `<li class="${r.how}"><span class="ic">${icon[r.how]}</span><div><div class="what">${esc(r.text)}<span class="when">${esc(r.when)}</span></div></div></li>`).join("");
+  else {
+    const rows = recording ? recording.steps.map(s => ({ s })) : (out || w.steps.map(s => ({ s })));
+    html = rows.length ? rows.map((o, i) => `<li class="${o.how || ""}"><span class="ic">${o.how ? icon[o.how] : i + 1}</span><div>
+      <div class="what">${esc(label(o.s))}${tag[o.how] ? `<span class="tag ${o.how}">${tag[o.how]}</span>` : ""}</div>
+      ${o.why ? `<div class="why">${esc(o.why)}</div>` : ""}</div></li>`).join("") : `<li class="empty">No steps yet</li>`;
   }
+  $("list").innerHTML = html;
+  $("foot").className = "foot" + (foot ? (foot.ok ? " ok" : " bad") : "");
+  $("foot").textContent = foot ? foot.text : "";
+}
+$("wf-list").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b || busy || recording) return; cur = +b.dataset.i; out = null; foot = null; openSite(false); draw(); });
+$("tab-steps").onclick = () => { view = "steps"; draw(); };
+$("tab-runs").onclick = () => { view = "runs"; draw(); };
+$("run").onclick = run;
+$("record").onclick = () => { if (busy || recording) return; recording = { steps:[], lead:null }; out = null; foot = null; view = "steps"; openSite(false); draw(); };
+$("stop").onclick = () => {
+  const r = recording, before = seed().find(l => l.id === r.lead), after = S.db.find(l => l.id === r.lead);
+  if (!before || !S.toast || (before.stage === after.stage && before.owner === after.owner)) {
+    foot = { ok:false, text:"Change a lead and save it on the page first." }; draw(); return;
+  }
+  recording = null;
   const expect = { name:after.name }; if (before.stage !== after.stage) expect.stage = after.stage; if (before.owner !== after.owner) expect.owner = after.owner;
-  const what = [expect.stage && `stage to ${expect.stage}`, expect.owner && `owner to ${expect.owner}`].filter(Boolean).join(" and ");
-  wf = { versions:[{ name:`Set ${after.name}'s ${what}`, steps:r.steps, expect }] }; runs = 0;
-  res.className = "result ok"; res.textContent = `Saved your workflow with ${r.steps.length} steps. Run it, then switch sites and run it again.`;
-  resetSite(S.v); draw();
+  const name = expect.stage && expect.owner ? `Update ${after.name}` : expect.stage ? `Move ${after.name} to ${expect.stage}` : `Reassign ${after.name} to ${expect.owner}`;
+  flows.push({ name, ver:1, expect, steps:r.steps, runs:[{ when:now(), text:"Recorded", how:"replay" }] }); cur = flows.length - 1; out = null; foot = null;
+  openSite(false); draw();
 };
-resetSite(1); draw();
+flows[0].popup = flows[1].popup = true; // the site's update notice shows on the next visit
+openSite(false); draw();
 </script>
 </body></html>
