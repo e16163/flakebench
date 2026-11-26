@@ -33,7 +33,9 @@ AGENTS = {
     "gemini": {"label": "Gemini (free tier)", "key": "GEMINI_API_KEY", "model": "gemini-3.5-flash-lite"},
     "ollama": {"label": "Ollama (local, free)", "key": None, "model": "qwen3:8b"},
     "claude": {"label": "Claude (paid API)", "key": "ANTHROPIC_API_KEY", "model": "claude-haiku-5-5"},
+    "custom": {"label": "Your own agent (Python class)", "key": None, "model": ""},
 }
+SPEC_RE = re.compile(r"^[\w./-]+\.py:\w+$|^[\w.]+:\w+$")
 
 
 def free_port():
@@ -110,18 +112,23 @@ def start_run():
     if key and not (os.environ.get(key) or KEYS.get(key)):
         return f"Missing {key}. Go back and paste a key, or export it before ./polarbench ui.", 400
     tasks = f.getlist("tasks") or [t.id for t in TASKS]
-    guards = [g for g in f.getlist("guards") if g in ALL_GUARDS]
+    guards = list(ALL_GUARDS) if f.get("all_fixes") else [g for g in f.getlist("guards") if g in ALL_GUARDS]
+    agent_arg = agent
+    if agent == "custom":
+        agent_arg = (f.get("agent_spec") or "").strip()
+        if not SPEC_RE.match(agent_arg):
+            return "Your own agent needs a path like examples/my_agent.py:RuleAgent. Go back and fill it in.", 400
     runs = max(1, min(20, int(f.get("runs", 5))))
     model = (f.get("model") or "").strip()
     gtag = "noguards" if not guards else ("allguards" if len(guards) == len(ALL_GUARDS) else "_".join(guards))
     name = f"{agent}-{gtag}{'-nochaos' if f.get('no_chaos') else ''}-{time.strftime('%m%d-%H%M%S')}"
     out = os.path.join(RUNS, name)
     os.makedirs(out, exist_ok=True)
-    cmd = [sys.executable, os.path.join(ROOT, "runner", "run.py"), "--agent", agent, "--runs", str(runs),
+    cmd = [sys.executable, os.path.join(ROOT, "runner", "run.py"), "--agent", agent_arg, "--runs", str(runs),
            "--tasks", ",".join(tasks), "--out", out, "--port", str(free_port())]
     if guards:
         cmd += ["--guards", ",".join(guards)]
-    if model and agent != "scripted":
+    if model and agent not in ("scripted", "custom"):
         cmd += ["--model", model]
     if agent == "claude":
         cmd += ["--compact"]

@@ -53,6 +53,8 @@ python -m playwright install chromium
 
 In the dashboard, pick an agent, tasks, runs per task and guards, then press **Start run**. You get a live grid of runs and the agent's current screen. When the run finishes, open the report, or tick two runs and press **Compare**.
 
+**Reading a report.** The top line is the pass rate. Below it, each task shows one square per run (filled means it passed). "Why runs failed" groups failures by cause: a pop-up blocked a click, the page was still loading, the agent was on the wrong tab, a button moved, or the agent just chose wrong. Further down, every failed run is shown at the exact step where it went wrong, with a screenshot, the error, what the agent said, and the full step list.
+
 The same from a terminal:
 
 ```bash

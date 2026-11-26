@@ -14,10 +14,10 @@ pre.log { background:var(--code); border-radius:var(--r); font-family:var(--mono
 </style></head><body>
 {% include "_side.html" %}
 <div class="app"><main>
-<div class="crumbs"><a href="/#runs">Runs</a> / {{ name }}</div>
+<div class="crumbs"><a href="/#runs">Results</a> / {{ name }}</div>
 <div class="bar2" style="justify-content:space-between">
   <div><h1 style="margin:0">{{ info.agent }}</h1>
-  <p class="sub" style="margin:4px 0 0">Guards: {{ info.guards|join(', ') or 'none' }} · chaos {{ 'on' if info.chaos else 'off' }}</p></div>
+  <p class="sub" style="margin:4px 0 0">{% if info.guards|length == 4 %}Fixes on{% elif info.guards %}Fixes: {{ info.guards|join(', ') }}{% else %}No fixes{% endif %} · misbehaving {{ 'on' if info.chaos else 'off' }}</p></div>
   <div class="bar2"><span id="status" class="chip"></span>
     <form method="post" action="/runs/{{ name }}/stop" id="stopf" hidden><button class="btn ghost">Stop</button></form>
     <a class="btn" id="rep" href="/runs/{{ name }}/report/" hidden>Open report</a></div>

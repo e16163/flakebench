@@ -1,74 +1,87 @@
 <!doctype html><html lang="en"><head>{% include "_head.html" %}<title>polarbench</title></head><body>
 {% include "_side.html" %}
 <div class="app"><main>
-<div class="eyebrow"><b>New</b> Bring your own agent: any browser, any model</div>
-<h1>Which runs break, and why?</h1>
-<p class="sub">Run a browser agent many times on the same tasks with the same injected chaos. See the exact step where runs split, the cause, and which guard stops it.</p>
+<h1>Test a browser agent</h1>
+<p class="sub">Pick an agent and press Start. It runs every task several times on a test site that misbehaves on purpose, then shows which runs failed, the exact step where each one went wrong, and why.</p>
 <div class="grid2">
 <form class="card" method="post" action="/runs" id="newrun">
-  <h2><span class="num">01</span>New run</h2>
-  <fieldset><legend>Agent</legend>
-  {% for k, a in agents.items() %}
-    <label class="opt"><input type="radio" name="agent" value="{{ k }}" {% if loop.first %}checked{% endif %} data-key="{{ a.key or '' }}" data-model="{{ a.model }}">
-      <span>{{ a.label }}{% if a.key %}<br><span class="hint">{% if keys_set[a.key] %}{{ a.key }} found{% else %}needs {{ a.key }}{% endif %}</span>{% endif %}</span></label>
-  {% endfor %}
-  </fieldset>
+  <h2><span class="num">01</span>New test</h2>
+  <fieldset><label class="lbl" for="agent">Agent</label>
+    <select id="agent" name="agent" class="sel">{% for k, a in agents.items() %}<option value="{{ k }}" data-key="{{ a.key or '' }}" data-model="{{ a.model }}">{{ a.label }}</option>{% endfor %}</select>
+    <div class="hint" id="agenthint"></div></fieldset>
+  <fieldset id="specbox" hidden><label class="lbl" for="agent_spec">Path to your agent class</label>
+    <input type="text" id="agent_spec" name="agent_spec" value="examples/my_agent.py:RuleAgent">
+    <div class="hint">A class with <code>reset(task, seed)</code> and <code>step(obs, obs_text, last_result)</code>. See <code>examples/my_agent.py</code>.</div></fieldset>
   <fieldset id="modelbox" hidden><label class="lbl" for="model">Model</label><input type="text" id="model" name="model"></fieldset>
   <fieldset id="keybox" hidden><label class="lbl" for="api_key">API key</label>
-    <input type="password" id="api_key" name="api_key" autocomplete="off" placeholder="kept in memory only">
+    <input type="password" id="api_key" name="api_key" autocomplete="off" placeholder="kept in memory only, never saved">
     <div class="hint" id="keyhint"></div></fieldset>
-  <fieldset><legend>Tasks <a href="#" class="hint" id="all">all</a> · <a href="#" class="hint" id="none">none</a></legend>
-    <div class="tasklist">{% for t in tasks %}<label><input type="checkbox" name="tasks" value="{{ t.id }}" checked><span><code>{{ t.id }}</code> <span class="hint">{{ t.prompt }}</span></span></label>{% endfor %}</div>
-  </fieldset>
-  <fieldset><label class="lbl" for="runs">Runs per task</label><input type="number" id="runs" name="runs" value="5" min="1" max="20">
-    <div class="hint" id="estimate"></div></fieldset>
-  <fieldset><legend>Guards (fixes)</legend>
-    {% set gdesc = {'settle': 'Wait for loading spinners and DOM churn to stop before looking', 'reresolve': 'Re-find an element that was re-rendered while the agent thought', 'overlay': 'Close a blocking dialog (only Dismiss / Close-style buttons)', 'follow_tab': 'Switch to a tab the agent just opened'} %}
-    {% for g in guards %}<label class="opt"><input type="checkbox" name="guards" value="{{ g }}"><span><b>{{ g }}</b><br><span class="hint">{{ gdesc[g] }}</span></span></label>{% endfor %}
-  </fieldset>
-  <fieldset><label class="opt"><input type="checkbox" name="no_chaos" value="1"><span>Chaos off<br><span class="hint">Control run: proves the tasks are doable</span></span></label></fieldset>
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--border2);margin:4px -20px 0;padding:14px 20px 0"><span class="hint" id="estimate2"></span><button class="btn" type="submit">Start run <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button></div>
+  <fieldset><label class="opt"><input type="checkbox" name="all_fixes" value="1" id="all_fixes"><span><b>Turn on fixes</b><br><span class="hint">Close pop-ups, wait for loading, follow new tabs, re-find moved buttons. Run once with and once without to see the difference.</span></span></label></fieldset>
+  <details class="more"><summary>More options</summary>
+    <fieldset style="margin-top:12px"><label class="lbl" for="runs">Runs per task</label><input type="number" id="runs" name="runs" value="5" min="1" max="20"></fieldset>
+    <fieldset><legend>Tasks <a href="#" class="hint" id="all">all</a> · <a href="#" class="hint" id="none">none</a></legend>
+      <div class="tasklist">{% for t in tasks %}<label><input type="checkbox" name="tasks" value="{{ t.id }}" checked><span>{{ t.prompt }}</span></label>{% endfor %}</div></fieldset>
+    <fieldset><legend>Pick fixes one at a time</legend>
+      {% set gdesc = {'settle': 'Wait for the page to finish loading', 'reresolve': 'Re-find a button that moved while the agent was thinking', 'overlay': 'Close a pop-up that blocks a click (only Dismiss or Close)', 'follow_tab': 'Switch to a tab the agent just opened'} %}
+      {% for g in guards %}<label class="opt"><input type="checkbox" name="guards" value="{{ g }}" class="g"><span>{{ gdesc[g] }} <span class="hint">({{ g }})</span></span></label>{% endfor %}</fieldset>
+    <fieldset><label class="opt"><input type="checkbox" name="no_chaos" value="1"><span>Turn off the misbehaving<br><span class="hint">A control run that shows the tasks are doable</span></span></label></fieldset>
+  </details>
+  <div class="go"><span class="hint" id="estimate"></span><button class="btn" type="submit">Start test <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button></div>
 </form>
 
 <div>
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-      <h2 style="margin:0" id="runs"><span class="num">02</span>Runs</h2>
-      <button class="btn ghost" id="cmp" disabled>Compare selected</button>
+      <h2 style="margin:0" id="runs"><span class="num">02</span>Results</h2>
+      <button class="btn ghost" id="cmp" disabled title="Tick two or more results">Compare</button>
     </div>
     {% if runs %}
     <div style="overflow-x:auto"><table style="margin-top:10px">
-      <thead><tr><th></th><th>Run</th><th>Guards</th><th>Progress</th><th class="n">Pass rate</th><th></th></tr></thead>
+      <thead><tr><th></th><th>Test</th><th class="n">Passed</th><th></th></tr></thead>
       <tbody>
       {% for r in runs %}
       <tr>
-        <td><input type="checkbox" class="pick" value="{{ r.name }}" aria-label="select {{ r.name }}"></td>
-        <td><a href="/runs/{{ r.name }}">{{ r.name }}</a><div class="small">{{ r.agent }}{% if not r.chaos %} · chaos off{% endif %}{% if r.source == 'recorder' %} · external agent{% endif %}</div></td>
-        <td class="small">{{ r.guards|join(', ') or 'none' }}</td>
-        <td><div class="prog"><div style="width:{{ (100 * r.done / r.total) if r.total else 0 }}%"></div></div><div class="small">{{ r.done }}/{{ r.total }}</div></td>
-        <td class="n">{% if r.pass_rate is not none %}{{ '%.0f' % (100 * r.pass_rate) }}%{% else %}–{% endif %}</td>
-        <td>{% if r.running %}<span class="chip live">running</span>{% elif r.done %}<a href="/runs/{{ r.name }}/report/">report</a>{% endif %}</td>
+        <td style="width:28px"><input type="checkbox" class="pick" value="{{ r.name }}" aria-label="select {{ r.name }}"></td>
+        <td><a href="/runs/{{ r.name }}">{{ r.agent }}</a><div class="small">{% if r.guards|length == 4 %}fixes on{% elif r.guards %}fixes: {{ r.guards|join(', ') }}{% else %}no fixes{% endif %}{% if not r.chaos %} · misbehaving off{% endif %}{% if r.source == 'recorder' %} · external agent{% endif %} · {{ r.done }}/{{ r.total }} runs</div></td>
+        <td class="n"><b>{% if r.pass_rate is not none %}{{ '%.0f' % (100 * r.pass_rate) }}%{% else %}–{% endif %}</b></td>
+        <td style="text-align:right">{% if r.running %}<span class="chip live">running</span>{% elif r.done %}<a href="/runs/{{ r.name }}/report/">Report</a>{% endif %}</td>
       </tr>
       {% endfor %}
       </tbody></table></div>
-    {% else %}<p class="empty">No runs yet. Start one on the left. The scripted baseline needs no key.</p>{% endif %}
+    {% else %}<p class="empty">No tests yet. Start one on the left. The scripted agent needs no key and takes about 10 minutes.</p>{% endif %}
+  </div>
+  <div class="card" style="margin-top:20px">
+    <h2 style="margin-top:0" id="plug"><span class="num">03</span>Plug in your own agent</h2>
+    <p class="hint" style="margin-top:0">Two ways, no changes to this tool.</p>
+    <p style="margin-bottom:6px"><b>Your agent drives its own browser.</b> Start an episode, point the agent at the URL, then ask for the grade.</p>
+<pre class="code">./polarbench serve --port 5055
+POST /api/episode/start  {"task": "t01_qualify_priya", "seed": 0}
+  → {"start_url": ..., "prompt": ...}
+POST /api/episode/finish → {"passed": true, "reason": ...}</pre>
+    <p style="margin:14px 0 6px"><b>Your agent is a Python class.</b> It gets the page and returns one action, and polarbench drives the browser.</p>
+<pre class="code">class MyAgent:
+    def reset(self, task, seed): ...
+    def step(self, obs, obs_text, last_result):
+        return {"action": "click", "id": 12}, "why"</pre>
   </div>
 </div>
 </div>
 </main>{{ footer|safe }}</div>
 <script>
-const form = document.getElementById('newrun');
+const form = document.getElementById('newrun'), sel = document.getElementById('agent'), set = {{ keys_set|tojson }};
 function sync() {
-  const a = form.querySelector('input[name=agent]:checked');
-  const key = a.dataset.key, set = {{ keys_set|tojson }};
-  document.getElementById('modelbox').hidden = !a.dataset.model;
-  document.getElementById('model').value = a.dataset.model;
+  const o = sel.selectedOptions[0], key = o.dataset.key;
+  document.getElementById('specbox').hidden = sel.value !== 'custom';
+  document.getElementById('modelbox').hidden = !o.dataset.model;
+  if (document.getElementById('model').dataset.for !== sel.value) { document.getElementById('model').value = o.dataset.model; document.getElementById('model').dataset.for = sel.value; }
   document.getElementById('keybox').hidden = !key || set[key];
-  document.getElementById('keyhint').textContent = key === 'GEMINI_API_KEY' ? 'Free key: aistudio.google.com/apikey' : '';
+  document.getElementById('keyhint').textContent = key === 'GEMINI_API_KEY' ? 'Free key at aistudio.google.com/apikey' : '';
+  document.getElementById('agenthint').textContent = key ? (set[key] ? 'Key found.' : '') : (sel.value === 'scripted' ? 'A recorded macro. Free, and good for checking the setup.' : '');
+  const all = document.getElementById('all_fixes').checked;
+  form.querySelectorAll('.g').forEach(g => { g.disabled = all; if (all) g.checked = false; });
   const n = form.querySelectorAll('input[name=tasks]:checked').length * (+document.getElementById('runs').value || 0);
-  const calls = a.value === 'scripted' ? '' : ` · about ${n * 12} model calls`;
+  const calls = ['scripted', 'custom'].includes(sel.value) ? '' : ` · about ${n * 12} model calls`;
   document.getElementById('estimate').textContent = `${n} runs${calls}`;
-  document.getElementById('estimate2').textContent = `${n} runs · ${a.parentElement.innerText.split('\n')[0]}`;
 }
 form.addEventListener('change', sync); form.addEventListener('input', sync); sync();
 document.getElementById('all').onclick = e => { e.preventDefault(); form.querySelectorAll('input[name=tasks]').forEach(c => c.checked = true); sync(); };
