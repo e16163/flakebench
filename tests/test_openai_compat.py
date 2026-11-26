@@ -69,3 +69,26 @@ def test_daily_quota_stops_cleanly(server):
     with pytest.raises(RateLimited):
         agent.step(None, "URL: /leads", None)
     MODE["daily"] = False
+
+
+def test_daily_quota_found_anywhere_in_long_body():
+    from agents.openai_compat import is_daily_quota
+    body = '[{"error": {"code": 429, "message": "' + "x" * 600 + '", "details": [{"violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]}}]'
+    assert is_daily_quota(body)
+    assert not is_daily_quota('{"error": {"code": 429, "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier"}}')
+
+
+def test_persistent_429_stops_cleanly(monkeypatch):
+    import io
+    import urllib.error
+    import pytest
+    from agents import openai_compat as oc
+    monkeypatch.setenv("GEMINI_API_KEY", "test")
+    a = oc.OpenAICompatAgent("gemini", rpm=0, max_retries=2)
+
+    def boom(*args, **kw):
+        raise urllib.error.HTTPError("u", 429, "Too Many Requests", {"Retry-After": "0"}, io.BytesIO(b'{"error":"slow down"}'))
+    monkeypatch.setattr(oc.urllib.request, "urlopen", boom)
+    monkeypatch.setattr(oc.time, "sleep", lambda s: None)
+    with pytest.raises(oc.RateLimited):
+        a._post({})

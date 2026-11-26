@@ -31,6 +31,13 @@ class RateLimited(Exception):
     pass
 
 
+def is_daily_quota(body):
+    """Gemini puts the quota id (e.g. GenerateRequestsPerDayPerProjectPerModel-FreeTier) deep in a
+    long JSON body, so look at all of it, not just the start."""
+    b = body.lower().replace("_", "").replace(" ", "")
+    return "perday" in b or "dailylimit" in b
+
+
 class OpenAICompatAgent:
     def __init__(self, provider="gemini", model=None, base_url=None, rpm=None, max_retries=8):
         p = PRESETS[provider]
@@ -69,16 +76,21 @@ class OpenAICompatAgent:
                 with urllib.request.urlopen(req, timeout=180) as r:
                     return json.loads(r.read())
             except urllib.error.HTTPError as e:
-                body = e.read().decode(errors="replace")[:300]
+                full = e.read().decode(errors="replace")
+                body = full[:300]
+                if e.code == 429 and is_daily_quota(full):
+                    raise RateLimited(f"daily quota used up: {body}")
                 if e.code in (429, 500, 502, 503, 504) and attempt < self.max_retries:
                     wait = float(e.headers.get("Retry-After") or delay)
-                    if e.code == 429 and any(w in body.lower() for w in ("per day", "perday", "per_day")):
-                        raise RateLimited(f"daily quota used up: {body}")
                     print(f"  [{self.name}] HTTP {e.code}, retrying in {wait:.0f}s", flush=True)
                     self.usage["rate_limit_waits_s"] += wait
                     time.sleep(wait)
                     delay = min(delay * 2, 120)
                     continue
+                if e.code == 429:
+                    # still rate limited after every retry: treat it as out of quota, so runs stop
+                    # cleanly and --resume picks up later instead of crashing
+                    raise RateLimited(f"still rate limited after {self.max_retries} retries: {body}")
                 raise RuntimeError(f"HTTP {e.code} from {self.base}: {body}") from None
             except urllib.error.URLError as e:
                 if attempt < self.max_retries:
