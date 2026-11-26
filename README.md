@@ -2,7 +2,7 @@
 
 **Run a browser agent many times on the same task. See the exact step where runs split, why they split, and which fix stops it.**
 
-A reliability bench for Polar-style browser agents, an independent project. It is not made by or affiliated with Polar.
+An independent reliability bench for Polar-style browser agents. It is not made by or affiliated with Polar.
 
 Browser agents rarely fail on the hard part of a task. They fail on boring things: a dialog that shows up a second late, a list that re-sorts while the model is thinking, a link that opens a new tab, a page that is still loading. A single pass/fail number hides all of that, and so does a single run. polarbench makes it visible and measurable:
 
