@@ -76,6 +76,13 @@ def element_line(e):
     return s
 
 
+def _detached(msg):
+    # "waiting for locator" with nothing after it: the element vanished between our
+    # lookup and the click (a re-render), so Playwright waited for it to come back.
+    vanished = "waiting for locator" in msg and "resolved to" not in msg
+    return "detached" in msg or "not attached" in msg or vanished
+
+
 def dom_hash(obs):
     """Structural fingerprint of the page: element kinds and labels, no ids."""
     sig = obs["url_path"] + "\n" + "\n".join(
@@ -129,6 +136,7 @@ class BrowserEnv:
         self.shot_dir = screenshot_dir
         self.guards = set(guards)
         self.guard_events = []
+        self.last_error_log = None
         self._pw = sync_playwright().start()
         self.browser = self._pw.chromium.launch(headless=headless, executable_path=chromium_path())
         self.ctx = None
@@ -209,20 +217,27 @@ class BrowserEnv:
     def _loc(self, el_id):
         loc = self.page.locator(f'[data-fb-id="{int(el_id)}"]')
         if loc.count() == 0:
-            fp = self._fingerprint(el_id)
-            if "reresolve" in self.guards and fp:
-                # The page re-rendered since the agent looked. Find the same element
-                # (same tag, label and link) in a fresh observation, if it is unique.
-                old = self.last_obs
-                fresh = self.observe()
-                self.last_obs = old  # keep the agent's view as the reference
-                matches = [e for e in fresh["elements"] if (e["tag"], e["label"], e.get("href")) == fp]
-                if len(matches) == 1:
-                    self.guard_events.append({"guard": "reresolve",
-                                              "detail": f"[{el_id}] went stale; re-found '{fp[1]}' as [{matches[0]['id']}]"})
-                    return self.page.locator(f'[data-fb-id="{matches[0]["id"]}"]').first
+            if "reresolve" in self.guards:
+                found = self._refind(el_id, why="went stale")
+                if found is not None:
+                    return found
             raise LookupError(f"stale element: [{el_id}] is no longer on the page (it changed after the last observation)")
         return loc.first
+
+    def _refind(self, el_id, why):
+        """The page re-rendered since the agent looked. Find the same element (same
+        tag, label and link) in a fresh observation, if exactly one matches."""
+        fp = self._fingerprint(el_id)
+        if not fp:
+            return None
+        old = self.last_obs
+        fresh = self.observe()
+        self.last_obs = old  # keep the agent's view as the reference
+        matches = [e for e in fresh["elements"] if (e["tag"], e["label"], e.get("href")) == fp]
+        if len(matches) != 1:
+            return None
+        self.guard_events.append({"guard": "reresolve", "detail": f"[{el_id}] {why}; re-found '{fp[1]}' as [{matches[0]['id']}]"})
+        return self.page.locator(f'[data-fb-id="{matches[0]["id"]}"]').first
 
     def _clear_overlay(self, loc):
         if "overlay" not in self.guards:
@@ -241,6 +256,7 @@ class BrowserEnv:
         kind = action.get("action")
         n_pages = len(self.pages)
         g0 = len(self.guard_events)
+        self.last_error_log = None
         try:
             if kind in ("click", "type", "select", "check"):
                 loc = self._loc(action["id"])
@@ -250,7 +266,20 @@ class BrowserEnv:
                     opens_tab = loc.evaluate("e => (e.closest('a') || {}).target === '_blank'")
                 except PWError:
                     opens_tab = False
-                loc.click(timeout=3000)
+                try:
+                    loc.click(timeout=3000)
+                except PWTimeout as e:
+                    # the element was swapped out mid-click (list re-rendered): re-find it once
+                    if "reresolve" not in self.guards or not _detached(str(e)):
+                        raise
+                    loc = self._refind(action["id"], why="was detached mid-click")
+                    if loc is None:
+                        raise
+                    try:
+                        opens_tab = loc.evaluate("e => (e.closest('a') || {}).target === '_blank'")
+                    except PWError:
+                        pass
+                    loc.click(timeout=3000)
                 deadline = time.time() + 2.0
                 while opens_tab and len(self.pages) <= n_pages and time.time() < deadline:
                     self.page.wait_for_timeout(50)
@@ -300,7 +329,11 @@ class BrowserEnv:
             return "ok." + note + fixes, None
         except PWTimeout as e:
             msg = str(e).split("\n")
-            detail = next((l.strip() for l in msg if "intercepts pointer events" in l), msg[0])
+            keys = ("intercepts pointer events", "detached", "not attached", "not visible", "not stable", "not enabled")
+            detail = next((l.strip(" -") for l in msg if any(k in l for k in keys)), msg[0])
+            if _detached(str(e)) and "stale" not in detail:
+                detail = "stale element: " + detail
+            self.last_error_log = str(e)[:1500]
             return None, f"timeout: {detail}"
         except (LookupError, ValueError, KeyError) as e:
             return None, str(e)

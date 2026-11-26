@@ -84,8 +84,8 @@ def trace_html(f):
     return "".join(items)
 
 
-def build(run_dir):
-    a = analyze(run_dir)
+def build(run_dir, reference=None):
+    a = analyze(run_dir, reference)
     rep = os.path.join(run_dir, "report")
     shots = os.path.join(rep, "shots")
     os.makedirs(shots, exist_ok=True)
@@ -106,8 +106,9 @@ def build(run_dir):
 
     table = "".join(
         f'<tr><td class="mono">{E(t["task"])}</td><td>{E(BY_ID[t["task"]].prompt)}</td>'
-        f'<td class="n">{t["passes"]}/{t["runs"]}</td><td class="n">{t["steps_mean"]} ± {t["steps_std"]}</td>'
-        f'<td class="n">{t["duration_mean_s"]} ± {t["duration_std_s"]}s</td></tr>' for t in a["tasks"])
+        f'<td class="n">{t["passes"]}/{t["runs"]}</td><td class="n">{t["pass_rate_ci95"][0]:.0%}–{t["pass_rate_ci95"][1]:.0%}</td>'
+        f'<td class="n">{t["steps_mean"]} ± {t["steps_std"]}</td>'
+        f'<td class="n">{t["duration_mean_s"]} ± {t["duration_std_s"]}s</td><td class="n">{t["max_tabs"]}</td></tr>' for t in a["tasks"])
 
     fails_html = []
     for t in a["tasks"]:
@@ -122,7 +123,7 @@ def build(run_dir):
             tgt = f' on <code>{E(f["target"]["label"])}</code>' if f.get("target") else ""
             fails_html.append(f'''
 <div class="card fail"><div>{img}</div><div>
-  <div><span class="tag">{E(a["cause_labels"][f["cause"]])}</span><span class="tag">{conf}</span></div>
+  <div><span class="tag">{E(a["cause_labels"][f["cause"]])}</span><span class="tag">{conf}</span>{'<span class="tag">page differed from every passing run</span>' if f.get("page_differed") else ""}</div>
   <p style="margin:8px 0 4px"><b class="mono">{E(t["task"])}</b> · seed {f["seed"]} · split at step {f["divergence_step"]} of {f["n_steps"]}
   {"" if f["had_passing_reference"] else "<span class='k'>(no passing run to compare; first error used)</span>"}</p>
   <p style="margin:4px 0"><span class="k">Action:</span> <code>{E(act)}</code>{tgt}</p>
@@ -145,7 +146,7 @@ def build(run_dir):
 <p class="sub">Agent <span class="mono">{E(meta["agent"])}</span> · {o["runs"]} runs ({meta["runs"]} per task, seeds 0–{meta["runs"] - 1}) ·
 chaos {"on" if meta["chaos"] else "off"} · guards: {guard_names} · {E(meta["started"])}</p>
 <div class="tiles">
-  <div class="tile"><div class="v">{o["pass_rate"]:.0%}</div><div class="l">runs passed ({o["passes"]}/{o["runs"]})</div></div>
+  <div class="tile"><div class="v">{o["pass_rate"]:.0%}</div><div class="l">runs passed ({o["passes"]}/{o["runs"]}; 95% CI {o["pass_rate_ci95"][0]:.0%}–{o["pass_rate_ci95"][1]:.0%})</div></div>
   <div class="tile"><div class="v">{o["flaky_tasks"]}/{len(a["tasks"])}</div><div class="l">tasks flaky (pass sometimes)</div></div>
   <div class="tile"><div class="v">{o["always_fail"]}</div><div class="l">tasks that never passed</div></div>
   <div class="tile"><div class="v">{n_guard}</div><div class="l">guard interventions ({guard_names})</div></div>
@@ -164,7 +165,7 @@ chaos {"on" if meta["chaos"] else "off"} · guards: {guard_names} · {E(meta["st
 
 <h2>Per-task numbers</h2>
 <div class="card" style="overflow-x:auto"><table>
-<thead><tr><th>Task</th><th>Prompt</th><th>Passed</th><th>Steps (mean ± sd)</th><th>Time (mean ± sd)</th></tr></thead>
+<thead><tr><th>Task</th><th>Prompt</th><th>Passed</th><th>95% CI</th><th>Steps (mean ± sd)</th><th>Time (mean ± sd)</th><th>Max tabs</th></tr></thead>
 <tbody>{table}</tbody></table></div>
 
 <h2>Every failure, at the step it split</h2>
@@ -177,4 +178,9 @@ chaos {"on" if meta["chaos"] else "off"} · guards: {guard_names} · {E(meta["st
 
 
 if __name__ == "__main__":
-    print(build(sys.argv[1]))
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("run_dir")
+    ap.add_argument("--reference", help="a --no-chaos run of the same agent, used as extra passing references")
+    args = ap.parse_args()
+    print(build(args.run_dir, args.reference))

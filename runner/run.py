@@ -88,7 +88,7 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
             "modal_at_observe": obs["modal_visible"], "modal_at_act": modal_at_act, "loading": obs["loading"],
             "action": action, "target": ({"tag": target["tag"], "label": target["label"]} if target else None),
             "reasoning": (reasoning or "")[:400], "result": result, "error": error,
-            "guards": env.guard_events[g0:],
+            "guards": env.guard_events[g0:], "error_log": env.last_error_log,
             "screenshot": os.path.relpath(shot, run_dir) if shot else None,
         })
         last_result = error and f"ERROR: {error}" or result

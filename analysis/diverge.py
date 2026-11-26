@@ -30,6 +30,17 @@ CAUSES = {
 CHAOS_FOR = {"modal": "modal", "stale_element": "reorder", "wrong_tab": "newtab", "slow_render": "slow"}
 
 
+def wilson(k, n, z=1.96):
+    """95% Wilson interval for a pass rate: honest error bars at n=5."""
+    if n == 0:
+        return (0.0, 0.0)
+    p = k / n
+    d = 1 + z * z / n
+    c = (p + z * z / (2 * n)) / d
+    h = z * ((p * (1 - p) / n + z * z / (4 * n * n)) ** 0.5) / d
+    return (round(max(0, c - h), 2), round(min(1, c + h), 2))
+
+
 def key(step):
     a = step["action"]
     label = (step.get("target") or {}).get("label") or a.get("path") or a.get("option") or ""
@@ -45,8 +56,9 @@ def divergence_index(fail, passes):
     """
     keys = [key(s) for s in fail["steps"]]
     if not passes:
-        errs = [s["i"] for s in fail["steps"] if s["error"]]
-        return (errs[0] if errs else len(keys) - 1), False
+        # no passing run to compare with: first step where something visibly went wrong
+        bad = [s["i"] for s in fail["steps"] if s["error"] or s["loading"] or s["modal_at_act"]]
+        return (bad[0] if bad else len(keys) - 1), False
     seen = {key(s) for p in passes for s in p["steps"]}
     for k, kk in enumerate(keys):
         if kk not in seen:
@@ -85,31 +97,46 @@ def classify(trace, k):
     return cause, confirmed, page
 
 
-def analyze(run_dir):
+def load_passes(ref_dir):
+    """Passing traces from a reference run (e.g. the same agent with chaos off)."""
+    out = {}
+    if ref_dir:
+        for path in glob.glob(os.path.join(ref_dir, "*", "run*", "trace.json")):
+            t = json.load(open(path))
+            if t["passed"]:
+                out.setdefault(t["task"], []).append(t)
+    return out
+
+
+def analyze(run_dir, reference=None):
+    ref = load_passes(reference)
     tasks = {}
     for path in sorted(glob.glob(os.path.join(run_dir, "*", "run*", "trace.json"))):
         t = json.load(open(path))
         t["_dir"] = os.path.relpath(os.path.dirname(path), run_dir)
         tasks.setdefault(t["task"], []).append(t)
 
-    out = {"run_dir": run_dir, "meta": json.load(open(os.path.join(run_dir, "meta.json"))), "tasks": [],
+    out = {"run_dir": run_dir, "reference": reference, "meta": json.load(open(os.path.join(run_dir, "meta.json"))), "tasks": [],
            "causes": {}, "cause_labels": CAUSES}
     total = Counter()
     for task_id, traces in tasks.items():
         traces.sort(key=lambda t: t["seed"])
         passes = [t for t in traces if t["passed"]]
         fails = [t for t in traces if not t["passed"]]
+        reference_passes = passes + ref.get(task_id, [])
         n = len(traces)
         p = len(passes) / n
         steps = [t["n_steps"] for t in traces]
         durs = [t["duration_s"] for t in traces]
         failures = []
         for f in fails:
-            k, had_ref = divergence_index(f, passes)
+            k, had_ref = divergence_index(f, reference_passes)
             cause, confirmed, page = classify(f, k)
             total[cause] += 1
             s = f["steps"][k]
+            pass_hashes = {st["dom_hash"] for p in reference_passes for st in p["steps"]}
             failures.append({
+                "page_differed": bool(reference_passes) and s["dom_hash"] not in pass_hashes,
                 "seed": f["seed"], "divergence_step": k, "had_passing_reference": had_ref,
                 "cause": cause, "confirmed_by_chaos_log": confirmed, "page": page,
                 "action": s["action"], "target": s["target"], "error": s["error"],
@@ -126,6 +153,8 @@ def analyze(run_dir):
             "task": task_id, "guard_events": dict(recov), "runs": n, "passes": len(passes), "pass_rate": round(p, 2),
             "flaky": 0 < len(passes) < n,
             "pass_rate_std": round((p * (1 - p) / n) ** 0.5, 2),
+            "pass_rate_ci95": wilson(len(passes), n),
+            "max_tabs": max(st["tabs_after"] for t in traces for st in t["steps"]),
             "steps_mean": round(statistics.mean(steps), 1),
             "steps_std": round(statistics.pstdev(steps), 1),
             "duration_mean_s": round(statistics.mean(durs), 1),
@@ -138,6 +167,7 @@ def analyze(run_dir):
     out["overall"] = {
         "runs": len(allruns), "passes": sum(r["passed"] for r in allruns),
         "pass_rate": round(sum(r["passed"] for r in allruns) / max(1, len(allruns)), 2),
+        "pass_rate_ci95": wilson(sum(r["passed"] for r in allruns), len(allruns)),
         "flaky_tasks": sum(t["flaky"] for t in out["tasks"]),
         "always_fail": sum(t["passes"] == 0 for t in out["tasks"]),
         "always_pass": sum(t["passes"] == t["runs"] for t in out["tasks"]),
@@ -147,7 +177,12 @@ def analyze(run_dir):
 
 
 if __name__ == "__main__":
-    res = analyze(sys.argv[1])
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("run_dir")
+    ap.add_argument("--reference", help="run dir whose passing traces also count as references (e.g. a --no-chaos run)")
+    args = ap.parse_args()
+    res = analyze(args.run_dir, args.reference)
     o = res["overall"]
     print(f"{o['passes']}/{o['runs']} runs passed ({o['pass_rate']:.0%}); "
           f"{o['flaky_tasks']} flaky tasks, {o['always_fail']} always fail, {o['always_pass']} always pass")

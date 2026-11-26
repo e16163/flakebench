@@ -12,4 +12,4 @@ run none 5101 &  run all 5102 "--guards all" &  run settle 5103 "--guards settle
 run reresolve 5104 "--guards reresolve" &  run overlay 5105 "--guards overlay" &  run follow_tab 5106 "--guards follow_tab" &  wait
 run nochaos 5107 "--no-chaos" & wait
 python3 report/compare.py runs/$AGENT-none runs/$AGENT-settle runs/$AGENT-reresolve runs/$AGENT-overlay \
-  runs/$AGENT-follow_tab runs/$AGENT-all runs/$AGENT-nochaos --out docs/$AGENT
+  runs/$AGENT-follow_tab runs/$AGENT-all runs/$AGENT-nochaos --reference runs/$AGENT-nochaos --out docs/$AGENT

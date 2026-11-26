@@ -28,13 +28,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("runs", nargs="+")
     ap.add_argument("--out", default=os.path.join(ROOT, "docs"))
+    ap.add_argument("--reference", help="a --no-chaos run of the same agent, used as extra passing references")
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
 
     cfgs = []
     for r in args.runs:
-        a = analyze(r)
-        build(r)
+        ref = args.reference if os.path.abspath(r) != os.path.abspath(args.reference or "") else None
+        a = analyze(r, ref)
+        build(r, ref)
         name = os.path.basename(os.path.normpath(r))
         dst = os.path.join(args.out, name)
         if os.path.exists(dst):
@@ -47,7 +49,8 @@ def main():
         f'<div class="row" title="{a["overall"]["passes"]}/{a["overall"]["runs"]} runs passed">'
         f'<div class="name"><a href="{E(n)}/index.html">{E(l)}</a></div>'
         f'<div class="track"><div class="fill" style="width:{100 * a["overall"]["pass_rate"]:.1f}%"></div></div>'
-        f'<div class="val">{a["overall"]["pass_rate"]:.0%} ({a["overall"]["passes"]}/{a["overall"]["runs"]})</div></div>'
+        f'<div class="val">{a["overall"]["pass_rate"]:.0%} ({a["overall"]["passes"]}/{a["overall"]["runs"]})'
+        f'<br><span style="font-size:12px">95% CI {a["overall"]["pass_rate_ci95"][0]:.0%}–{a["overall"]["pass_rate_ci95"][1]:.0%}</span></div></div>'
         for n, l, a in cfgs)
 
     head = "".join(f'<th class="n">{E(l)}</th>' for _, l, _ in cfgs)

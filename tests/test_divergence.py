@@ -54,3 +54,10 @@ def test_wrong_tab():
                step(1, {"action": "select", "id": 6, "option": "Qualified"}, "Stage", tabs_after=2)],
               chaos=[{"kind": "newtab", "t": 0.1, "page": "leads"}])
     assert classify(f, 1)[0] == "wrong_tab"
+
+
+def test_wilson_interval():
+    from analysis.diverge import wilson
+    lo, hi = wilson(5, 5)
+    assert hi == 1.0 and 0.5 < lo < 0.6   # 5/5 is not "certainly 100%"
+    assert wilson(0, 5)[0] == 0.0
