@@ -1,7 +1,7 @@
 """Add your own tasks. A task is an id, a prompt, and a checker that reads the
 site's SQLite DB after the run and returns (passed, reason).
 
-    ./flakebench run --tasks-file examples/my_tasks.py --tasks x01_unassign_birch
+    ./polarbench run --tasks-file examples/my_tasks.py --tasks x01_unassign_birch
 
 Tables: leads(id, name, company, email, title, stage, owner, last_activity, notes),
 messages(id, folder, from_addr, to_addr, subject, body, is_read, archived, in_reply_to),

@@ -31,7 +31,7 @@ def http(method, url, data=None):
 
 
 def start_server(db_path, port):
-    env = dict(os.environ, FLAKEBENCH_DB=db_path, PORT=str(port))
+    env = dict(os.environ, POLARBENCH_DB=db_path, PORT=str(port))
     proc = subprocess.Popen([sys.executable, os.path.join(ROOT, "site", "app.py")], env=env,
                             cwd=os.path.join(ROOT, "site"), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     base = f"http://127.0.0.1:{port}"
@@ -122,7 +122,7 @@ def run_once(env, agent, task, seed, base, db_path, run_dir, max_steps, chaos_of
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="flakebench run")
+    ap = argparse.ArgumentParser(prog="polarbench run")
     ap.add_argument("--agent", default="scripted",
                     help="scripted | gemini | ollama | claude | path/to/file.py:ClassName | module:ClassName")
     ap.add_argument("--tasks-file", help="Python file defining TASKS = [Task(...)] to add to the built-in ones")
@@ -182,7 +182,7 @@ def main(argv=None):
     if hasattr(agent, "usage"):
         meta["usage"] = agent.usage
         json.dump(meta, open(os.path.join(out, "meta.json"), "w"), indent=2)
-    print(f"\ntraces in {out}\nnext: ./flakebench report {out}")
+    print(f"\ntraces in {out}\nnext: ./polarbench report {out}")
     if args.min_pass_rate is not None:
         rows = [json.loads(l) for l in open(os.path.join(out, "results.jsonl"))]
         rate = sum(r["passed"] for r in rows) / max(1, len(rows))

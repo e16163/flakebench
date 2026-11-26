@@ -1,10 +1,10 @@
-# flakebench
+# polarbench
 
 **Run a browser agent many times on the same task. See the exact step where runs split, why they split, and which fix stops it.**
 
-The name: a *flaky* test passes on some runs and fails on others for no change in the code. Browser agents are flaky in the same way, and this is a bench(mark) for measuring it.
+A reliability bench for Polar-style browser agents, an independent project. It is not made by or affiliated with Polar.
 
-Browser agents rarely fail on the hard part of a task. They fail on boring things: a dialog that shows up a second late, a list that re-sorts while the model is thinking, a link that opens a new tab, a page that is still loading. A single pass/fail number hides all of that, and so does a single run. flakebench makes it visible and measurable:
+Browser agents rarely fail on the hard part of a task. They fail on boring things: a dialog that shows up a second late, a list that re-sorts while the model is thinking, a link that opens a new tab, a page that is still loading. A single pass/fail number hides all of that, and so does a single run. polarbench makes it visible and measurable:
 
 - **A test site that misbehaves on purpose.** "Pipeline" is a small CRM (leads, inbox, compose, calendar). It injects realistic chaos from a seed and logs every injection, so any failure can be replayed exactly.
 - **11 realistic tasks with strict checkers.** Each checker reads the database and grades the final state, including side effects ("you also reassigned Grace Liu").
@@ -17,7 +17,7 @@ Browser agents rarely fail on the hard part of a task. They fail on boring thing
 
 ## Results so far
 
-Full reports with every failure, its screenshot and its trace: [`docs/index.html`](docs/index.html) (published at https://e16163.github.io/flakebench/ once GitHub Pages is on for `main` / `docs`).
+Full reports with every failure, its screenshot and its trace: [`docs/index.html`](docs/index.html) (published at https://e16163.github.io/polarbench/ once GitHub Pages is on for `main` / `docs`).
 
 Scripted baseline agent (a recorded macro with simulated model latency), 11 tasks × 5 seeds, same chaos schedule in every row:
 
@@ -44,11 +44,11 @@ The scripted agent sets a floor and proves the harness works. The interesting nu
 ## Quick start
 
 ```bash
-git clone https://github.com/e16163/flakebench && cd flakebench
+git clone https://github.com/e16163/polarbench && cd polarbench
 pip install -r requirements.txt
 python -m playwright install chromium
 
-./flakebench ui                 # dashboard at http://localhost:8800
+./polarbench ui                 # dashboard at http://localhost:8800
 ```
 
 In the dashboard, pick an agent, tasks, runs per task and guards, then press **Start run**. You get a live grid of runs and the agent's current screen. When the run finishes, open the report, or tick two runs and press **Compare**.
@@ -56,10 +56,10 @@ In the dashboard, pick an agent, tasks, runs per task and guards, then press **S
 The same from a terminal:
 
 ```bash
-./flakebench run --agent scripted --out runs/scripted                 # free, no key
-./flakebench run --agent scripted --guards all --out runs/scripted-all
-./flakebench compare runs/scripted runs/scripted-all --out docs/mine  # side-by-side page
-./flakebench report runs/scripted                                     # one run's failure report
+./polarbench run --agent scripted --out runs/scripted                 # free, no key
+./polarbench run --agent scripted --guards all --out runs/scripted-all
+./polarbench compare runs/scripted runs/scripted-all --out docs/mine  # side-by-side page
+./polarbench report runs/scripted                                     # one run's failure report
 ```
 
 ## Models (free options first)
@@ -82,7 +82,7 @@ There are three ways in, depending on how much of the stack your agent owns.
 No code changes. The site records what happened from its side and grades the end state.
 
 ```bash
-./flakebench serve --port 5055
+./polarbench serve --port 5055
 ```
 
 ```python
@@ -93,7 +93,7 @@ my_agent.run(url=ep["start_url"], instruction=ep["prompt"])     # any browser, a
 print(requests.post("http://127.0.0.1:5055/api/episode/finish").json())  # {"passed": ..., "reason": ...}
 ```
 
-A small recorder in every page logs clicks, edits, page loads, tabs and whether a dialog was in the way. On `finish` it writes a trace in the same format the runner uses, so `./flakebench report runs/external-<date>` gives you the divergence analysis too. `GET /api/tasks` lists tasks. See `examples/external_agent.py`.
+A small recorder in every page logs clicks, edits, page loads, tabs and whether a dialog was in the way. On `finish` it writes a trace in the same format the runner uses, so `./polarbench report runs/external-<date>` gives you the divergence analysis too. `GET /api/tasks` lists tasks. See `examples/external_agent.py`.
 
 ### 2. Your agent is a policy: page in, action out
 
@@ -108,7 +108,7 @@ class MyAgent:
 ```
 
 ```bash
-./flakebench run --agent path/to/my_agent.py:MyAgent --guards all
+./polarbench run --agent path/to/my_agent.py:MyAgent --guards all
 ```
 
 `examples/my_agent.py` is a working example.
@@ -116,14 +116,14 @@ class MyAgent:
 ### 3. Your own tasks
 
 ```bash
-./flakebench run --tasks-file examples/my_tasks.py --tasks x01_unassign_birch
+./polarbench run --tasks-file examples/my_tasks.py --tasks x01_unassign_birch
 ```
 
 A task is an id, a prompt and a checker `check(con) -> (passed, reason)` over the site's SQLite DB. Helpers such as `untouched_leads` catch side effects.
 
 ### CI
 
-`--min-pass-rate 0.9` makes `run` exit with code 1 below the bar, and `./flakebench gate runs/<dir> --min-pass-rate 0.9` checks an existing run. `.github/workflows/ci.yml` runs the tests and a small guarded scripted run on every push, and uploads the report.
+`--min-pass-rate 0.9` makes `run` exit with code 1 below the bar, and `./polarbench gate runs/<dir> --min-pass-rate 0.9` checks an existing run. `.github/workflows/ci.yml` runs the tests and a small guarded scripted run on every push, and uploads the report.
 
 ## The chaos
 
@@ -194,7 +194,7 @@ Environmental labels are checked against the chaos log for that run, and the rep
 ## Layout
 
 ```
-flakebench        CLI: ui, run, report, compare, serve, tasks, gate
+polarbench        CLI: ui, run, report, compare, serve, tasks, gate
 site/             Flask + SQLite CRM, chaos injection, reset, episode API, page recorder
 tasks/            11 tasks + checkers; register() / load_tasks_file() for your own
 agents/           browser env + guards, agent interface, scripted, Claude, Gemini/Ollama

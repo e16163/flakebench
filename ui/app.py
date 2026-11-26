@@ -1,6 +1,6 @@
-"""flakebench dashboard: start runs, watch them live, read results.
+"""polarbench dashboard: start runs, watch them live, read results.
 
-    ./flakebench ui            # http://localhost:8800
+    ./polarbench ui            # http://localhost:8800
 
 Everything is local. API keys typed into the form stay in this process's memory
 and are passed only to the run you start; nothing is written to disk.
@@ -108,7 +108,7 @@ def start_run():
     if key and f.get("api_key"):
         KEYS[key] = f["api_key"].strip()
     if key and not (os.environ.get(key) or KEYS.get(key)):
-        return f"Missing {key}. Go back and paste a key, or export it before ./flakebench ui.", 400
+        return f"Missing {key}. Go back and paste a key, or export it before ./polarbench ui.", 400
     tasks = f.getlist("tasks") or [t.id for t in TASKS]
     guards = [g for g in f.getlist("guards") if g in ALL_GUARDS]
     runs = max(1, min(20, int(f.get("runs", 5))))
@@ -166,7 +166,7 @@ def _pretty_cmd(cmd):
             skip = True
             continue
         out.append(os.path.relpath(a, ROOT) if a.startswith(ROOT) else a)
-    return " ".join(["./flakebench run"] + out)
+    return " ".join(["./polarbench run"] + out)
 
 
 @app.get("/api/runs/<name>")
@@ -232,7 +232,7 @@ def compare_file(key, p):
 
 def serve(port=8800):
     os.makedirs(RUNS, exist_ok=True)
-    print(f"flakebench dashboard: http://localhost:{port}")
+    print(f"polarbench dashboard: http://localhost:{port}")
     app.run(host="127.0.0.1", port=port, debug=False, threaded=True)
 
 

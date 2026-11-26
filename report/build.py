@@ -22,10 +22,10 @@ E = html.escape
 FONT_LINK = ('<link rel="preconnect" href="https://fonts.googleapis.com">'
              '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
              '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">')
-FOOTER = ('<footer class="foot"><span><b>flakebench</b> · reliability testing for browser agents</span>'
-          '<span>Built for Polar · <a href="https://github.com/e16163/flakebench">source</a></span></footer>')
-HEADER = ('<header class="bar"><a class="wm" href="https://github.com/e16163/flakebench">flakebench</a>'
-          '<a class="btn-pill" href="https://github.com/e16163/flakebench#quick-start">Run it yourself</a></header>')
+FOOTER = ('<footer class="foot"><span><b>polarbench</b> · reliability testing for browser agents</span>'
+          '<span>Built for Polar · <a href="https://github.com/e16163/polarbench">source</a></span></footer>')
+HEADER = ('<header class="bar"><a class="wm" href="https://github.com/e16163/polarbench">polarbench</a>'
+          '<a class="btn-pill" href="https://github.com/e16163/polarbench#quick-start">Run it yourself</a></header>')
 CSS = """
 :root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif; --display:"Saans","Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -190,7 +190,7 @@ def build(run_dir, reference=None):
     usage = meta.get("usage")
     html_out = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>flakebench report</title>{FONT_LINK}<style>{CSS}</style></head><body>{HEADER}<main>
+<title>polarbench report</title>{FONT_LINK}<style>{CSS}</style></head><body>{HEADER}<main>
 <div class="eyebrow"><b>Report</b> {E(meta["agent"])} · {o["runs"]} runs</div>
 <h1>Where this agent breaks</h1>
 <p class="sub">Agent <span class="mono">{E(meta["agent"])}</span> · {o["runs"]} runs ({meta["runs"]} per task, seeds 0–{meta["runs"] - 1}) ·

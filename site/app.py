@@ -19,7 +19,7 @@ from seed import seed as seed_db
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
-DB_PATH = os.environ.get("FLAKEBENCH_DB", os.path.join(HERE, "pipeline.db"))
+DB_PATH = os.environ.get("POLARBENCH_DB", os.path.join(HERE, "pipeline.db"))
 PAGE_SIZE = 10
 OWNERS = ["Ana", "Marco", "Riley", "Unassigned"]
 STAGES = ["New", "Contacted", "Qualified", "Meeting", "Won", "Lost"]
@@ -256,7 +256,7 @@ EPISODE = {"active": False}
 
 def _tasks():
     from tasks import tasks as T
-    f = os.environ.get("FLAKEBENCH_TASKS_FILE")
+    f = os.environ.get("POLARBENCH_TASKS_FILE")
     if f and not getattr(T, "_user_loaded", False):
         T.load_tasks_file(f)
         T._user_loaded = True

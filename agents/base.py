@@ -1,4 +1,4 @@
-"""The agent interface. Implement two methods and flakebench can run your agent.
+"""The agent interface. Implement two methods and polarbench can run your agent.
 
     class MyAgent:
         name = "my-agent"
@@ -24,7 +24,7 @@
             # and note is any text you want shown in the trace (e.g. the model's reasoning).
             ...
 
-Run it:  ./flakebench run --agent path/to/my_agent.py:MyAgent
+Run it:  ./polarbench run --agent path/to/my_agent.py:MyAgent
 
 Agents that drive their own browser (Polar, Browser Use, a computer-use loop)
 don't need this interface at all: see "Bring your own browser" in the README.

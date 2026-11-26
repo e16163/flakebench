@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""flakebench command line.
+"""polarbench command line.
 
-  ./flakebench ui                                   dashboard at http://localhost:8800
-  ./flakebench run --agent gemini --guards all      run tasks (see ./flakebench run -h)
-  ./flakebench report runs/<dir>                    build runs/<dir>/report/index.html
-  ./flakebench compare runs/a runs/b --out docs/x   side-by-side page
-  ./flakebench serve --port 5055                    just the test site (bring your own browser)
-  ./flakebench tasks                                list tasks
-  ./flakebench gate runs/<dir> --min-pass-rate 0.9  exit 1 below the bar (CI)
+  ./polarbench ui                                   dashboard at http://localhost:8800
+  ./polarbench run --agent gemini --guards all      run tasks (see ./polarbench run -h)
+  ./polarbench report runs/<dir>                    build runs/<dir>/report/index.html
+  ./polarbench compare runs/a runs/b --out docs/x   side-by-side page
+  ./polarbench serve --port 5055                    just the test site (bring your own browser)
+  ./polarbench tasks                                list tasks
+  ./polarbench gate runs/<dir> --min-pass-rate 0.9  exit 1 below the bar (CI)
 """
 import argparse
 import json
@@ -28,7 +28,7 @@ def main():
         from runner.run import main as run_main
         return run_main(rest)
     if cmd == "report":
-        ap = argparse.ArgumentParser(prog="flakebench report")
+        ap = argparse.ArgumentParser(prog="polarbench report")
         ap.add_argument("run_dir")
         ap.add_argument("--reference")
         a = ap.parse_args(rest)
@@ -40,18 +40,18 @@ def main():
         from report.compare import main as cmp_main
         return cmp_main()
     if cmd == "serve":
-        ap = argparse.ArgumentParser(prog="flakebench serve")
+        ap = argparse.ArgumentParser(prog="polarbench serve")
         ap.add_argument("--port", type=int, default=5055)
         ap.add_argument("--db", default=os.path.join(ROOT, "site", "pipeline.db"))
         ap.add_argument("--tasks-file")
         a = ap.parse_args(rest)
-        env = dict(os.environ, PORT=str(a.port), FLAKEBENCH_DB=a.db)
+        env = dict(os.environ, PORT=str(a.port), POLARBENCH_DB=a.db)
         if a.tasks_file:
-            env["FLAKEBENCH_TASKS_FILE"] = os.path.abspath(a.tasks_file)
+            env["POLARBENCH_TASKS_FILE"] = os.path.abspath(a.tasks_file)
         print(f"Pipeline test site on http://127.0.0.1:{a.port}  (POST /api/episode/start to begin)")
         return subprocess.call([sys.executable, os.path.join(ROOT, "site", "app.py")], env=env, cwd=os.path.join(ROOT, "site"))
     if cmd == "ui":
-        ap = argparse.ArgumentParser(prog="flakebench ui")
+        ap = argparse.ArgumentParser(prog="polarbench ui")
         ap.add_argument("--port", type=int, default=8800)
         a = ap.parse_args(rest)
         from ui.app import serve
@@ -62,7 +62,7 @@ def main():
             print(f"{t.id:26s} {t.prompt}")
         return
     if cmd == "gate":
-        ap = argparse.ArgumentParser(prog="flakebench gate")
+        ap = argparse.ArgumentParser(prog="polarbench gate")
         ap.add_argument("run_dir")
         ap.add_argument("--min-pass-rate", type=float, required=True)
         a = ap.parse_args(rest)

@@ -1,6 +1,6 @@
 """A minimal custom agent: a few hand-written rules instead of a model.
 
-    ./flakebench run --agent examples/my_agent.py:RuleAgent --tasks t09_move_lumen
+    ./polarbench run --agent examples/my_agent.py:RuleAgent --tasks t09_move_lumen
 
 Swap the body of step() for a call to your own model or planner.
 """

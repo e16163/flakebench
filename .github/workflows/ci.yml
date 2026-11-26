@@ -1,4 +1,4 @@
-name: flakebench
+name: polarbench
 on: [push, pull_request, workflow_dispatch]
 jobs:
   test:
@@ -12,10 +12,10 @@ jobs:
       - name: Unit + end-to-end tests
         run: python -m pytest -q tests
       - name: Reliability gate (scripted agent, all guards, chaos on)
-        run: ./flakebench run --agent scripted --guards all --runs 2 --tasks t01_qualify_priya,t03_reply_pricing,t06_archive_newsletters,t09_move_lumen --out runs/ci --min-pass-rate 0.9
+        run: ./polarbench run --agent scripted --guards all --runs 2 --tasks t01_qualify_priya,t03_reply_pricing,t06_archive_newsletters,t09_move_lumen --out runs/ci --min-pass-rate 0.9
       - name: Report
         if: always()
-        run: ./flakebench report runs/ci || true
+        run: ./polarbench report runs/ci || true
       - uses: actions/upload-artifact@v4
         if: always()
-        with: { name: flakebench-report, path: runs/ci/report }
+        with: { name: polarbench-report, path: runs/ci/report }

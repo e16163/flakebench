@@ -73,7 +73,7 @@ def main():
 
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>flakebench results</title>{FONT_LINK}<style>{CSS}
+<title>polarbench results</title>{FONT_LINK}<style>{CSS}
 @media (min-width:701px) {{ .row {{ grid-template-columns:minmax(220px,340px) 1fr 130px; }} }} td.mono {{ background:none; }} td .track {{ min-width:60px; }}</style></head><body>{HEADER}<main>
 <div class="eyebrow"><b>Results</b> {len(cfgs)} configurations · {len(task_ids)} tasks</div>
 <h1>Same tasks, same chaos. What changes the pass rate?</h1>

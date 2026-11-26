@@ -1,13 +1,13 @@
 """Bring your own browser: grade an agent that controls its own browser.
 
-flakebench never touches the browser here. The agent (Polar, Browser Use, a
+polarbench never touches the browser here. The agent (Polar, Browser Use, a
 computer-use loop...) opens the start URL in whatever browser it likes. The
 site records what happened and grades the end state.
 
-    ./flakebench serve --port 5055                 # terminal 1
+    ./polarbench serve --port 5055                 # terminal 1
     python examples/external_agent.py              # terminal 2
 
-Replace drive() with a call into your agent. Then: ./flakebench report runs/external-<date>
+Replace drive() with a call into your agent. Then: ./polarbench report runs/external-<date>
 """
 import json
 import sys
