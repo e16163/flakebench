@@ -53,7 +53,9 @@ def main():
         f'<br><span style="font-size:12px">95% CI {a["overall"]["pass_rate_ci95"][0]:.0%}–{a["overall"]["pass_rate_ci95"][1]:.0%}</span></div></div>'
         for n, l, a in cfgs)
 
-    head = "".join(f'<th class="n">{E(l)}</th>' for _, l, _ in cfgs)
+    agents = {a["meta"]["agent"] for _, _, a in cfgs}
+    short = (lambda l: l.split(" · ", 1)[1]) if len(agents) == 1 else (lambda l: l)
+    head = "".join(f'<th class="n">{E(short(l))}</th>' for _, l, _ in cfgs)
     rows = []
     for tid in task_ids:
         cells = []
@@ -74,7 +76,7 @@ def main():
 <title>flakebench results</title><style>{CSS}
 .row {{ grid-template-columns:minmax(220px,340px) 1fr 120px; }} td.mono {{ background:none; }} td .track {{ min-width:60px; }}</style></head><body><main>
 <h1>flakebench results</h1>
-<p class="sub">Same {len(task_ids)} tasks, same seeds, same injected chaos. Only the agent and the guards change. Click a configuration for its full failure report.</p>
+<p class="sub">Same {len(task_ids)} tasks, same seeds, same injected chaos. Only the agent and the guards change. Click a configuration for its full failure report.{(" Agent: <b>" + E(next(iter(agents))) + "</b>.") if len(agents) == 1 else ""}</p>
 <h2>Pass rate by configuration</h2>
 <div class="card">{bars}</div>
 <h2>Pass rate by task</h2>
