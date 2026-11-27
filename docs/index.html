@@ -6,15 +6,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root { --font:"Inter Variable","Inter",ui-sans-serif,system-ui,sans-serif;
-  --desk:#e9e9ec; --chrome:#f3f3f3; --surface:#ffffff; --hover:#1919190a; --ink:#191919; --ink2:#717171; --ink3:#a0a0a0;
-  --border:#1919190f; --border2:#19191914; --accent:#2f6eeb; --accent-soft:#ebf2ff; --ok:#16803c; --ok-soft:#e9f7ee;
+  --desk:#dfe3ea; --chrome:#ebf2f9; --url:#f8f8f8; --surface:#ffffff; --hover:#1919190a; --ink:#191919; --ink2:#717171; --ink3:#a0a0a0;
+  --border:#1919190f; --border2:#19191914; --accent:#007aff; --accent-soft:#e6f1ff; --ok:#16803c; --ok-soft:#e9f7ee;
   --warn:#9a5b00; --warn-soft:#fff4e0; --fail:#e40015; --fail-soft:#fdecee; --btn:#191919; --btn-ink:#ffffff; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --desk:#0b0b0c; --chrome:#1c1c1e; --surface:#141414; --hover:#ffffff0d; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
-  --border:#ffffff0f; --border2:#ffffff1a; --accent:#4f8afb; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
+  --desk:#0b0b0c; --chrome:#1b1e23; --url:#232323; --surface:#141414; --hover:#ffffff0d; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
+  --border:#ffffff0f; --border2:#ffffff1a; --accent:#3b8cff; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
   --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; } }
-:root[data-theme="dark"] { --desk:#0b0b0c; --chrome:#1c1c1e; --surface:#141414; --hover:#ffffff0d; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
-  --border:#ffffff0f; --border2:#ffffff1a; --accent:#4f8afb; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
+:root[data-theme="dark"] { --desk:#0b0b0c; --chrome:#1b1e23; --url:#232323; --surface:#141414; --hover:#ffffff0d; --ink:#f3f3f3; --ink2:#a0a0a0; --ink3:#717171;
+  --border:#ffffff0f; --border2:#ffffff1a; --accent:#3b8cff; --accent-soft:#0c1d40; --ok:#4ccb7a; --ok-soft:#0f2a19;
   --warn:#f0b35a; --warn-soft:#2e2108; --fail:#f84b4b; --fail-soft:#3a1214; --btn:#f3f3f3; --btn-ink:#191919; }
 * { box-sizing:border-box; }
 html, body { height:100%; }
@@ -23,7 +23,7 @@ button { font:inherit; color:inherit; }
 .win { flex:1; display:grid; grid-template-columns:208px minmax(0,1fr) 340px; grid-template-rows:44px minmax(0,1fr); background:var(--chrome);
   border:1px solid var(--border2); border-radius:14px; overflow:hidden; box-shadow:0 1px 2px #1919190a,0 12px 40px #19191914; min-height:600px; }
 .strip { grid-column:1 / -1; display:flex; align-items:flex-end; gap:6px; padding:0 12px; }
-.lights { display:flex; gap:7px; align-self:center; width:196px; }
+.lights { display:flex; gap:7px; align-items:center; align-self:center; width:196px; } .lights .tool { margin-left:auto; margin-right:8px; }
 .lights i { width:12px; height:12px; border-radius:50%; background:#ff5f57; } .lights i+i { background:#febc2e; } .lights i+i+i { background:#28c840; }
 .tab { display:flex; align-items:center; gap:8px; height:34px; padding:0 14px; border-radius:10px 10px 0 0; color:var(--ink2); font-size:13px; max-width:240px; white-space:nowrap; overflow:hidden; }
 .tab.on { background:var(--surface); color:var(--ink); }
@@ -38,26 +38,23 @@ button { font:inherit; color:inherit; }
 .nav .wf { display:flex; align-items:center; gap:8px; width:100%; text-align:left; border:0; background:none; padding:5px 8px; border-radius:8px; color:var(--ink2); cursor:pointer; }
 .nav .wf span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .nav .wf.on { color:var(--ink); background:var(--hover); }
-.ap { width:6px; height:6px; border-radius:50%; background:var(--ok); flex:none; }
-.page { display:flex; flex-direction:column; background:var(--surface); border-radius:12px 0 0 0; border:1px solid var(--border2); border-width:1px 0 0 1px; min-width:0; }
+.page { display:flex; flex-direction:column; background:var(--surface); border-radius:12px 0 0 0; box-shadow:0 0 0 1px var(--border2); min-width:0; position:relative; }
 .bar { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--border); }
 .bar svg { width:16px; height:16px; color:var(--ink3); flex:none; }
-.url { flex:1; display:flex; align-items:center; background:var(--chrome); border-radius:99px; padding:6px 14px; color:var(--ink2); font-size:13px; min-width:0; overflow:hidden; white-space:nowrap; }
-.url b { color:var(--ink); font-weight:400; }
-.side { background:var(--surface); border-left:1px solid var(--border2); border-top:1px solid var(--border2); display:flex; flex-direction:column; min-height:0; }
-.shead { padding:14px 14px 10px; }
+.url { flex:1; display:flex; align-items:center; gap:8px; background:var(--url); border:1px solid var(--border); border-radius:99px; padding:6px 14px; color:var(--ink2); font-size:13px; min-width:0; overflow:hidden; white-space:nowrap; }
+.url b { color:var(--ink); font-weight:400; } .url svg { width:14px; height:14px; color:var(--ink3); } .url .star { margin-left:auto; }
+.urlt { overflow:hidden; text-overflow:ellipsis; }
+.side { background:var(--surface); border-left:1px solid var(--border2); display:flex; flex-direction:column; min-height:0; }
+.shead { padding:8px 14px 10px; }
 .shead .row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .shead .t { font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; border-radius:99px; padding:2px 9px; background:var(--ok-soft); color:var(--ok); white-space:nowrap; }
 .pill.rec { background:var(--fail-soft); color:var(--fail); } .pill.run { background:var(--accent-soft); color:var(--accent); }
 .meta { color:var(--ink2); font-size:12.5px; margin-top:2px; }
 .ctrl { display:flex; gap:8px; padding:0 14px 12px; }
-.b { border-radius:12px; padding:7px 14px; cursor:pointer; border:1px solid var(--border2); background:var(--surface); font-weight:500; }
+.b { border-radius:99px; padding:7px 16px; cursor:pointer; border:1px solid var(--border2); background:var(--surface); font-weight:500; }
 .b.pri { background:var(--btn); color:var(--btn-ink); border-color:var(--btn); }
 .b:disabled { opacity:.45; cursor:default; }
-.tabs { display:flex; gap:4px; padding:0 14px; border-bottom:1px solid var(--border); }
-.tabs button { border:0; background:none; padding:8px 4px; margin-right:10px; color:var(--ink2); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500; }
-.tabs button[aria-selected="true"] { color:var(--ink); border-bottom-color:var(--ink); }
 .list { list-style:none; margin:0; padding:6px 0; overflow:auto; flex:1; }
 .list li { display:grid; grid-template-columns:20px 1fr; gap:10px; padding:9px 14px; }
 .ic { width:18px; height:18px; border-radius:50%; border:1.5px solid var(--border2); display:grid; place-items:center; font-size:11px; font-weight:600; color:var(--ink3); margin-top:1px; }
@@ -75,6 +72,27 @@ li.now .ic { border-color:var(--accent); border-top-color:transparent; animation
 .foot { padding:12px 14px; border-top:1px solid var(--border); font-size:13px; color:var(--ink2); }
 .foot:empty { display:none; }
 .foot.ok { color:var(--ok); } .foot.bad { color:var(--fail); }
+
+.tool { width:28px; height:28px; display:grid; place-items:center; border-radius:8px; color:var(--ink2); border:0; background:none; flex:none; }
+.tool svg { width:16px; height:16px; }
+.tool:hover, .tab:not(.on):hover, .nav .it:hover, .nav .wf:hover { background:var(--hover); }
+.tab, .nav .it, .nav .wf, .b, .seg button, .tool { transition:background .15s, color .15s, box-shadow .15s; }
+.tab .x { width:16px; height:16px; margin-left:4px; color:var(--ink3); opacity:0; }
+.tab.on .x, .tab:hover .x { opacity:1; }
+.newtab { align-self:center; margin-left:2px; }
+.nav .it.dim { color:var(--ink); }
+.fold { width:16px; height:16px; border-radius:4px; display:grid; place-items:center; flex:none; }
+.fold svg { width:11px; height:11px; }
+.sp-head { display:flex; align-items:center; gap:10px; padding:14px 14px 4px; }
+.logo { width:30px; height:30px; border-radius:9px; background:var(--surface); box-shadow:0 0 0 1px var(--border2),0 2px 6px #19191912; display:grid; place-items:center; flex:none; }
+.logo svg { width:16px; height:16px; }
+.sp-head .h { font-size:15px; font-weight:500; }
+.seg { display:inline-flex; margin:0 14px 8px; padding:3px; border-radius:99px; background:var(--url); border:1px solid var(--border2); align-self:flex-start; }
+.seg button { border:0; background:none; border-radius:99px; padding:4px 14px; color:var(--ink2); cursor:pointer; font-weight:500; font-size:13px; }
+.seg button[aria-selected="true"] { background:var(--surface); color:var(--ink); box-shadow:0 1px 2px #19191914,0 2px 8px #1919190d; }
+.b:not(:disabled):hover { background:var(--hover); } .b.pri:not(:disabled):hover { background:var(--btn); opacity:.88; }
+.list li { transition:background .2s; } .list li.now { background:var(--accent-soft); }
+.ic { transition:background .2s, border-color .2s; }
 /* the page open in the tab */
 #site { position:relative; flex:1; background:#fafafb; color:#1d1d1f; font:14px/20px var(--font); overflow:auto; }
 #site.busy { pointer-events:none; }
@@ -107,14 +125,19 @@ li.now .ic { border-color:var(--accent); border-top-color:transparent; animation
 <body>
 <div class="win">
   <div class="strip">
-    <div class="lights"><i></i><i></i><i></i></div>
-    <div class="tab on"><span class="fav"></span><span id="tab-title">Leads · Pipeline</span></div>
-    <div class="tab">Inbox</div>
+    <div class="lights"><i></i><i></i><i></i><span class="tool" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 3v10"/></svg></span></div>
+    <div class="tab on"><span class="fav"></span><span id="tab-title">Leads · Pipeline</span><svg class="x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 5 6 6M11 5l-6 6"/></svg></div>
+    <div class="tab"><span class="fav" style="background:#e8eaed"></span>Inbox<svg class="x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="m5 5 6 6M11 5l-6 6"/></svg></div>
+    <span class="tool newtab" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 3v10M3 8h10"/></svg></span>
   </div>
   <nav class="nav" aria-label="Browser">
     <div class="it"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 13h10M4 10.5 11 3.5l1.5 1.5-7 7H4z"/></svg>New task</div>
     <div class="it"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>Search</div>
     <div class="it on"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h8l-2-2M13 11H5l2 2"/></svg>Workflows</div>
+    <div class="it"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4.5h6M11.5 4.5H13M3 11.5h1.5M7 11.5h6"/><circle cx="10" cy="4.5" r="1.5"/><circle cx="5.5" cy="11.5" r="1.5"/></svg>Customize</div>
+    <div class="sec">Projects</div>
+    <div class="it"><span class="fold" style="background:#dbe7ff;color:#3b6fd8"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 3.5a1 1 0 0 1 1-1h2.2l1 1h3.8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z"/></svg></span>Q3 renewals</div>
+    <div class="it"><span class="fold" style="background:#dcf2e6;color:#2f8a57"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 3.5a1 1 0 0 1 1-1h2.2l1 1h3.8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z"/></svg></span>Sales ops</div>
     <div class="sec">Workflows<button id="record" title="Record a new workflow" aria-label="Record a new workflow">+</button></div>
     <div id="wf-list"></div>
   </nav>
@@ -123,14 +146,15 @@ li.now .ic { border-color:var(--accent); border-top-color:transparent; animation
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 5 8l5 5"/></svg>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 3 5 5-5 5"/></svg>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 3v3h-3"/></svg>
-      <div class="url" id="url"></div>
+      <div class="url"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12"/></svg><span class="urlt" id="url"></span><svg class="star" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="m8 2 1.8 3.8 4.2.5-3.1 2.9.8 4.1L8 11.3l-3.7 2 .8-4.1L2 6.3l4.2-.5z"/></svg></div>
     </div>
     <div id="site"></div>
   </section>
   <aside class="side" aria-label="Workflow">
+    <div class="sp-head"><span class="logo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11.5 6.5 8 9 10.5 13 5"/><path d="M10 5h3v3"/></svg></span><span class="h">Autopilot</span></div>
     <div class="shead"><div class="row"><span class="t" id="wf-name"></span><span class="pill" id="wf-state"></span></div><div class="meta" id="wf-meta"></div></div>
     <div class="ctrl"><button class="b pri" id="run">Run now</button><button class="b" id="stop" hidden>Save workflow</button></div>
-    <div class="tabs" role="tablist"><button role="tab" id="tab-steps" aria-selected="true">Steps</button><button role="tab" id="tab-runs" aria-selected="false">Runs</button></div>
+    <div class="seg" role="tablist"><button role="tab" id="tab-steps" aria-selected="true">Steps</button><button role="tab" id="tab-runs" aria-selected="false">Runs</button></div>
     <ol class="list" id="list" aria-live="polite"></ol>
     <div class="foot" id="foot"></div>
   </aside>
@@ -293,7 +317,7 @@ async function run() {
 function slug(n) { return "/" + n.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
 function draw() {
   const w = flows[cur];
-  $("wf-list").innerHTML = flows.map((f, i) => `<button class="wf${i === cur && !recording ? " on" : ""}" data-i="${i}"><span class="ap"></span><span>${esc(slug(f.name))}</span></button>`).join("");
+  $("wf-list").innerHTML = flows.map((f, i) => `<button class="wf${i === cur && !recording ? " on" : ""}" data-i="${i}"><span>${esc(slug(f.name))}</span></button>`).join("");
   $("wf-name").textContent = recording ? "New workflow" : w.name;
   const st = $("wf-state");
   st.className = "pill" + (recording ? " rec" : busy ? " run" : "");
@@ -311,7 +335,7 @@ function draw() {
     const rows = recording ? recording.steps.map(s => ({ s })) : (out || w.steps.map(s => ({ s })));
     html = rows.length ? rows.map((o, i) => `<li class="${o.how || ""}"><span class="ic">${o.how ? icon[o.how] : i + 1}</span><div>
       <div class="what">${esc(label(o.s))}${tag[o.how] ? `<span class="tag ${o.how}">${tag[o.how]}</span>` : ""}</div>
-      ${o.why ? `<div class="why">${esc(o.why)}</div>` : ""}</div></li>`).join("") : `<li class="empty">No steps yet</li>`;
+      ${o.why ? `<div class="why">${esc(o.why)}</div>` : ""}</div></li>`).join("") : `<li class="empty">${recording ? "Steps you take on the page show up here" : "No steps yet"}</li>`;
   }
   $("list").innerHTML = html;
   $("foot").className = "foot" + (foot ? (foot.ok ? " ok" : " bad") : "");
