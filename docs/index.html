@@ -152,54 +152,158 @@ table.inp .del button:hover { background:var(--hover); color:var(--ink); }
 .chip { border:1px solid var(--border2); background:var(--surface); border-radius:99px; padding:5px 12px; font-size:13px; color:var(--ink2); }
 .chip:hover { color:var(--ink); background:var(--hover); }
 .ntp .note { color:var(--ink2); font-size:13px; min-height:20px; }
+/* autopilot panel extras */
+.desc { color:var(--ink2); font-size:13px; padding:0 14px 10px; line-height:19px; }
+.diff { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:4px; font-size:12.5px; }
+.diff s { color:var(--ink3); } .diff span { color:var(--ink3); }
+.diff b { font-weight:500; color:var(--ink); background:var(--url); border:1px solid var(--border2); border-radius:6px; padding:0 6px; }
+li.ver .ic { background:var(--accent); border-color:var(--accent); color:#fff; }
+li.ask .ic { background:var(--accent); border-color:var(--accent); color:#fff; }
+.tag.ask, .tag.cur { background:var(--accent-soft); color:var(--accent); }
+.askbox { margin-top:8px; padding:10px 12px; border-radius:10px; background:var(--accent-soft); font-size:12.5px; line-height:18px; }
+.askbox .acts, .done .acts { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+.done { margin:6px 14px 14px; padding:12px 14px; border-radius:12px; }
+.done.ok { background:var(--ok-soft); } .done.bad { background:var(--fail-soft); }
+.done .dh { font-weight:600; font-size:13px; } .done.ok .dh { color:var(--ok); } .done.bad .dh { color:var(--fail); }
+.done .dt { margin-top:2px; }
+.done ul { margin:8px 0 0; padding:0; list-style:none; font-size:12.5px; line-height:19px; }
+.done li.ok::before { content:"✓  "; color:var(--ok); font-weight:700; } .done li.bad::before { content:"!  "; color:var(--fail); font-weight:700; }
+.done .ds { margin-top:8px; font-size:12.5px; color:var(--ink2); }
+.lnk { border:0; background:none; padding:0; color:var(--accent); font-weight:500; font-size:inherit; }
+.subh { color:var(--ink2); font-size:12.5px; font-weight:500; padding:14px 14px 0; }
+.vers .b { margin-top:6px; }
+.loop { display:flex; flex-direction:column; gap:10px; margin:6px 14px 14px; }
+.loop div { display:grid; grid-template-columns:24px 1fr; gap:10px; align-items:start; font-size:13px; color:var(--ink2); }
+.loop b { display:block; color:var(--ink); font-weight:500; }
+.loop i { width:24px; height:24px; border-radius:50%; background:var(--url); border:1px solid var(--border2); display:grid; place-items:center; font-style:normal; font-size:12px; font-weight:600; color:var(--ink); }
+.recbar { margin:0 14px 10px; padding:10px 12px; border-radius:10px; background:var(--fail-soft); color:var(--ink); font-size:13px; display:flex; gap:8px; align-items:center; }
+.recbar::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--fail); flex:none; animation:blink 1.2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity:.3; } }
+#ghost { position:absolute; left:0; top:0; z-index:4; pointer-events:none; opacity:0; transition:transform .45s cubic-bezier(.3,.7,.2,1), opacity .2s; display:flex; align-items:flex-start; gap:2px; }
+#ghost.on { opacity:1; }
+#ghost svg { width:18px; height:18px; filter:drop-shadow(0 1px 2px #0006); flex:none; }
+#gcap { margin-top:14px; background:var(--accent); color:#fff; font-size:12px; font-weight:500; padding:3px 10px; border-radius:99px; white-space:nowrap; box-shadow:0 2px 10px #007aff55; }
+/* built-in pages: memory and improve */
+.p-wrap { padding:22px 26px 30px; color:var(--ink); background:var(--surface); flex:1; font:14px/20px var(--font); }
+.p-h { font-size:20px; font-weight:600; margin:0; letter-spacing:-.01em; } .p-sub { color:var(--ink2); margin:2px 0 14px; font-size:13px; }
+.legend { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink2); margin-bottom:10px; align-items:center; } .legend span { display:inline-flex; align-items:center; gap:6px; }
+.legend i { display:inline-block; width:10px; height:10px; border-radius:3px; }
+.gwrap { border:1px solid var(--border2); border-radius:14px; background:var(--url); padding:12px; overflow:auto; }
+.gwrap svg { display:block; width:100%; min-width:680px; height:auto; }
+.colh { font-size:10.5px; fill:var(--ink3); font-weight:600; letter-spacing:.06em; }
+.gn { cursor:pointer; transition:opacity .15s; } .gn rect { fill:var(--surface); stroke:var(--border2); } .gn:hover > rect:first-child, .gn:focus > rect:first-child { stroke:var(--ink3); } .gn:focus { outline:none; }
+.gn .t1 { font-size:12px; fill:var(--ink); font-weight:500; } .gn .t2, .gwrap .t2 { font-size:10.5px; fill:var(--ink2); }
+.gn .kb { stroke:none; } .k-w .kb { fill:#3b8cff; } .k-s .kb { fill:#8a8a94; } .k-r .kb { fill:#e8a33c; } .k-c .kb { fill:#2f8a57; }
+.gn.sel > rect:first-child { stroke:var(--accent); stroke-width:2; }
+.ge { fill:none; stroke:var(--ink3); stroke-opacity:.45; stroke-width:1.3; transition:opacity .15s; } .ge.from { stroke:#e8a33c; stroke-opacity:.9; stroke-dasharray:4 3; } .ge.used { stroke:#7e3fc0; stroke-opacity:1; stroke-width:2.2; }
+svg.focus .gn:not(.hot) { opacity:.28; } svg.focus .ge:not(.hot) { opacity:.08; } .ge.hot { stroke-width:2.6; stroke-opacity:1; }
+.pcard { border:1px solid var(--border2); border-radius:12px; padding:14px 16px; margin-top:12px; background:var(--surface); }
+.pcard h4 { margin:0 0 4px; font-size:14px; font-weight:600; } .pcard p { margin:4px 0; color:var(--ink2); font-size:13px; } .pcard ul { margin:4px 0; padding-left:18px; font-size:13px; color:var(--ink2); }
+.pcard .acts { display:flex; gap:8px; margin-top:10px; align-items:center; }
+.psec { font-size:12.5px; color:var(--ink2); font-weight:600; margin:22px 0 2px; }
+.plog { list-style:none; padding:0; margin:0; font-size:13px; } .plog li { padding:8px 0; border-bottom:1px solid var(--border); display:flex; gap:12px; justify-content:space-between; } .plog .when { float:none; flex:none; }
+.test { background:var(--ok-soft); color:var(--ok); border-radius:8px; padding:7px 10px; font-size:12.5px; margin-top:8px; }
+.nav .badge { margin-left:auto; background:var(--accent); color:#fff; font-size:11px; border-radius:99px; padding:0 7px; line-height:18px; }
+li.mem .ic { background:#7e3fc0; border-color:#7e3fc0; color:#fff; } .tag.mem { background:#efe4fb; color:#7e3fc0; }
 /* the website in the tab */
-#site { position:relative; flex:1; display:flex; flex-direction:column; background:#fafafb; color:#1d1d1f; font:14px/20px var(--font); overflow:auto; --sa:#7048e8; --sa-soft:#f0eefc; --sa-ink:#5a3fc0; }
+#site { position:relative; flex:1; display:flex; flex-direction:column; background:#fff; color:#1d1d1f; font:13.5px/20px var(--font); overflow:auto;
+  --sa:#6941c6; --sa-soft:#f1ecfd; --sa-ink:#5532b0; --sbg:#f8f7fb; --line:#ececf0; --mut:#6e6e78; }
 #site.busy { pointer-events:none; }
 #site.loading > * { opacity:.35; transition:opacity .1s; }
-#site.hirebase { --sa:#0e8a7e; --sa-soft:#e3f5f2; --sa-ink:#0b6e65; }
-#site.ledgerly { --sa:#1f8a4c; --sa-soft:#e6f5ec; --sa-ink:#196f3d; }
-#site.northwind { --sa:#e8590c; --sa-soft:#fff0e6; --sa-ink:#c2410c; background:#fff; }
-.c-nav { background:#fff; border-bottom:1px solid #e7e7ec; padding:10px 16px; display:flex; gap:6px; font-size:13.5px; align-items:center; flex-wrap:wrap; }
-.c-nav .brand { font-weight:600; margin-right:12px; display:flex; align-items:center; gap:8px; }
-.c-nav .brand i { width:16px; height:16px; border-radius:5px; background:var(--sa); }
-.c-navl { border:0; background:none; color:#77777f; padding:4px 8px; border-radius:7px; }
-.c-navl:hover { background:#f1f1f4; color:#1d1d1f; } .c-navl.on { color:#1d1d1f; font-weight:500; }
-.c-body { padding:16px; max-width:720px; width:100%; }
-.c-h { font-size:18px; font-weight:600; margin:2px 0 12px; }
-.c-card { background:#fff; border:1px solid #e7e7ec; border-radius:14px; padding:14px; }
-.c-row { display:flex; justify-content:space-between; align-items:center; padding:9px 4px; border-bottom:1px solid #f0f0f3; gap:10px; }
-.c-row:last-child { border-bottom:0; }
-.c-row .m { color:#77777f; font-size:13px; }
-.c-pill { font-size:12px; border-radius:99px; padding:1px 8px; background:var(--sa-soft); color:var(--sa-ink); white-space:nowrap; }
-.c-link { color:var(--sa-ink); text-decoration:underline; text-underline-offset:2px; background:none; border:0; font:inherit; padding:0; }
-.c-btn { font:500 13.5px var(--font); background:var(--sa); color:#fff; border:0; border-radius:99px; padding:7px 14px; }
+#site.hirebase { --sa:#0f766e; --sa-soft:#e0f2ef; --sa-ink:#0b5d56; --sbg:#f5f8f8; }
+#site.ledgerly { --sa:#15803d; --sa-soft:#e6f4ea; --sa-ink:#166534; --sbg:#f6f8f6; }
+#site.northwind { --sa:#ea580c; --sa-soft:#fff1e7; --sa-ink:#c2410c; }
+.a-shell { display:grid; grid-template-columns:172px minmax(0,1fr); flex:1; }
+.a-side { background:var(--sbg); border-right:1px solid var(--line); padding:12px 10px; display:flex; flex-direction:column; gap:2px; }
+.a-ws { display:flex; align-items:center; gap:8px; font-weight:600; padding:4px 6px 14px; }
+.a-ws i { width:22px; height:22px; border-radius:6px; background:var(--sa); color:#fff; font-style:normal; font-size:12px; display:grid; place-items:center; }
+.a-nl { display:flex; align-items:center; gap:8px; border:0; background:none; width:100%; text-align:left; padding:6px 8px; border-radius:7px; color:#3a3a42; }
+.a-nl:hover { background:#0000000a; } .a-nl.on { background:#fff; box-shadow:0 0 0 1px var(--line); color:#111; font-weight:500; }
+.a-nl .n { margin-left:auto; color:#9a9aa3; font-size:12px; font-weight:400; }
+.a-nl svg { width:15px; height:15px; color:#8a8a94; flex:none; }
+.a-me { margin-top:auto; display:flex; align-items:center; gap:8px; padding:10px 6px 0; border-top:1px solid var(--line); color:var(--mut); font-size:12.5px; }
+.a-main { min-width:0; padding:18px 22px 28px; }
+.a-crumb { margin-bottom:10px; font-size:12.5px; }
+.a-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+.a-h { font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0; }
+.a-sub { color:var(--mut); font-size:12.5px; margin-top:1px; }
+.a-tbl { width:100%; border-collapse:separate; border-spacing:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.a-tbl th { text-align:left; font-weight:500; font-size:12px; color:var(--mut); background:#fafafb; padding:7px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+.a-tbl td { padding:8px 12px; border-bottom:1px solid #f2f2f5; white-space:nowrap; }
+.a-tbl tr:last-child td { border-bottom:0; }
+.a-tbl .r { text-align:right; } .a-tbl .m { color:var(--mut); }
+.who { display:inline-flex; align-items:center; gap:8px; }
+.av { width:24px; height:24px; border-radius:50%; display:inline-grid; place-items:center; font-size:10.5px; font-weight:600; color:#fff; flex:none; }
+.av.sm { width:20px; height:20px; font-size:9px; } .av.lg { width:44px; height:44px; font-size:16px; }
+.st { font-size:12px; font-weight:500; border-radius:99px; padding:1px 8px 1px 7px; white-space:nowrap; display:inline-flex; align-items:center; gap:5px; }
+.st::before { content:""; width:6px; height:6px; border-radius:50%; background:currentColor; }
+.st.s0 { background:#f2f2f5; color:#55555f; } .st.s1 { background:#eaf1ff; color:#2f5fd0; } .st.s2 { background:#f1ecfd; color:#6941c6; }
+.st.s3 { background:#e6f4ea; color:#15803d; } .st.s4 { background:#fdecee; color:#c0101f; } .st.s5 { background:#fff4e0; color:#9a5b00; }
+.c-link { color:#1d1d1f; background:none; border:0; font:inherit; font-weight:500; padding:0; text-align:left; }
+.c-link:hover { color:var(--sa-ink); text-decoration:underline; text-underline-offset:2px; } .c-link.u { color:var(--sa-ink); }
+.c-btn { font:500 13px var(--font); background:var(--sa); color:#fff; border:0; border-radius:8px; padding:7px 14px; }
 .c-btn:hover { filter:brightness(1.08); }
 .c-btn.alt { background:#fff; color:#1d1d1f; border:1px solid #d9d9e0; } .c-btn.alt:hover { background:#f5f5f7; filter:none; }
-.c-btn.sel { background:#1d1d1f; color:#fff; border-color:#1d1d1f; }
-.c-pager { display:flex; justify-content:space-between; align-items:center; margin-top:12px; color:#77777f; font-size:13px; }
-.c-field { margin:12px 0; } .c-field label, .c-field .l { display:block; font-weight:600; font-size:13px; margin-bottom:4px; }
-.c-field select, .c-field input, .c-field textarea { font:14px var(--font); padding:7px 10px; border:1px solid #d3d3db; border-radius:8px; min-width:220px; max-width:100%; background:#fff; color:#1d1d1f; outline:none; }
-.c-field textarea { width:100%; min-height:70px; resize:vertical; }
-.c-field input:focus, .c-field textarea:focus, .c-field select:focus { border-color:var(--sa); }
+.c-btn.sel { background:var(--sa); color:#fff; border-color:var(--sa); }
+.c-pager { display:flex; justify-content:space-between; align-items:center; margin-top:12px; color:var(--mut); font-size:12.5px; }
+.a-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:14px; align-items:start; }
+.c-card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
+.c-card h5 { margin:0 0 10px; font-size:13px; font-weight:600; }
+.kv { display:grid; grid-template-columns:96px minmax(0,1fr); gap:7px 10px; font-size:13px; } .kv > :nth-child(odd) { color:var(--mut); }
+.kv > * { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.feed { list-style:none; margin:0; padding:0; }
+.feed li { display:grid; grid-template-columns:24px 1fr; gap:8px; padding:7px 0; font-size:13px; color:#3a3a42; }
+.feed .t { color:#9a9aa3; font-size:12px; } .feed .dot { width:8px; height:8px; border-radius:50%; background:#d9d9e0; margin:6px 0 0 8px; }
+.c-field { margin:12px 0; } .c-field label, .c-field .l { display:block; font-weight:500; font-size:12.5px; margin-bottom:5px; color:#3a3a42; }
+.c-field select, .c-field input, .c-field textarea { font:13.5px var(--font); padding:7px 10px; border:1px solid #d3d3db; border-radius:8px; width:100%; max-width:320px; background:#fff; color:#1d1d1f; outline:none; }
+.c-field textarea { max-width:none; min-height:64px; resize:vertical; }
+.c-field input:focus, .c-field textarea:focus, .c-field select:focus { border-color:var(--sa); box-shadow:0 0 0 3px var(--sa-soft); }
 .c-stages { display:flex; gap:6px; flex-wrap:wrap; }
-.c-toast { background:#e9f7ee; color:#16803c; border-radius:8px; padding:6px 10px; margin-bottom:10px; font-weight:500; }
-.c-err { background:#fdecee; color:#c0101f; border-radius:8px; padding:6px 10px; margin-bottom:10px; }
-.c-veil { position:absolute; inset:0; background:#16161a55; display:flex; align-items:flex-start; justify-content:center; padding-top:80px; }
-.c-modal { background:#fff; border-radius:14px; padding:18px; width:290px; box-shadow:0 10px 30px #0003; }
-.c-modal h4 { margin:0 0 6px; font-size:15px; } .c-modal p { margin:0 0 12px; color:#55555c; font-size:13.5px; }
-.c-banner { position:sticky; bottom:0; margin-top:auto; background:#1d1d1f; color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; gap:12px; font-size:13px; }
-.c-menu { display:flex; flex-direction:column; gap:2px; border:1px solid #e7e7ec; border-radius:10px; padding:4px; margin-top:6px; width:160px; background:#fff; box-shadow:0 6px 18px #0000001a; }
+.c-toast { background:#e9f7ee; color:#16803c; border-radius:8px; padding:6px 10px; margin-bottom:10px; font-weight:500; font-size:13px; }
+.c-err { background:#fdecee; color:#c0101f; border-radius:8px; padding:6px 10px; margin-bottom:10px; font-size:13px; }
+.mwrap { position:relative; }
+.c-menu { position:absolute; right:0; top:calc(100% + 4px); z-index:2; display:flex; flex-direction:column; gap:2px; border:1px solid #e7e7ec; border-radius:10px; padding:4px; width:160px; background:#fff; box-shadow:0 6px 18px #0000001a; }
 .c-menu button { border:0; background:none; text-align:left; padding:6px 10px; border-radius:7px; } .c-menu button:hover { background:#f1f1f4; }
-.c-note { margin-top:12px; padding:10px 12px; border-radius:10px; background:#f6f6f8; font-size:13.5px; }
-.c-plans { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-.c-plan { border:1px solid #ececf0; border-radius:16px; padding:16px; }
-.c-plan .p { font-size:24px; font-weight:600; margin:8px 0 12px; letter-spacing:-.01em; } .c-plan .p small { font-size:13px; color:#77777f; font-weight:400; }
-.c-hero { padding:36px 4px 20px; } .c-hero h3 { font-size:28px; letter-spacing:-.02em; margin:0 0 8px; font-weight:600; } .c-hero p { color:#66666e; margin:0 0 16px; max-width:420px; }
-.c-logos { display:flex; gap:24px; flex-wrap:wrap; color:#9a9aa3; font-weight:600; letter-spacing:.02em; }
-#site .hl { outline:3px solid var(--accent); outline-offset:2px; border-radius:8px; }
-@media (max-width:1000px) { .win, .win.collapsed { grid-template-columns:minmax(0,1fr) 330px; } .nav, .lights { display:none; } .mob { display:inline-flex !important; } }
+.prog { display:flex; gap:4px; margin:0 0 4px; } .prog span { flex:1; height:4px; border-radius:2px; background:var(--line); } .prog span.on { background:var(--sa); }
+.prog-l { display:flex; justify-content:space-between; font-size:11.5px; color:var(--mut); margin-bottom:14px; }
+.skel { height:12px; border-radius:6px; background:linear-gradient(90deg,#f0f0f3,#f8f8fa,#f0f0f3); background-size:200% 100%; animation:sh 1s linear infinite; margin:14px 0; }
+@keyframes sh { to { background-position:-200% 0; } }
+.pol { margin:0; padding-left:18px; color:#4a4a52; font-size:13px; line-height:22px; }
+.c-hint { color:var(--mut); font-size:12.5px; margin-top:8px; }
+/* northwind: a marketing site */
+.w-nav { display:flex; align-items:center; gap:4px; padding:12px 28px; border-bottom:1px solid #f1f1f3; position:sticky; top:0; background:#fffffff0; z-index:1; }
+.w-logo { font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; margin-right:14px; font-size:15px; }
+.w-logo i { width:18px; height:18px; border-radius:50% 50% 50% 4px; background:var(--sa); }
+.c-navl { border:0; background:none; color:#55555f; padding:5px 10px; border-radius:7px; }
+.c-navl:hover { background:#f4f4f6; color:#1d1d1f; } .c-navl.on { color:#1d1d1f; font-weight:500; }
+.w-sp { flex:1; }
+.w-wrap { padding:0 28px 28px; max-width:900px; margin:0 auto; width:100%; }
+.w-hero { display:grid; grid-template-columns:1.1fr 1fr; gap:28px; align-items:center; padding:40px 0 30px; }
+.w-hero h3 { font-size:32px; line-height:1.1; letter-spacing:-.03em; margin:0 0 12px; font-weight:650; }
+.w-hero p { color:#5f5f69; margin:0 0 18px; font-size:15px; line-height:23px; }
+.w-eye { color:var(--sa-ink); font-weight:600; font-size:12.5px; margin-bottom:10px; }
+.w-shot { border:1px solid #ececf0; border-radius:14px; padding:14px; background:#fff; box-shadow:0 12px 30px #0000000f; font-size:12px; color:var(--mut); }
+.w-shot b { display:block; color:#1d1d1f; font-size:20px; margin-top:2px; }
+.w-bars { display:flex; align-items:flex-end; gap:6px; height:100px; margin-top:12px; } .w-bars span { flex:1; border-radius:4px 4px 0 0; background:var(--sa-soft); } .w-bars span:nth-child(4n+2) { background:var(--sa); }
+.w-logos { display:flex; gap:28px; flex-wrap:wrap; color:#a3a3ab; font-weight:700; letter-spacing:.04em; font-size:13px; padding:12px 0 24px; border-bottom:1px solid #f1f1f3; }
+.w-feats { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; padding:24px 0; font-size:13px; color:#5f5f69; } .w-feats b { display:block; color:#1d1d1f; margin-bottom:4px; }
+.w-title { text-align:center; padding:32px 0 20px; } .w-title h3 { font-size:26px; letter-spacing:-.02em; margin:0 0 6px; } .w-title p { margin:0; color:#5f5f69; }
+.w-plans { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.w-plan { border:1px solid #ececf0; border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:10px; position:relative; }
+.w-plan.hot { border-color:var(--sa); box-shadow:0 0 0 3px var(--sa-soft); }
+.w-plan .p { font-size:28px; font-weight:650; letter-spacing:-.02em; } .w-plan .p small { font-size:13px; color:#77777f; font-weight:400; }
+.w-plan ul { list-style:none; padding:0; margin:0 0 6px; font-size:13px; color:#4a4a52; line-height:23px; } .w-plan li::before { content:"✓  "; color:var(--sa); font-weight:700; }
+.w-plan .c-btn { margin-top:auto; }
+.w-badge { position:absolute; top:-10px; right:14px; background:var(--sa); color:#fff; font-size:11px; font-weight:600; border-radius:99px; padding:1px 9px; }
+.w-quotes { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; } .w-quote { border:1px solid #ececf0; border-radius:14px; padding:16px; font-size:13.5px; color:#3a3a42; }
+.w-quote .who { margin-top:12px; color:var(--mut); font-size:12.5px; }
+.w-foot { border-top:1px solid #f1f1f3; margin-top:28px; padding-top:16px; color:#9a9aa3; font-size:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+#site .hl { outline:2px solid var(--accent); outline-offset:2px; box-shadow:0 0 0 6px #007aff26; border-radius:8px; }
+@media (max-width:1000px) { .win, .win.collapsed { grid-template-columns:minmax(0,1fr) 330px; } .nav, .lights { display:none; } .mob { display:inline-flex !important; }
+  .a-shell { grid-template-columns:minmax(0,1fr); } .a-side { display:none; } .opt { display:none; } }
 @media (max-width:760px) { body { padding:0; } .win, .win.collapsed { border-radius:0; grid-template-columns:1fr; grid-template-rows:44px auto auto; }
-  .side { border-left:0; border-top:1px solid var(--border2); } .body { flex:none; } .mob { padding:4px 8px; } #site { min-height:460px; } .tab:not(.on) { display:none; } .tab { width:auto; flex:1; } .c-plans { grid-template-columns:1fr; } }
+  .side { border-left:0; border-top:1px solid var(--border2); } .body { flex:none; } .mob { padding:4px 8px; } #site { min-height:460px; } .tab:not(.on) { display:none; } .tab { width:auto; flex:1; }
+  .a-grid, .w-hero, .w-plans, .w-quotes, .w-feats { grid-template-columns:1fr; } .a-main, .w-wrap { padding-left:16px; padding-right:16px; } .w-nav { padding:10px 12px; overflow:auto; } }
 @media (prefers-reduced-motion: reduce) { li.now .ic { animation:none; } * { transition:none !important; } }
 </style></head>
 <body>
@@ -210,7 +314,7 @@ table.inp .del button:hover { background:var(--hover); color:var(--ink); }
     <button class="tool newtab" id="newtab" aria-label="New tab"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 3v10M3 8h10"/></svg></button>
   </div>
   <nav class="nav" aria-label="Sidebar" id="nav"></nav>
-  <section class="page" aria-label="Current tab">
+  <section class="page" id="page" aria-label="Current tab">
     <div class="bar">
       <button class="tool" id="back" aria-label="Back"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 5 8l5 5"/></svg></button>
       <button class="tool" id="fwd" aria-label="Forward"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m6 3 5 5-5 5"/></svg></button>
@@ -219,6 +323,7 @@ table.inp .del button:hover { background:var(--hover); color:var(--ink); }
         <button class="tool" id="star" aria-label="Bookmark"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="m8 2 1.8 3.8 4.2.5-3.1 2.9.8 4.1L8 11.3l-3.7 2 .8-4.1L2 6.3l4.2-.5z"/></svg></button></div>
     </div>
     <div id="site"></div>
+    <div id="ghost" aria-hidden="true"><svg viewBox="0 0 18 18"><path d="M3 2l11 6.2-4.9 1.1L7 14z" fill="#fff" stroke="#111" stroke-width="1.3" stroke-linejoin="round"/></svg><span id="gcap"></span></div>
   </section>
   <aside class="side" aria-label="Autopilot" id="side"></aside>
 </div>
@@ -234,57 +339,87 @@ const I = {
   plus:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v10M3 8h10"/></svg>',
   x:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4.5 4.5 7 7M11.5 4.5l-7 7"/></svg>',
   play:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5v9l7.5-4.5z"/></svg>',
+  rec:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="4.5" fill="currentColor"/></svg>',
+  stop:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="4" width="8" height="8" rx="1.5"/></svg>',
   clock:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg>',
   down:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 4.5 3 3 3-3"/></svg>',
   up:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 13V3M4 7l4-4 4 4"/></svg>',
   fold:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1.5 3.5a1 1 0 0 1 1-1h2.2l1 1h3.8a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1z"/></svg>' };
+const ICO = {
+  users:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 13.5c.6-2.5 2.3-3.5 4.5-3.5s3.9 1 4.5 3.5M10.5 3.2a2.4 2.4 0 0 1 0 4.6M12.5 10.3c1 .5 1.7 1.6 2 3.2"/></svg>',
+  inbox:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 9.5 3.8 3.5h8.4L14 9.5V13H2zM2 9.5h3.5l1 1.5h3l1-1.5H14"/></svg>',
+  cal:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="3" width="12" height="11" rx="2"/><path d="M2 6.5h12M5.5 1.5v3M10.5 1.5v3"/></svg>',
+  brief:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="2" y="4.5" width="12" height="9" rx="2"/><path d="M5.5 4.5V3a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.5"/></svg>',
+  receipt:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3.5 1.5h9v13l-2-1.2-2.5 1.2-2.5-1.2-2 1.2zM6 5h4M6 8h4"/></svg>',
+  plus:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 5v6M5 8h6"/></svg>' };
 const withClass = (svg, cls) => svg.replace("<svg", `<svg class="${cls}"`);
 function el(kind, label, act, cls, extra = "") {
   return `<button class="${cls}" data-kind="${kind}" data-label="${esc(label)}" data-act="${esc(act)}" ${extra}>${esc(label)}</button>`;
 }
-function navBar(site, items, cur) {
-  return `<div class="c-nav"><span class="brand"><i></i>${site.name}</span>` + items.map(([l, k]) => el("link", l, "nav:" + k, "c-navl" + (k === cur ? " on" : ""))).join("") + `</div>`;
+const RISK = 'data-risk="1"'; // sends, posts or submits something that can't be undone
+const STC = { New:"s0", Contacted:"s1", Qualified:"s2", Won:"s3", Lost:"s4", Applied:"s0", Screen:"s1", Onsite:"s2", Offer:"s3", Reject:"s4", Pending:"s5", Approved:"s3" };
+const pill = s => `<span class="st ${STC[s] || "s0"}">${esc(s)}</span>`;
+const AVC = ["#6941c6","#0f766e","#c2410c","#2f5fd0","#b42318","#15803d","#a15c07","#7a5af8"];
+const av = (n, c = "") => `<span class="av ${c}" style="background:${AVC[[...n].reduce((a, ch) => a + ch.charCodeAt(0), 0) % AVC.length]}">${esc(n.split(" ").map(w => w[0]).join("").slice(0, 2))}</span>`;
+const money = n => "$" + n.toLocaleString("en-US");
+const tbl = (cols, rows) => `<table class="a-tbl"><thead><tr>${cols.map(c => `<th${c[1] ? ` class="${c[1]}"` : ""}>${c[0]}</th>`).join("")}</tr></thead><tbody>` +
+  rows.map(r => `<tr>${r.map((v, i) => `<td${cols[i][1] ? ` class="${cols[i][1]}"` : ""}>${v}</td>`).join("")}</tr>`).join("") + `</tbody></table>`;
+function shell(site, items, cur, main) {
+  return `<div class="a-shell"><aside class="a-side"><div class="a-ws"><i>${site.name[0]}</i>${site.ws}</div>` +
+    items.map(([l, k, n, ic]) => `<button class="a-nl${k === cur ? " on" : ""}" data-kind="link" data-label="${l}" data-act="nav:${k}">${ICO[ic]}${l}${n != null ? `<span class="n">${n}</span>` : ""}</button>`).join("") +
+    `<div class="a-me">${av("Riley Shaw", "sm")}Riley Shaw</div></aside><main class="a-main">${main}</main></div>`;
 }
+const head = (h, sub, right = "") => `<div class="a-head"><div><h3 class="a-h">${h}</h3>${sub ? `<div class="a-sub">${sub}</div>` : ""}</div>${right}</div>`;
 
 // ---------------------------------------------------------------- the websites
 const STAGES = ["New", "Contacted", "Qualified", "Won", "Lost"], OWNERS = ["Riley", "Uma", "Sam"];
 const LEADS = [["Zoe Hart","Atlas"],["Ravi Nair","Beacon"],["Ella Brooks","Cinder"],["Hugo Laurent","Delta Six"],["June Kim","Evergreen"],["Max Weber","Fable"],
   ["Ana Costa","Brightline"],["Leo Park","Cobalt AI"],["Mia Chen","Driftwood"],["Omar Haddad","Ember Labs"],["Grace Liu","Helix Robotics"],["Tomás Ruiz","Lumen Health"],
   ["Priya Raman","Northwind Labs"],["Felix Wagner","Quartz"],["Nina Berg","Arcadia"],["Kai Moore","Fjord"],["Sara Ali","Juniper"],["Ivan Petrov","Kestrel"]];
-const leadSeed = () => LEADS.map((x, i) => ({ id:i + 1, name:x[0], co:x[1], stage:i < 6 ? "New" : i % 3 ? "Contacted" : "New", owner:OWNERS[i % 3] }));
-const CANDS = [["Dana Cole","Senior Backend Engineer","Screen"],["Marco Silva","Product Designer","Onsite"],["Aisha Khan","Senior Backend Engineer","Screen"],
-  ["Luis Ortiz","Data Engineer","Applied"],["Lena Fischer","Engineering Manager","Offer"],["Tom Becker","Frontend Engineer","Screen"]];
+const TITLES = ["Head of Ops","VP Engineering","Founder","CTO","IT Director","Product Lead"];
+const ACTS = ["Opened your email","Replied to sequence","Booked a call","Viewed pricing","Filled demo form","No reply yet"];
+const SRC = ["Website","Referral","Outbound","Event"];
+const leadSeed = () => LEADS.map((x, i) => ({ id:i + 1, name:x[0], co:x[1], title:TITLES[i % 6], stage:i < 6 ? "New" : i % 3 ? "Contacted" : "New", owner:OWNERS[i % 3],
+  value:((i * 37) % 9 + 2) * 1200, act:ACTS[i % 6], ago:i % 5 + 1, src:SRC[i % 4] }));
+const CANDS = [["Dana Cole","Senior Backend Engineer","Screen","Nov 12","Referral","Austin, TX"],["Marco Silva","Product Designer","Onsite","Nov 4","LinkedIn","Lisbon"],
+  ["Aisha Khan","Senior Backend Engineer","Screen","Nov 15","Careers page","Toronto"],["Luis Ortiz","Data Engineer","Applied","Nov 21","LinkedIn","Remote"],
+  ["Lena Fischer","Engineering Manager","Offer","Oct 28","Referral","Berlin"],["Tom Becker","Frontend Engineer","Screen","Nov 18","Careers page","Remote"]];
 const SITES = {
-  pipeline: { name:"Pipeline", domain:"pipeline.app", fav:"#7048e8", per:5,
-    start:() => ({ db:leadSeed(), view:"list", page:0, lead:null, draft:null, toast:false, last:null,
-      popup:{ h:"Pipeline has a new look", p:"Leads you add now show up first.", b:"Got it" } }),
+  pipeline: { name:"Pipeline", ws:"Acme Sales", domain:"pipeline.app", fav:"#6941c6", per:5,
+    start:() => ({ db:leadSeed(), view:"list", page:0, lead:null, draft:null, toast:false, last:null }),
     title(S) { const l = S.view === "lead" && S.db.find(x => x.id === S.lead); return l ? `${l.name} · Pipeline` : { list:"Leads", inbox:"Inbox", calendar:"Calendar" }[S.view] + " · Pipeline"; },
     path(S) { return S.view === "lead" ? "/leads/" + S.lead : S.view === "list" ? "/leads" + (S.page ? "?page=" + (S.page + 1) : "") : "/" + S.view; },
     render(S) {
-      let h = navBar(this, [["Leads","list"],["Inbox","inbox"],["Calendar","calendar"]], S.view === "lead" ? "list" : S.view) + `<div class="c-body">`;
+      let m;
       if (S.view === "list") {
-        const rows = S.db.slice(S.page * this.per, S.page * this.per + this.per), pages = Math.ceil(S.db.length / this.per);
-        h += `<div class="c-h">Leads</div><div class="c-card">` + rows.map(x => `<div class="c-row"><span>${el("link", x.name, "open:" + x.id, "c-link", `data-href="/leads/${x.id}"`)}
-          <span class="m"> · ${esc(x.co)}</span></span><span class="c-pill">${esc(x.stage)}</span></div>`).join("") + `</div>
-          <div class="c-pager">${S.page > 0 ? el("button", "Previous page", "prev", "c-btn alt") : "<span></span>"}<span>Page ${S.page + 1} of ${pages}</span>
+        const a = S.page * this.per, rows = S.db.slice(a, a + this.per), pages = Math.ceil(S.db.length / this.per);
+        m = head("Leads", `${S.db.length} leads · Sales pipeline`) +
+          tbl([["Name"],["Company","opt"],["Stage"],["Owner","opt"],["Value","r opt"],["Last activity","opt"]], rows.map(x => [
+            `<span class="who">${av(x.name, "sm")}${el("link", x.name, "open:" + x.id, "c-link", `data-href="/leads/${x.id}"`)}</span>`, `<span class="m">${esc(x.co)}</span>`, pill(x.stage),
+            `<span class="who">${av(x.owner, "sm")}${x.owner}</span>`, money(x.value), `<span class="m">${x.act} · ${x.ago}d ago</span>`])) +
+          `<div class="c-pager">${S.page > 0 ? el("button", "Previous page", "prev", "c-btn alt") : "<span></span>"}<span>${a + 1}–${a + rows.length} of ${S.db.length}</span>
           ${S.page < pages - 1 ? el("button", "Next page", "next", "c-btn alt") : "<span></span>"}</div>`;
       } else if (S.view === "lead") {
         const l = S.db.find(x => x.id === S.lead), d = S.draft;
-        h += `<div style="margin-bottom:10px">${el("link", "← Back to leads", "nav:list", "c-link")}</div><div class="c-card">` + (S.toast ? `<div class="c-toast">Saved</div>` : "") +
-          `<div style="font-weight:600;font-size:17px">${esc(l.name)}</div><div style="color:#77777f">${esc(l.co)}</div>
+        m = `<div class="a-crumb">${el("link", "← All leads", "nav:list", "c-link u")}</div>` +
+          head(`<span class="who">${av(l.name, "lg")}<span>${esc(l.name)}<span class="a-sub" style="display:block">${l.title} at ${esc(l.co)}</span></span></span>`, "", pill(l.stage)) +
+          `<div class="a-grid"><div class="c-card">${S.toast ? `<div class="c-toast">Changes saved</div>` : ""}<h5>Deal</h5>
           <div class="c-field"><span class="l">Stage</span><div class="c-stages">` +
           STAGES.map(s => el("button", s, "stage:" + s, "c-btn alt" + (s === d.stage ? " sel" : ""), `aria-pressed="${s === d.stage}"`)).join("") + `</div></div>
           <div class="c-field"><label for="f-owner">Assigned to</label><select id="f-owner" data-kind="select" data-key="owner" data-label="Assigned to">` +
-          OWNERS.map(o => `<option${o === d.owner ? " selected" : ""}>${o}</option>`).join("") + `</select></div>` + el("button", "Save changes", "save", "c-btn") + `</div>`;
-      } else h += `<div class="c-h">${S.view === "inbox" ? "Inbox" : "Calendar"}</div><div class="c-card" style="color:#77777f">${S.view === "inbox" ? "You're all caught up." : "No meetings today."}</div>`;
-      h += `</div>`;
-      if (S.popup && S.view === "list") h += `<div class="c-veil"><div class="c-modal" role="dialog" aria-label="What's new"><h4>${S.popup.h}</h4><p>${S.popup.p}</p>${el("button", S.popup.b, "dismiss", "c-btn")}</div></div>`;
-      return h;
+          OWNERS.map(o => `<option${o === d.owner ? " selected" : ""}>${o}</option>`).join("") + `</select></div>` + el("button", "Save changes", "save", "c-btn") + `</div>
+          <div class="c-card"><h5>About</h5><div class="kv"><span>Email</span><span>${l.name.split(" ")[0].toLowerCase()}@${l.co.toLowerCase().replace(/[^a-z]/g, "")}.com</span>
+          <span>Deal value</span><span>${money(l.value)}</span><span>Owner</span><span>${l.owner}</span><span>Source</span><span>${l.src}</span></div>
+          <h5 style="margin-top:18px">Activity</h5><ul class="feed"><li><span class="dot"></span><div>${l.act}<div class="t">${l.ago} days ago</div></div></li>
+          <li><span class="dot"></span><div>Added by ${l.owner}<div class="t">Nov 3</div></div></li></ul></div></div>`;
+      } else if (S.view === "inbox") m = head("Inbox", "3 unread") + tbl([["From"],["Subject"],["","r m"]],
+        [["Priya Raman","Re: pilot timeline","9:41 AM"],["Leo Park","Pricing for 40 seats","Yesterday"],["Grace Liu","Notes from our intro call","Mon"]].map(r => [`<span class="who">${av(r[0], "sm")}${r[0]}</span>`, r[1], r[2]]));
+      else m = head("Calendar", "Today") + tbl([["Time"],["Meeting"],["With","opt"]], [["10:00 AM","Discovery call","Hugo Laurent"],["2:30 PM","Product demo","Leo Park"]].map(r => [`<span class="m">${r[0]}</span>`, r[1], r[2]]));
+      return shell(this, [["Leads","list",S.db.length,"users"],["Inbox","inbox",3,"inbox"],["Calendar","calendar",null,"cal"]], S.view === "lead" ? "list" : S.view, m);
     },
     act(S, a) {
       S.toast = false;
-      if (a === "dismiss") S.popup = null;
-      else if (a === "next") S.page++; else if (a === "prev") S.page--;
+      if (a === "next") S.page++; else if (a === "prev") S.page--;
       else if (a.startsWith("nav:")) S.view = a.slice(4);
       else if (a.startsWith("open:")) { S.lead = +a.slice(5); const l = S.db.find(x => x.id === S.lead); S.draft = { stage:l.stage, owner:l.owner }; S.view = "lead"; }
       else if (a.startsWith("stage:")) S.draft.stage = a.slice(6);
@@ -296,26 +431,33 @@ const SITES = {
     },
     set(S, key, v) { S.draft[key] = v; S.toast = false; } },
 
-  hirebase: { name:"Hirebase", domain:"hirebase.io", fav:"#0e8a7e",
-    start:() => ({ cands:CANDS.map((c, i) => ({ id:i + 1, name:c[0], role:c[1], stage:c[2], notes:[] })), view:"list", id:null, menu:false, note:"", toast:null, last:null }),
+  hirebase: { name:"Hirebase", ws:"Acme Talent", domain:"hirebase.io", fav:"#0f766e",
+    start:() => ({ cands:CANDS.map((c, i) => ({ id:i + 1, name:c[0], role:c[1], stage:c[2], applied:c[3], src:c[4], loc:c[5],
+      notes:i ? [] : [["Uma Patel","Phone screen went well. Strong on APIs.","Nov 18"]] })), view:"list", id:null, menu:false, note:"", toast:null, last:null, loading:true }),
     title(S) { const c = S.view === "cand" && S.cands.find(x => x.id === S.id); return c ? `${c.name} · Hirebase` : S.view === "jobs" ? "Jobs · Hirebase" : "Candidates · Hirebase"; },
     path(S) { return S.view === "cand" ? "/candidates/" + S.id : "/" + (S.view === "list" ? "candidates" : S.view); },
     render(S) {
-      let h = navBar(this, [["Candidates","list"],["Jobs","jobs"]], S.view === "cand" ? "list" : S.view) + `<div class="c-body">`;
-      if (S.view === "list") h += `<div class="c-h">Candidates</div><div class="c-card">` + S.cands.map(c => `<div class="c-row"><span>${el("link", c.name, "open:" + c.id, "c-link", `data-href="/candidates/${c.id}"`)}
-        <span class="m"> · ${esc(c.role)}</span></span><span class="c-pill">${esc(c.stage)}</span></div>`).join("") + `</div>`;
-      else if (S.view === "jobs") h += `<div class="c-h">Open jobs</div><div class="c-card">` + ["Senior Backend Engineer","Product Designer","Data Engineer"].map(j => `<div class="c-row"><span>${j}</span><span class="m">Remote</span></div>`).join("") + `</div>`;
+      let m;
+      if (S.loading) m = head("Candidates", "Loading…") + `<div class="skel" style="width:90%"></div><div class="skel" style="width:70%"></div><div class="skel" style="width:80%"></div>`;
+      else if (S.view === "list") m = head("Candidates", `${S.cands.length} active across 5 open roles`) +
+        tbl([["Name"],["Role","opt"],["Stage"],["Applied","opt"],["Source","opt"]], S.cands.map(c => [
+          `<span class="who">${av(c.name, "sm")}${el("link", c.name, "open:" + c.id, "c-link", `data-href="/candidates/${c.id}"`)}</span>`, `<span class="m">${esc(c.role)}</span>`, pill(c.stage), `<span class="m">${c.applied}</span>`, `<span class="m">${c.src}</span>`]));
+      else if (S.view === "jobs") m = head("Jobs", "5 open") + tbl([["Role"],["Team","opt"],["Location"],["Candidates","r"]],
+        [["Senior Backend Engineer","Platform","Remote, US",2],["Product Designer","Design","Lisbon",1],["Data Engineer","Data","Remote",1],["Engineering Manager","Platform","Berlin",1],["Frontend Engineer","Web","Remote",1]]);
       else {
-        const c = S.cands.find(x => x.id === S.id);
-        h += `<div style="margin-bottom:10px">${el("link", "← All candidates", "nav:list", "c-link")}</div><div class="c-card">` + (S.toast ? `<div class="c-toast">${esc(S.toast)}</div>` : "") +
-          `<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap"><div><div style="font-weight:600;font-size:17px">${esc(c.name)}</div>
-          <div style="color:#77777f">${esc(c.role)} · <span class="c-pill">${esc(c.stage)}</span></div></div>
-          <div>${el("button", "Move stage", "menu", "c-btn alt", `aria-expanded="${S.menu}"`)}${S.menu ? `<div class="c-menu">` + ["Screen","Onsite","Offer","Reject"].map(s => el("button", s, "stage:" + s, "")).join("") + `</div>` : ""}</div></div>
-          ${c.notes.map(n => `<div class="c-note">${esc(n)}</div>`).join("")}
-          <div class="c-field"><label for="f-note">Comment</label><textarea id="f-note" data-kind="input" data-key="note" data-label="Comment">${esc(S.note)}</textarea></div>
-          ${el("button", "Post", "post", "c-btn")}</div>`;
+        const c = S.cands.find(x => x.id === S.id), si = ["Applied","Screen","Onsite","Offer"].indexOf(c.stage);
+        m = `<div class="a-crumb">${el("link", "← All candidates", "nav:list", "c-link u")}</div>` +
+          head(`<span class="who">${av(c.name, "lg")}<span>${esc(c.name)}<span class="a-sub" style="display:block">${esc(c.role)} · ${c.loc}</span></span></span>`, "",
+            `<div class="mwrap">${el("button", "Move stage", "menu", "c-btn alt", `aria-expanded="${S.menu}"`)}${S.menu ? `<div class="c-menu">` + ["Screen","Onsite","Offer","Reject"].map(s => el("button", s, "stage:" + s, "")).join("") + `</div>` : ""}</div>`) +
+          `<div class="prog">${[0,1,2,3].map(k => `<span class="${k <= si ? "on" : ""}"></span>`).join("")}</div><div class="prog-l"><span>Applied</span><span>Screen</span><span>Onsite</span><span>Offer</span></div>
+          <div class="a-grid"><div class="c-card">${S.toast ? `<div class="c-toast">${esc(S.toast)}</div>` : ""}<h5>Comments</h5>
+          ${c.notes.length ? `<ul class="feed">${c.notes.map(n => `<li>${av(n[0], "sm")}<div><b style="font-weight:500">${n[0]}</b> · <span class="t">${n[2]}</span><div>${esc(n[1])}</div></div></li>`).join("")}</ul>` : `<div class="c-hint">No comments yet.</div>`}
+          <div class="c-field"><label for="f-note">Comment</label><textarea id="f-note" data-kind="input" data-key="note" data-label="Comment" placeholder="Share feedback with the hiring team">${esc(S.note)}</textarea></div>
+          ${el("button", "Post", "post", "c-btn", RISK)}</div>
+          <div class="c-card"><h5>Details</h5><div class="kv"><span>Stage</span><span>${pill(c.stage)}</span><span>Applied</span><span>${c.applied}</span><span>Source</span><span>${c.src}</span><span>Recruiter</span><span>Uma Patel</span></div>
+          <h5 style="margin-top:18px">Interviews</h5><ul class="feed"><li><span class="dot"></span><div>Phone screen · Uma Patel<div class="t">Nov 18</div></div></li></ul></div></div>`;
       }
-      return h + `</div>`;
+      return shell(this, [["Candidates","list",S.cands.length,"users"],["Jobs","jobs",5,"brief"]], S.view === "cand" ? "list" : S.view, m);
     },
     act(S, a) {
       if (a !== "menu") S.toast = null;
@@ -323,85 +465,265 @@ const SITES = {
       else if (a.startsWith("open:")) { S.id = +a.slice(5); S.view = "cand"; S.menu = false; }
       else if (a === "menu") S.menu = !S.menu;
       else if (a.startsWith("stage:")) { const c = S.cands.find(x => x.id === S.id); c.stage = a.slice(6); S.toast = `Moved to ${c.stage}`; S.menu = false; this.out(S, c); }
-      else if (a === "post" && S.note.trim()) { const c = S.cands.find(x => x.id === S.id); c.notes.push(S.note.trim()); S.note = ""; S.toast = "Comment posted"; this.out(S, c); }
+      else if (a === "post" && S.note.trim()) { const c = S.cands.find(x => x.id === S.id); c.notes.push(["Riley Shaw", S.note.trim(), "Just now"]); S.note = ""; S.toast = "Comment posted"; this.out(S, c); }
     },
-    out(S, c) { S.last = `${c.name}: stage ${c.stage}` + (c.notes.length ? `, comment “${c.notes[c.notes.length - 1]}”` : ""); },
+    out(S, c) { S.last = `${c.name}: stage ${c.stage}` + (c.notes.length ? `, comment “${c.notes[c.notes.length - 1][1]}”` : ""); },
     set(S, key, v) { S[key] = v; } },
 
-  ledgerly: { name:"Ledgerly", domain:"ledgerly.com", fav:"#1f8a4c",
-    start:() => ({ view:"new", f:{ amount:"", cat:"", desc:"" }, list:[["Nov 20","Figma seats","Software","$45.00"],["Nov 14","Train to Boston","Travel","$118.00"]], toast:false, err:false, last:null, banner:true }),
+  ledgerly: { name:"Ledgerly", ws:"Acme Finance", domain:"ledgerly.com", fav:"#15803d",
+    start:() => ({ view:"new", f:{ amount:"", cat:"", desc:"" }, toast:false, err:false, last:null,
+      list:[["Nov 20","Figma seats","Software","$45.00","Approved"],["Nov 14","Train to Boston","Travel","$118.00","Approved"],["Nov 10","Client dinner","Meals","$212.40","Pending"]] }),
     title(S) { return S.view === "new" ? "New expense · Ledgerly" : "Expenses · Ledgerly"; },
     path(S) { return S.view === "new" ? "/expenses/new" : "/expenses"; },
     render(S) {
-      let h = navBar(this, [["Expenses","list"],["New expense","new"]], S.view) + `<div class="c-body">`;
-      if (S.view === "list") h += `<div class="c-h">Expenses</div><div class="c-card">` + S.list.map(e => `<div class="c-row"><span>${esc(e[1])}<span class="m"> · ${e[0]}</span></span><span><span class="c-pill">${esc(e[2])}</span> ${esc(e[3])}</span></div>`).join("") + `</div>`;
-      else h += `<div class="c-h">New expense</div><div class="c-card">` + (S.toast ? `<div class="c-toast">Expense submitted</div>` : "") + (S.err ? `<div class="c-err">Fill in every field.</div>` : "") +
-          `<div class="c-field"><label for="f-amt">Amount (USD)</label><input id="f-amt" inputmode="decimal" data-kind="input" data-key="amount" data-label="Amount (USD)" value="${esc(S.f.amount)}"></div>
+      let m;
+      if (S.view === "list") m = head("Expenses", "November") + tbl([["Date","m"],["Description"],["Category","opt m"],["Amount","r"],["Status"]], S.list.map(e => [e[0], esc(e[1]), e[2], e[3], pill(e[4])]));
+      else m = head("New expense", "Sent to Morgan Lee for approval") + `<div class="a-grid"><div class="c-card">` + (S.toast ? `<div class="c-toast">Expense submitted for approval</div>` : "") + (S.err ? `<div class="c-err">Fill in every field.</div>` : "") +
+          `<div class="c-field"><label for="f-amt">Amount (USD)</label><input id="f-amt" inputmode="decimal" placeholder="0.00" data-kind="input" data-key="amount" data-label="Amount (USD)" value="${esc(S.f.amount)}"></div>
           <div class="c-field"><span class="l">Category</span><div class="c-stages">` + ["Meals","Travel","Software","Office"].map(c => el("button", c, "cat:" + c, "c-btn alt" + (S.f.cat === c ? " sel" : ""), `aria-pressed="${S.f.cat === c}"`)).join("") + `</div></div>
-          <div class="c-field"><label for="f-desc">What was it for?</label><input id="f-desc" data-kind="input" data-key="desc" data-label="What was it for?" value="${esc(S.f.desc)}"></div>
-          ${el("button", "Submit expense", "submit", "c-btn")}</div>`;
-      h += `</div>`;
-      if (S.banner) h += `<div class="c-banner"><span>We use cookies to keep you signed in.</span>${el("button", "Accept", "dismiss", "c-btn")}</div>`;
-      return h;
+          <div class="c-field"><label for="f-desc">What was it for?</label><input id="f-desc" placeholder="e.g. Client lunch" data-kind="input" data-key="desc" data-label="What was it for?" value="${esc(S.f.desc)}"></div>
+          ${el("button", "Submit expense", "submit", "c-btn", RISK)}</div>
+          <div class="c-card"><h5>Spending policy</h5><ul class="pol"><li>Meals: up to $40 a person</li><li>Travel: economy fares</li><li>Software: check with IT first</li><li>Receipts needed over $75</li></ul></div></div>`;
+      return shell(this, [["Expenses","list",S.list.length,"receipt"],["New expense","new",null,"plus"]], S.view, m);
     },
     act(S, a) {
       S.toast = false; S.err = false;
-      if (a === "dismiss") S.banner = false;
-      else if (a.startsWith("nav:")) S.view = a.slice(4);
+      if (a.startsWith("nav:")) S.view = a.slice(4);
       else if (a.startsWith("cat:")) S.f.cat = a.slice(4);
       else if (a === "submit") {
         const f = S.f; if (!f.amount || !f.cat || !f.desc) { S.err = true; return; }
         const amt = (+f.amount.replace(/[^0-9.]/g, "")).toFixed(2);
-        S.list.unshift(["Today", f.desc, f.cat, "$" + amt]); S.last = `Submitted $${amt} · ${f.cat} · ${f.desc}`; S.f = { amount:"", cat:"", desc:"" }; S.toast = true;
+        S.list.unshift(["Today", f.desc, f.cat, "$" + amt, "Pending"]); S.last = `Submitted $${amt} · ${f.cat} · ${f.desc}`; S.f = { amount:"", cat:"", desc:"" }; S.toast = true;
       }
     },
     set(S, key, v) { S.f[key] = v; S.err = false; } },
 
-  northwind: { name:"Northwind", domain:"northwind.io", fav:"#e8590c",
+  northwind: { name:"Northwind", domain:"northwind.io", fav:"#ea580c",
     start:() => ({ view:"home", last:null, toast:null }),
-    title(S) { return { home:"Northwind", plans:"Plans · Northwind", customers:"Customers · Northwind" }[S.view]; },
+    title(S) { return { home:"Northwind · The self-driving data warehouse", plans:"Plans · Northwind", customers:"Customers · Northwind" }[S.view]; },
     path(S) { return S.view === "home" ? "/" : "/" + S.view; },
     render(S) {
-      let h = navBar(this, [["Product","home"],["Plans","plans"],["Customers","customers"]], S.view) + `<div class="c-body" style="max-width:820px">` + (S.toast ? `<div class="c-toast">${esc(S.toast)}</div>` : "");
-      if (S.view === "home") h += `<div class="c-hero"><h3>The data warehouse that runs itself.</h3><p>Connect your sources, ask questions in plain English, and share live dashboards.</p>${el("button", "Start free", "cta", "c-btn")}</div>
-        <div class="c-logos"><span>ACME</span><span>GLOBEX</span><span>INITECH</span><span>UMBRELLA</span></div>`;
-      else if (S.view === "plans") h += `<div class="c-h">Plans</div><div class="c-plans">` + [["Starter","$0","/mo"],["Pro plan","$49","/mo"],["Business","$129","/mo"]].map(p =>
-        `<div class="c-plan" data-kind="value" data-label="${p[0]}" data-value="${p[1]}${p[2]}"><div style="font-weight:600">${p[0]}</div><div class="p">${p[1]}<small>${p[2]}</small></div>${el("button", "Choose " + p[0].replace(" plan", ""), "cta", "c-btn alt")}</div>`).join("") + `</div>`;
-      else h += `<div class="c-h">Customers</div><div class="c-card" style="color:#66666e">“We replaced three tools with Northwind.” · Globex data team</div>`;
-      return h + `</div>`;
+      let h = `<div class="w-nav"><span class="w-logo"><i></i>Northwind</span>` + [["Product","home"],["Plans","plans"],["Customers","customers"]].map(([l, k]) => el("link", l, "nav:" + k, "c-navl" + (k === S.view ? " on" : ""))).join("") +
+        `<span class="w-sp"></span>${el("button", "Start free", "cta", "c-btn")}</div><div class="w-wrap">` + (S.toast ? `<div class="c-toast" style="margin-top:14px">${esc(S.toast)}</div>` : "");
+      if (S.view === "home") h += `<div class="w-hero"><div><div class="w-eye">New · Ask questions in plain English</div><h3>The data warehouse that runs itself.</h3>
+        <p>Connect Stripe, Postgres and 200 other sources. Northwind models the data, keeps it fresh, and answers questions in seconds.</p>${el("button", "Book a demo", "demo", "c-btn")}</div>
+        <div class="w-shot">Monthly revenue<b>$1.28M</b><div class="w-bars">${[40,55,48,62,58,70,66,78,74,88,84,96].map(x => `<span style="height:${x}%"></span>`).join("")}</div></div></div>
+        <div class="w-logos"><span>ACME</span><span>GLOBEX</span><span>INITECH</span><span>UMBRELLA</span><span>HOOLI</span></div>
+        <div class="w-feats"><div><b>Sync in minutes</b>200+ connectors, no pipelines to babysit.</div><div><b>Always fresh</b>Models rebuild when the source changes.</div><div><b>Ask anything</b>Plain-English questions become SQL you can check.</div></div>`;
+      else if (S.view === "plans") h += `<div class="w-title"><h3>Pricing that grows with your data</h3><p>Every plan includes unlimited dashboards.</p></div><div class="w-plans">` +
+        [["Starter","$0","/mo",["1 workspace","5 sources","Daily syncs"]],["Pro plan","$49","/mo",["5 workspaces","Unlimited sources","Hourly syncs","AI questions"]],["Business","$129","/mo",["SSO and audit log","15-minute syncs","Priority support"]]].map(p =>
+        `<div class="w-plan${p[0] === "Pro plan" ? " hot" : ""}" data-kind="value" data-label="${p[0]}" data-value="${p[1]}${p[2]}">${p[0] === "Pro plan" ? `<span class="w-badge">Most popular</span>` : ""}<div style="font-weight:600">${p[0].replace(" plan", "")}</div>
+        <div class="p">${p[1]}<small>${p[2]}</small></div><ul>${p[3].map(x => `<li>${x}</li>`).join("")}</ul>${el("button", "Choose " + p[0].replace(" plan", ""), "cta", "c-btn" + (p[0] === "Pro plan" ? "" : " alt"))}</div>`).join("") + `</div>`;
+      else h += `<div class="w-title"><h3>Teams that stopped babysitting pipelines</h3></div><div class="w-quotes">` +
+        [["We replaced three tools with Northwind.","Globex, data team"],["Our board deck builds itself now.","Initech, finance"],["Fresh numbers every hour, zero on-call.","Hooli, analytics"]].map(q => `<div class="w-quote">“${q[0]}”<div class="who">${q[1]}</div></div>`).join("") + `</div>`;
+      return h + `<div class="w-foot"><span>© 2026 Northwind Data, Inc.</span><span>Privacy · Terms · Status</span></div></div>`;
     },
-    act(S, a) { S.toast = null; if (a.startsWith("nav:")) S.view = a.slice(4); else if (a === "cta") S.toast = "Checkout opens in a new window."; },
+    act(S, a) { S.toast = null; if (a.startsWith("nav:")) S.view = a.slice(4); else if (a === "cta") S.toast = "Check your email to finish signing up."; else if (a === "demo") S.toast = "Thanks. We’ll email you to pick a time."; },
     read(S, node) { S.last = `${node.dataset.label}: ${node.dataset.value}`; },
     set() {} } };
 
 // ---------------------------------------------------------------- saved workflows (most were saved before their site's latest update)
 const flows = [
-  { name:"Qualify Priya Raman", site:"pipeline", project:"Sales", ver:1, schedule:"off", review:false, expect:"Priya Raman: stage Qualified",
+  { name:"Qualify Priya Raman", site:"pipeline", project:"Sales", ver:1, schedule:"off", review:false, ask:true, expect:"Priya Raman: stage Qualified",
+    desc:"Finds Priya Raman in Pipeline and moves her lead to Qualified.", done:() => "Priya Raman is now Qualified in Pipeline.",
     steps:[ { type:"click", kind:"button", label:"Next" }, { type:"click", kind:"link", label:"Priya Raman", href:"/leads/13" },
       { type:"select", field:"Stage", value:"Qualified" }, { type:"click", kind:"button", label:"Save" } ],
-    runs:[{ when:"Yesterday, 9:02 AM", text:"Ran on autopilot", how:"replay" }, { when:"Mon, 9:00 AM", text:"Recorded", how:"replay" }] },
-  { name:"Update lead stages", site:"pipeline", project:"Sales", ver:3, schedule:"off", review:false, expect:"{{Lead}}: stage {{Stage}}",
+    runs:[{ when:"Yesterday, 9:02 AM", text:"Priya Raman is now Qualified", how:"replay" }, { when:"Mon, 9:00 AM", text:"Recorded", how:"replay" }] },
+  { name:"Update lead stages", site:"pipeline", project:"Sales", ver:3, schedule:"off", review:false, ask:true, expect:"{{Lead}}: stage {{Stage}}",
+    desc:"Sets the stage of every lead in your list. Edit the list under Inputs.", done:(g, p) => `${p.Lead} is now ${p.Stage}`,
     inputs:{ cols:["Lead","Stage"], rows:[["Ana Costa","Qualified"],["Felix Wagner","Won"],["Sara Ali","Lost"]] },
     steps:[ { type:"click", kind:"link", label:"{{Lead}}" }, { type:"click", kind:"button", label:"{{Stage}}" }, { type:"click", kind:"button", label:"Save changes" } ],
-    runs:[{ when:"Nov 21, 4:40 PM", text:"Ran on 12 rows · all done", how:"replay" }] },
-  { name:"Move Dana Cole to onsite", site:"hirebase", project:"Recruiting", ver:1, schedule:"off", review:true,
+    runs:[{ when:"Nov 21, 4:40 PM", text:"Updated 12 leads", how:"replay" }] },
+  { name:"Move Dana Cole to onsite", site:"hirebase", project:"Recruiting", ver:1, schedule:"off", review:true, ask:true,
     expect:"Dana Cole: stage Onsite, comment “Strong system design. Onsite next week.”",
+    desc:"Moves Dana Cole to Onsite in Hirebase and posts a note for the team.", done:() => "Dana Cole is in Onsite, and your note is posted.",
     steps:[ { type:"click", kind:"link", label:"Dana Cole", href:"/candidates/1" }, { type:"click", kind:"button", label:"Advance to Onsite" },
       { type:"fill", field:"Note", value:"Strong system design. Onsite next week." }, { type:"click", kind:"button", label:"Post note" } ],
     runs:[{ when:"Tue, 11:20 AM", text:"Recorded", how:"replay" }] },
-  { name:"File team lunch expense", site:"ledgerly", project:"Ops", ver:1, schedule:"fri", review:true, expect:"Submitted $84.20 · Meals · Team lunch",
+  { name:"Move Aisha Khan to onsite", site:"hirebase", project:"Recruiting", ver:1, schedule:"off", review:true, ask:true,
+    expect:"Aisha Khan: stage Onsite, comment “Great pairing session. Onsite next.”",
+    desc:"Moves Aisha Khan to Onsite in Hirebase and posts a note for the team.", done:() => "Aisha Khan is in Onsite, and your note is posted.",
+    steps:[ { type:"click", kind:"link", label:"Aisha Khan", href:"/candidates/3" }, { type:"click", kind:"button", label:"Advance to Onsite" },
+      { type:"fill", field:"Note", value:"Great pairing session. Onsite next." }, { type:"click", kind:"button", label:"Post note" } ],
+    runs:[{ when:"Wed, 3:15 PM", text:"Recorded", how:"replay" }] },
+  { name:"File team lunch expense", site:"ledgerly", project:"Ops", ver:1, schedule:"fri", review:true, ask:true, expect:"Submitted $84.20 · Meals · Team lunch",
+    desc:"Files the Friday team lunch in Ledgerly for approval.", done:() => "Submitted $84.20 for Team lunch under Meals. It’s waiting for approval.",
     steps:[ { type:"fill", field:"Amount", value:"84.20" }, { type:"select", field:"Category", value:"Meals" },
       { type:"fill", field:"Description", value:"Team lunch" }, { type:"click", kind:"button", label:"Submit" } ],
-    runs:[{ when:"Fri, 5:00 PM", text:"Ran on schedule", how:"replay" }, { when:"Nov 14, 5:00 PM", text:"Ran on schedule", how:"replay" }] },
-  { name:"Check Northwind's Pro price", site:"northwind", project:"Research", ver:1, schedule:"mon", review:false, expect:"Pro plan: $49/mo",
+    runs:[{ when:"Fri, 5:00 PM", text:"Submitted $84.20", how:"replay" }, { when:"Nov 14, 5:00 PM", text:"Submitted $84.20", how:"replay" }] },
+  { name:"Check Northwind's Pro price", site:"northwind", project:"Research", ver:1, schedule:"mon", review:false, ask:true, expect:"Pro plan: $49/mo",
+    desc:"Every Monday, reads the Pro price on Northwind’s site so you hear when it changes.",
+    done:g => { const p = g.split(": ")[1]; return `Northwind Pro is ${p}, the same as last week.`; },
     steps:[ { type:"click", kind:"link", label:"Pricing" }, { type:"read", field:"Pro" } ],
-    runs:[{ when:"Mon, 9:00 AM", text:"Read $49/mo", how:"replay" }] } ];
+    runs:[{ when:"Mon, 9:00 AM", text:"Pro is $49/mo", how:"replay" }] } ];
+flows.forEach(f => f.versions = [{ v:f.ver, when:f.runs[f.runs.length - 1].when, note:"Recorded", steps:clone(f.steps) }]);
 // what the healer works out about renamed or moved controls.
 // shortcut: scripted so the page needs no API key; the real feature makes one model call per broken step
 const MEANS = { "Advance to Onsite":["Move stage","Onsite"], "Note":["Comment"], "Description":["What was it for?"], "Pricing":["Plans"] };
 const SCHED = { off:"Off", hour:"Every hour", weekday:"Weekdays at 9 AM", mon:"Mondays at 9 AM", fri:"Fridays at 5 PM" };
 const PROJECTS = [["Sales","#dbe7ff","#3b6fd8"],["Recruiting","#dcf2e6","#2f8a57"],["Ops","#fde9d9","#c2410c"],["Research","#efe4fb","#7e3fc0"]];
 const PROJECT_OF = { pipeline:"Sales", hirebase:"Recruiting", ledgerly:"Ops", northwind:"Research" };
+
+// ---------------------------------------------------------------- memory: what autopilot learned from every run, shared by all workflows
+const mem = { renames:{}, records:{}, slow:{} };
+const traces = []; // one per run: what autopilot saw and did, for the self-review
+const harness = { v:1, rules:[], log:[], bar:{ rename:1, direct:2 } }; // its own working rules, which it proposes and tests itself
+let ideas = [];
+const ago = () => now().replace("Today, ", "today ");
+function remember(site, name, info, from) {
+  const x = mem.records[site + "|" + name] ||= { site, name, flows:[], usedBy:[], when:ago() };
+  Object.assign(x, info); if (!x.flows.includes(from)) x.flows.push(from);
+}
+const usedBy = (x, name) => { if (!x.usedBy.includes(name)) x.usedBy.push(name); };
+const ruleOn = (type, site) => harness.rules.find(r => r.on && r.type === type && r.site === site);
+function learn(f, r) {
+  for (const o of out) {
+    if (o.rename && !/\{\{/.test(o.rename.old)) mem.renames[f.site + "|" + o.rename.old] ||= { site:f.site, old:o.rename.old, seq:o.rename.seq, from:f.name, when:ago(), usedBy:[], ai:o.how === "ai" };
+    if (o.link) remember(f.site, o.link.label, { href:o.link.href, act:o.link.act }, f.name);
+  }
+  if (out.some(o => o.waited)) mem.slow[f.site] = (mem.slow[f.site] || 0) + 1;
+  if (r.ok && r.got) {
+    const m = r.got.match(/^(.+?): (.+)$/), p = r.got.split(" · ");
+    if (m) remember(f.site, m[1], { fact:m[2] }, f.name); else remember(f.site, p[p.length - 1], { fact:p.slice(0, -1).join(" · ").toLowerCase() }, f.name);
+  }
+  traces.push({ flow:f.name, site:f.site, when:now(), ok:!!r.ok, ai:r.ai || 0, paged:r.paged || [], mem:out.filter(o => o.how === "mem").length });
+  for (const rule of r.used || []) { // watch every change it made to itself, and undo the ones that hurt
+    rule.used++;
+    if (r.ok) rule.good++;
+    else if (!r.halted) { rule.bad++; rule.on = false; harness.log.unshift({ when:now(), text:`Turned off “${rule.title}” by itself: a run that used it got stuck.`, kind:"off" }); }
+  }
+}
+// seed: what it saw when each workflow was recorded
+flows.forEach(f => f.steps.forEach(s => s.href && remember(f.site, s.label, { href:s.href, act:"open:" + s.href.split("/").pop() }, f.name)));
+
+// the self-review: read past runs, find patterns, propose a change to its own rules, and test it on what was recorded
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+function triage() {
+  const found = [];
+  for (const site of Object.keys(SITES).filter(k => !SITES[k].internal)) {
+    const dom = SITES[site].domain, runs = traces.filter(t => t.site === site);
+    const rn = Object.values(mem.renames).filter(x => x.site === site && x.ai);
+    if (rn.length >= harness.bar.rename && !harness.rules.some(x => x.type === "rename" && x.site === site)) {
+      const hits = flows.flatMap(g => g.site === site ? g.steps.filter(s => rn.some(x => x.from !== g.name && x.old === (s.label || s.field))).map(() => g.name) : []), who = [...new Set(hits)];
+      found.push({ type:"rename", site, title:`Reuse AI fixes from one ${SITES[site].name} workflow in all of them`,
+        saw:rn.map(x => `AI worked out that “${x.old}” is now ${x.seq.join(" › ")} (in ${x.from})`),
+        test:who.length ? `Tested on your saved workflows: ${who.join(", ")} still ${who.length > 1 ? "use" : "uses"} the old names. With this change ${who.length > 1 ? "they" : "it"} would skip ${plural(hits.length, "AI call")}.`
+          : `No other saved workflow uses these old names right now. New ones on ${dom} will reuse them.`, gain:hits.length });
+    }
+    const flips = runs.flatMap(t => t.paged).filter(p => mem.records[site + "|" + p.label]?.act);
+    if (flips.length >= harness.bar.direct && !harness.rules.some(x => x.type === "direct" && x.site === site)) {
+      const n = flips.reduce((a, p) => a + p.pages, 0);
+      found.push({ type:"direct", site, title:`Open known ${site === "pipeline" ? "leads" : "records"} on ${dom} by their address`,
+        saw:flips.slice(0, 4).map(p => `Flipped ${plural(p.pages, "page")} to find ${p.label} (in ${p.flow})`).concat(flips.length > 4 ? [`and ${flips.length - 4} more`] : []),
+        test:`Replayed on ${plural(runs.length, "past run")}: every one of these records has a known address, so it would skip ${plural(n, "page flip")}.`, gain:n });
+    }
+  }
+  return found.sort((a, b) => b.gain - a.gain);
+}
+function applyIdea(k) {
+  const x = ideas[k]; harness.v++;
+  harness.rules.push({ id:harness.v, type:x.type, site:x.site, title:x.title, on:true, used:0, good:0, bad:0, when:now(), v:harness.v });
+  harness.log.unshift({ when:now(), text:`Applied “${x.title}”. Its rules are now version ${harness.v}.`, kind:"on" });
+  ideas = triage();
+}
+function skipIdea(k) {
+  const x = ideas[k]; harness.bar[x.type]++;
+  harness.log.unshift({ when:now(), text:`You passed on “${x.title}”, so it now waits for ${plural(harness.bar[x.type], "example")} before suggesting this kind of change again.`, kind:"skip" });
+  ideas = triage().filter(y => !(y.type === x.type && y.site === x.site));
+}
+function forget(id) {
+  const [kind, key] = [id[0], id.slice(2)];
+  if (kind === "r") delete mem.renames[key]; else if (kind === "c") delete mem.records[key];
+  ideas = triage();
+}
+
+// the graph: workflows, the sites they run on, and what was learned there, with every connection drawn
+function graph() {
+  const sites = Object.keys(SITES).filter(k => !SITES[k].internal && flows.some(f => f.site === k));
+  const W = [], S = [], L = [], E = [];
+  sites.forEach(site => {
+    flows.forEach((f, i) => f.site === site && W.push({ id:"w:" + i, kind:"w", t1:f.name, t2:`v${f.ver} · ${plural(f.runs.length, "run")}`, site, name:f.name }));
+    S.push({ id:"s:" + site, kind:"s", t1:SITES[site].name, t2:SITES[site].domain + (mem.slow[site] ? " · loads slowly" : ""), site });
+    Object.entries(mem.renames).filter(([, x]) => x.site === site).forEach(([k, x]) => L.push({ id:"r:" + k, kind:"r", t1:`“${x.old}” → ${x.seq.join(" › ")}`, t2:x.ai ? "rename, worked out by AI" : "rename, matched by name", site, x }));
+    Object.entries(mem.records).filter(([, x]) => x.site === site).forEach(([k, x]) => L.push({ id:"c:" + k, kind:"c", t1:x.name, t2:x.fact || x.href || "", site, x }));
+  });
+  const wid = name => W.find(w => w.name === name)?.id;
+  W.forEach(w => E.push({ a:w.id, b:"s:" + w.site, k:"uses" }));
+  L.forEach(l => {
+    E.push({ a:"s:" + l.site, b:l.id, k:"on" });
+    const from = l.kind === "r" ? [l.x.from] : l.x.flows;
+    from.forEach(n => wid(n) && E.push({ a:wid(n), b:l.id, k:"from" }));
+    l.x.usedBy.forEach(n => wid(n) && !from.includes(n) && E.push({ a:wid(n), b:l.id, k:"used" }));
+  });
+  return { W, S, L, E };
+}
+function graphSvg(sel) {
+  const { W, S, L, E } = graph(), H = 38, top = 34, col = [{ x:8, w:214 }, { x:318, w:168 }, { x:582, w:262 }];
+  W.forEach((n, i) => { n.c = 0; n.y = top + i * H; });
+  L.forEach((n, i) => { n.c = 2; n.y = top + i * H; });
+  S.forEach(n => { n.c = 1; const ys = [...W, ...L].filter(m => m.site === n.site).map(m => m.y); n.y = Math.round(ys.reduce((a, y) => a + y, 0) / ys.length); });
+  const all = [...W, ...S, ...L], at = Object.fromEntries(all.map(n => [n.id, n])), h = Math.max(W.length, L.length, 1) * H + top + 8;
+  const near = sel ? new Set([sel, ...E.filter(e => e.a === sel || e.b === sel).flatMap(e => [e.a, e.b])]) : null;
+  const cut = (t, w) => t.length * 6.6 > w - 20 ? t.slice(0, Math.floor((w - 24) / 6.6)) + "…" : t;
+  const edges = E.map(e => {
+    const a = at[e.a], b = at[e.b], x1 = col[a.c].x + col[a.c].w, y1 = a.y + 15, x2 = col[b.c].x, y2 = b.y + 15, m = (x1 + x2) / 2;
+    const hot = near && near.has(e.a) && near.has(e.b) && (e.a === sel || e.b === sel);
+    return `<path class="ge ${e.k}${hot ? " hot" : ""}" data-a="${e.a}" data-b="${e.b}" d="M${x1} ${y1}C${m} ${y1} ${m} ${y2} ${x2} ${y2}"/>`;
+  }).join("");
+  const box = n => `<g class="gn k-${n.kind}${n.id === sel ? " sel" : ""}${near && near.has(n.id) ? " hot" : ""}" data-act="sel:${esc(n.id)}" data-id="${esc(n.id)}" transform="translate(${col[n.c].x} ${n.y})" tabindex="0" role="button" aria-label="${esc(n.t1)}">
+    <rect width="${col[n.c].w}" height="30" rx="8"/><rect class="kb" width="4" height="18" x="6" y="6" rx="2"/><text class="t1" x="16" y="13">${esc(cut(n.t1, col[n.c].w))}</text><text class="t2" x="16" y="25">${esc(cut(n.t2, col[n.c].w + 20))}</text></g>`;
+  return `<svg viewBox="0 0 852 ${h}" class="${near ? "focus" : ""}" role="img" aria-label="Memory graph">
+    <text class="colh" x="${col[0].x}" y="16">WORKFLOWS</text><text class="colh" x="${col[1].x}" y="16">SITES</text><text class="colh" x="${col[2].x}" y="16">WHAT IT LEARNED</text>
+    ${edges}${all.map(box).join("")}${L.length ? "" : `<text class="t2" x="${col[2].x}" y="${top + 18}">Nothing yet. Run a workflow.</text>`}</svg>`;
+}
+function nodeCard(id) {
+  const i = id.indexOf(":"), kind = id.slice(0, i), key = id.slice(i + 1);
+  if (kind === "w") { const f = flows[+key], got = Object.values(mem.renames).filter(x => x.from === f.name).length + Object.values(mem.records).filter(x => x.flows.includes(f.name)).length;
+    const reused = [...Object.values(mem.renames), ...Object.values(mem.records)].filter(x => x.usedBy.includes(f.name)).length;
+    return `<h4>${esc(f.name)}</h4><p>Runs on ${SITES[f.site].domain}. Taught memory ${plural(got, "thing")}${reused ? `, and reused ${plural(reused, "thing")} other workflows learned` : ""}.</p><div class="acts"><button class="b sm" data-act="flow:${key}">Open workflow</button></div>`; }
+  if (kind === "s") { const n = flows.filter(f => f.site === key).length, k = Object.values(mem.renames).filter(x => x.site === key).length + Object.values(mem.records).filter(x => x.site === key).length;
+    return `<h4>${SITES[key].name} · ${SITES[key].domain}</h4><p>${plural(n, "workflow")} run here. Everything learned here (${plural(k, "item")}) is shared by all of them.${mem.slow[key] ? ` It was slow to load in ${plural(mem.slow[key], "run")}, so autopilot waits for it.` : ""}</p>`; }
+  if (kind === "r") { const x = mem.renames[key]; if (!x) return "";
+    return `<h4>“${esc(x.old)}” is now ${esc(x.seq.join(" › "))}</h4><p>${x.ai ? "AI worked this out" : "Matched by name"} in “${esc(x.from)}”, ${x.when}.</p>
+      <p>${x.usedBy.length ? `Reused, with no AI, by ${esc(x.usedBy.join(", "))}.` : ruleOn("rename", x.site) ? "Other workflows on this site will reuse it." : "Not shared yet. Autopilot will suggest sharing it on the Improve page."}</p><div class="acts"><button class="b sm" data-act="forget:${esc(id)}">Forget this</button></div>`; }
+  const x = mem.records[key]; if (!x) return "";
+  return `<h4>${esc(x.name)}</h4><p>${[x.fact && `Last seen: ${esc(x.fact)}.`, x.href && `Lives at ${SITES[x.site].domain}${esc(x.href)}.`].filter(Boolean).join(" ")}</p><p>Seen in ${esc(x.flows.join(", "))}.${x.usedBy.length ? ` Found by address, with no paging, in ${esc(x.usedBy.join(", "))}.` : ""}</p>
+    <div class="acts"><button class="b sm" data-act="forget:${esc(id)}">Forget this</button></div>`;
+}
+SITES.memory = { name:"Memory", domain:"polar://memory", fav:"#7e3fc0", internal:true, start:() => ({ sel:null }), title:() => "Memory", path:() => "",
+  render(S) {
+    const n = Object.keys(mem.renames).length + Object.keys(mem.records).length;
+    return `<div class="p-wrap"><h3 class="p-h">Memory</h3><div class="p-sub">What autopilot has learned from ${plural(traces.length, "run")} so far: ${plural(n, "thing")}, shared by every workflow on the same site.</div>
+      <div class="legend"><span><i style="background:#3b8cff"></i>Workflow</span><span><i style="background:#8a8a94"></i>Site</span><span><i style="background:#e8a33c"></i>Renamed control</span><span><i style="background:#2f8a57"></i>Record</span>
+      <span><svg width="22" height="8"><path d="M0 4h22" stroke="#e8a33c" stroke-width="2" stroke-dasharray="4 3"/></svg>learned in</span><span><svg width="22" height="8"><path d="M0 4h22" stroke="#7e3fc0" stroke-width="2.5"/></svg>reused by</span></div>
+      <div class="gwrap">${graphSvg(S.sel)}</div>${S.sel && nodeCard(S.sel) ? `<div class="pcard">${nodeCard(S.sel)}</div>` : ""}</div>`;
+  },
+  act(S, a) {
+    if (a.startsWith("sel:")) S.sel = S.sel === a.slice(4) ? null : a.slice(4);
+    else if (a.startsWith("forget:")) { forget(a.slice(7)); S.sel = null; renderNav(); }
+    else if (a.startsWith("flow:")) setTimeout(() => selectFlow(+a.slice(5)));
+  }, set() {} };
+SITES.improve = { name:"Improve", domain:"polar://improve", fav:"#16803c", internal:true, start:() => ({ reviewed:null }), title:() => "Improve", path:() => "",
+  render(S) {
+    const ai = traces.reduce((a, t) => a + t.ai, 0), stuck = traces.filter(t => !t.ok).length, m = traces.reduce((a, t) => a + t.mem, 0);
+    return `<div class="p-wrap"><h3 class="p-h">Improve</h3><div class="p-sub">Autopilot reviews its own runs, finds what keeps going wrong or costing AI, and suggests changes to how it works. It tests each one on past runs first.</div>
+      <div class="pcard" style="margin-top:0"><p style="margin:0">Rules version ${harness.v} · reviewed ${plural(traces.length, "run")}: ${plural(ai, "AI call")}, ${plural(m, "step")} from memory, ${stuck} stuck.</p>
+      <div class="acts"><button class="b sm pri" data-act="review">Review runs now</button>${S.reviewed ? `<span class="p-sub" style="margin:4px 0 0">Reviewed ${S.reviewed}</span>` : ""}</div></div>
+      <div class="psec">Suggestions</div>` + (ideas.length ? ideas.map((x, k) => `<div class="pcard"><h4>${esc(x.title)}</h4><p>What it noticed:</p><ul>${x.saw.map(t => `<li>${esc(t)}</li>`).join("")}</ul>
+        <div class="test">${esc(x.test)}</div><div class="acts"><button class="b sm pri" data-act="apply:${k}">Apply</button><button class="b sm" data-act="skip:${k}">Not now</button></div></div>`).join("")
+        : `<div class="p-sub">${traces.length ? "Nothing to change right now. It checks again after every run." : "No runs to learn from yet. Run a workflow and it reviews it here."}</div>`) +
+      `<div class="psec">Changes it made to itself</div>` + (harness.rules.length ? harness.rules.map(r => `<div class="pcard"><h4>${esc(r.title)}</h4><p>Version ${r.v}, applied ${r.when}. ${r.used ? `Used in ${plural(r.used, "run")}: ${r.good} worked${r.bad ? `, ${r.bad} got stuck` : ""}.` : "Not used yet."}</p>
+        <div class="acts"><button class="b sm" data-act="toggle:${r.id}">${r.on ? "Turn off" : "Turn back on"}</button>${r.on ? "" : `<span class="p-sub" style="margin:4px 0 0">Off</span>`}</div></div>`).join("") : `<div class="p-sub">None yet.</div>`) +
+      (harness.log.length ? `<div class="psec">History</div><ul class="plog">${harness.log.map(l => `<li><span>${esc(l.text)}</span><span class="when">${esc(l.when)}</span></li>`).join("")}</ul>` : "") + `</div>`;
+  },
+  act(S, a) {
+    if (a === "review") { ideas = triage(); S.reviewed = now().replace("Today, ", "at "); }
+    else if (a.startsWith("apply:")) applyIdea(+a.slice(6));
+    else if (a.startsWith("skip:")) skipIdea(+a.slice(5));
+    else if (a.startsWith("toggle:")) { const r = harness.rules.find(x => x.id === +a.slice(7)); r.on = !r.on; harness.log.unshift({ when:now(), text:`${r.on ? "Turned back on" : "Turned off"} “${r.title}”.`, kind:"off" }); }
+    renderNav();
+  }, set() {} };
+function openInternal(name) { if (busy || recording) return; let i = tabs.findIndex(t => t.site === name); if (i < 0) openTab(name); else active = i; draw(); }
 
 // ---------------------------------------------------------------- browser state
 let tabs = [], active = 0, cur = 0, recording = null, busy = false, out = null, foot = null, view = "steps", filter = null, searching = false, query = "",
@@ -411,11 +733,7 @@ function openTab(site) { tabs.push({ site, S:site ? SITES[site].start() : null, 
 function focusSite(site, fresh) {
   let i = tabs.findIndex(t => t.site === site);
   if (i < 0) { openTab(site); i = active; } else active = i;
-  if (fresh) { // reload the page but keep pop-ups the user already closed closed
-    const keep = tabs[i].S; tabs[i].S = SITES[site].start();
-    if (keep && "popup" in keep) tabs[i].S.popup = keep.popup; if (keep && "banner" in keep) tabs[i].S.banner = keep.banner;
-    tabs[i].hist = []; tabs[i].fwd = [];
-  }
+  if (fresh) { tabs[i].S = SITES[site].start(); tabs[i].hist = []; tabs[i].fwd = []; }
 }
 const slug = n => "/" + n.toLowerCase().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -432,6 +750,7 @@ function renderPage() {
   $("url").innerHTML = s ? `<b>${s.domain}</b>${esc(s.path(t.S))}` : "Search or type a URL";
   $("star").classList.toggle("on", t.star); $("star").disabled = !s;
   $("back").disabled = busy || !t.hist.length; $("fwd").disabled = busy || !t.fwd.length; $("reload").disabled = busy || !s;
+  if (s && t.S.loading && !t.slow) t.slow = setTimeout(() => { t.slow = null; t.S.loading = false; if (tab() === t) { renderTabs(); renderPage(); } }, 1100); // this site is slow to load
   if (s) { site.innerHTML = s.render(t.S); return; }
   site.innerHTML = `<div class="ntp"><h2>What can I do for you?</h2><div class="prompt"><textarea id="ask" placeholder="Describe a task" aria-label="Task"></textarea>
     <div class="r"><span>Medium</span><button class="send" id="send" aria-label="Send" disabled>${I.up}</button></div></div>
@@ -443,6 +762,8 @@ function renderNav() {
     <button class="it" data-nav="new"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 13h10M4 10.5 11 3.5l1.5 1.5-7 7H4z"/></svg>New task</button>
     <button class="it${searching ? " on" : ""}" data-nav="search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>Search</button>
     <button class="it${!filter && !searching ? " on" : ""}" data-nav="all"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h8l-2-2M13 11H5l2 2"/></svg>Workflows</button>
+    <button class="it" data-nav="memory"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4" cy="4.5" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="8" cy="12" r="2"/><path d="M6 4.4h4M5 6.2l2 4M11 5.8l-2 4.4"/></svg>Memory</button>
+    <button class="it" data-nav="improve"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2.5 12.5 6 9l2.5 2.5L13.5 6"/><path d="M10 6h3.5v3.5"/></svg>Improve${ideas.length ? `<span class="badge">${ideas.length}</span>` : ""}</button>
     <button class="it" data-nav="custom"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 4.5h6M11.5 4.5H13M3 11.5h1.5M7 11.5h6"/><circle cx="10" cy="4.5" r="1.5"/><circle cx="5.5" cy="11.5" r="1.5"/></svg>Customize</button>
     <div class="sec">Projects</div>` +
     PROJECTS.map(([p, bg, fg]) => `<button class="it${filter === p ? " on" : ""}" data-proj="${p}"><span class="fold" style="background:${bg};color:${fg}">${I.fold}</span>${p}</button>`).join("") +
@@ -451,40 +772,81 @@ function renderNav() {
     (today.length ? `<div class="sec">Today</div>` + today.map(t => `<span class="today">${esc(t)}</span>`).join("") : "");
   if (searching) { const q = $("q"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
 }
-const label = s => {
-  const v = x => esc(x).replace(/\{\{(\w+)\}\}/g, '<span class="param">$1</span>');
-  return s.type === "select" ? `${v(s.field)}: ${v(s.value)}` : s.type === "fill" ? `Type “${v(s.value)}” in ${v(s.field)}` : s.type === "read" ? `Read the ${v(s.field)} price` : `Click ${v(s.label)}`;
-};
+const v = x => esc(x).replace(/\{\{(\w+)\}\}/g, '<span class="param">$1</span>');
+const q = x => `“${v(x)}”`;
+function label(s, t = "do") { // plain words for a step: to do, doing, done
+  const k = { do:0, now:1, done:2 }[t], W = w => w.split("|")[k];
+  if (s.type === "select") return `${W("Set|Setting|Set")} ${v(s.field)} to ${q(s.value)}`;
+  if (s.type === "fill") return `${W("Type|Typing|Typed")} ${q(s.value)} into ${v(s.field)}`;
+  if (s.type === "read") return `${W("Read|Reading|Read")} the ${v(s.field)} price`;
+  return s.kind === "link" ? `${W("Open|Opening|Opened")} ${q(s.label)}` : `${W("Click|Clicking|Clicked")} ${q(s.label)}`;
+}
+const TAG = { free:"Fixed, no AI", ai:"Fixed with AI", mem:"From memory", fail:"Stuck", ask:"Needs your OK" };
+const ICON = { replay:"✓", free:"✓", ai:"✓", mem:"✓", ver:"✓", fail:"!", ask:"?", now:"" };
+function stepLi(o, i) {
+  const what = o.did || label(o.s, o.how === "now" ? "now" : ["replay", "free", "ai", "mem"].includes(o.how) ? "done" : "do");
+  return `<li class="${o.how || ""}"><span class="ic">${o.how ? ICON[o.how] : i + 1}</span><div>
+    <div class="what">${what}${TAG[o.how] ? `<span class="tag ${o.how}">${TAG[o.how]}</span>` : ""}</div>
+    ${o.was ? `<div class="diff"><s>${v(o.was)}</s><span>→</span><b>${v(o.is)}</b></div>` : ""}${o.why ? `<div class="why">${esc(o.why)}</div>` : ""}
+    ${o.how === "ask" ? `<div class="askbox">${esc(o.ask)}<div class="acts"><button class="b sm pri" id="approve">${esc(o.askLabel)}</button><button class="b sm" id="deny">Don’t</button></div></div>` : ""}</div></li>`;
+}
+function resultCard() {
+  if (!result) return "";
+  return `<div class="done ${result.ok ? "ok" : "bad"}" role="status"><div class="dh">${result.ok ? "✓ Done" : "Stopped"}</div><div class="dt">${esc(result.head)}</div>` +
+    (result.rows ? `<ul>${result.rows.map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join("")}</ul>` : "") +
+    (result.saved ? `<div class="ds">The site had changed, so autopilot saved the fixed steps as version ${result.saved}. <button class="lnk" data-view="runs">See versions</button></div>` : "") +
+    (result.memo ? `<div class="ds">Reused ${result.memo} thing${result.memo > 1 ? "s" : ""} it learned in other runs. <button class="lnk" data-open="memory">See memory</button></div>` : "") +
+    (result.ok && !result.saved && !result.pending && !result.rows && !result.memo ? `<div class="ds">Every step ran exactly as recorded.</div>` : "") +
+    (ideas.length ? `<div class="ds">It has ${ideas.length} idea${ideas.length > 1 ? "s" : ""} for working better. <button class="lnk" data-open="improve">Review</button></div>` : "") + `</div>`;
+}
 function renderSide() {
-  const f = flows[cur], rows = f.inputs ? f.inputs.rows.length : 0;
-  const state = recording ? ["rec", "Recording"] : busy ? ["run", "Running"] : pending ? ["rev", "Review fix"] : f.schedule !== "off" ? ["sch", SCHED[f.schedule]] : ["", "Ready"];
-  const tag = { free:"Fixed", ai:"Fixed with AI", fail:"Stuck" }, icon = { replay:"✓", free:"✓", ai:"✓", fail:"!", now:"" };
+  const f = flows[cur], rows = f.inputs ? f.inputs.rows.length : 0, asking = out && out.some(o => o.how === "ask");
+  const state = recording ? ["rec", "Recording"] : asking ? ["rev", "Needs your OK"] : busy ? ["run", "Running"] : pending ? ["rev", "Review fix"] : f.schedule !== "off" ? ["sch", SCHED[f.schedule]] : ["", "Ready"];
   let body;
-  if (recording) body = `<ol class="list">` + (recording.steps.length ? recording.steps.map((s, i) => `<li><span class="ic">${i + 1}</span><div class="what">${label(s)}</div></li>`).join("") : `<li class="empty">Do the task on the page. Each step shows up here.</li>`) + `</ol>`;
-  else if (view === "runs") body = `<ol class="list">` + f.runs.map(r => `<li class="${r.how}"><span class="ic">${icon[r.how]}</span><div class="what">${esc(r.text)}<span class="when">${esc(r.when)}</span></div></li>`).join("") + `</ol>`;
+  if (recording) body = recording.steps.length ? `<ol class="list">` + recording.steps.map((s, i) => `<li><span class="ic">${i + 1}</span><div class="what">${label(s, "done")}</div></li>`).join("") + `</ol>`
+    : `<div class="loop"><div><i>1</i><span><b>Do the task once</b>Click through it on this page, like you normally would.</span></div>
+      <div><i>2</i><span><b>Save it</b>Each step you take shows up here.</span></div>
+      <div><i>3</i><span><b>Autopilot repeats it</b>Run it again, on a schedule, or over a list. If the site changes, it fixes the step.</span></div></div>`;
+  else if (view === "runs") body = `<div class="subh">Runs</div><ol class="list">` + f.runs.map(r => `<li class="${r.how}"><span class="ic">${ICON[r.how]}</span><div class="what">${esc(r.text)}<span class="when">${esc(r.when)}</span></div></li>`).join("") + `</ol>
+    <div class="subh">Versions</div><ol class="list vers">` + f.versions.map((x, k) => `<li><span class="ic">${x.v}</span><div><div class="what">Version ${x.v}${x.v === f.ver ? `<span class="tag cur">In use</span>` : ""}<span class="when">${esc(x.when)}</span></div>
+      <div class="why">${esc(x.note)}</div>${x.v !== f.ver ? `<button class="b sm" data-restore="${k}"${busy ? " disabled" : ""}>Use this version</button>` : ""}</div></li>`).join("") + `</ol>`;
   else if (view === "inputs" && f.inputs) body = `<table class="inp"><thead><tr>${f.inputs.cols.map(c => `<th>${esc(c)}</th>`).join("")}<th class="st"></th><th class="del"></th></tr></thead><tbody>` +
-    f.inputs.rows.map((r, ri) => `<tr>${r.map((v, ci) => `<td><input data-cell="${ri},${ci}" value="${esc(v)}" aria-label="${esc(f.inputs.cols[ci])}, row ${ri + 1}"${busy ? " disabled" : ""}></td>`).join("")}
+    f.inputs.rows.map((r, ri) => `<tr>${r.map((x, ci) => `<td><input data-cell="${ri},${ci}" value="${esc(x)}" aria-label="${esc(f.inputs.cols[ci])}, row ${ri + 1}"${busy ? " disabled" : ""}></td>`).join("")}
       <td class="st">${rowState && rowState[ri] ? (rowState[ri] === "now" ? `<span class="now-t">…</span>` : rowState[ri] === "ok" ? `<span class="ok-t">✓</span>` : `<span class="bad-t">!</span>`) : ""}</td>
       <td class="del"><button data-delrow="${ri}" aria-label="Remove row ${ri + 1}"${busy ? " disabled" : ""}>${I.x}</button></td></tr>`).join("") + `</tbody></table>
-      <button class="b sm addrow" id="addrow"${busy ? " disabled" : ""}>${I.plus}Add row</button>`;
-  else body = `<ol class="list" aria-live="polite">` + (out || f.steps.map(s => ({ s }))).map((o, i) => `<li class="${o.how || ""}"><span class="ic">${o.how ? icon[o.how] : i + 1}</span><div>
-      <div class="what">${label(o.s)}${tag[o.how] ? `<span class="tag ${o.how}">${tag[o.how]}</span>` : ""}</div>${o.why ? `<div class="why">${esc(o.why)}</div>` : ""}</div></li>`).join("") + `</ol>`;
+      <button class="b sm addrow" id="addrow"${busy ? " disabled" : ""}>${I.plus}Add row</button>` + resultCard();
+  else body = `<ol class="list" aria-live="polite">` + (out || f.steps.map(s => ({ s }))).map(stepLi).join("") + `</ol>` + resultCard();
   $("side").innerHTML = `<div class="sp-head"><span class="logo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11.5 6.5 8 9 10.5 13 5"/><path d="M10 5h3v3"/></svg></span><span class="h">Autopilot</span>
       <select class="b sm mob" id="pick" aria-label="Workflow"${busy || recording ? " disabled" : ""}>${flows.map((x, i) => `<option value="${i}"${i === cur ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>
     <div class="shead"><div class="row"><span class="t">${recording ? "New workflow" : esc(f.name)}</span><span class="pill ${state[0]}">${state[0] === "sch" ? I.clock : ""}${state[1]}</span></div>
-      <div class="meta">${recording ? SITES[tab().site].domain : `${SITES[f.site].domain} · version ${f.ver} · ${f.steps.length} steps`}</div></div>
-    <div class="ctrl">` + (recording ? `<button class="b pri" id="save">Save workflow</button><button class="b" id="cancel">Discard</button>`
-      : `<button class="b pri" id="run"${busy || pending ? " disabled" : ""}>${I.play}${rows ? `Run on ${rows} row${rows > 1 ? "s" : ""}` : "Run now"}</button>
-        <span class="selwrap">${withClass(I.clock, "i1")}<select id="sched" aria-label="Schedule"${busy ? " disabled" : ""}>${Object.entries(SCHED).map(([k, v]) => `<option value="${k}"${k === f.schedule ? " selected" : ""}>${k === "off" ? "Schedule" : v}</option>`).join("")}</select>${withClass(I.down, "i2")}</span>`) + `</div>
-    ${recording ? "" : `<div class="seg" role="tablist"><button role="tab" data-view="steps" aria-selected="${view === "steps"}">Steps</button>${f.inputs ? `<button role="tab" data-view="inputs" aria-selected="${view === "inputs"}">Inputs</button>` : ""}<button role="tab" data-view="runs" aria-selected="${view === "runs"}">Runs</button></div>`}
-    ${pending ? `<div class="review"><b>Fixed ${pending.ai} step${pending.ai > 1 ? "s" : ""} with AI.</b> Check the steps marked “Fixed with AI”, then keep the fix or undo it.<div class="acts"><button class="b sm pri" id="keep">Keep fix</button><button class="b sm" id="undo">Undo</button></div></div>` : ""}
+      <div class="meta">${recording ? "Recording on " + SITES[tab().site].domain : `${SITES[f.site].domain} · version ${f.ver} · ${f.steps.length} steps`}</div></div>
+    ${recording ? `<div class="recbar">Recording. Do the task on the page.</div>` : `<div class="desc">${esc(f.desc)}</div>`}
+    <div class="ctrl">` + (recording ? `<button class="b pri" id="save"${recording.steps.length ? "" : " disabled"}>Save workflow</button><button class="b" id="cancel">Discard</button>`
+      : busy ? `<button class="b pri" disabled>${I.play}Running…</button><button class="b" id="stop">${I.stop}Stop, I’ll take over</button>`
+      : `<button class="b pri" id="run"${pending ? " disabled" : ""}>${I.play}${rows ? `Run on ${rows} row${rows > 1 ? "s" : ""}` : "Run now"}</button>
+        <span class="selwrap">${withClass(I.clock, "i1")}<select id="sched" aria-label="Schedule">${Object.entries(SCHED).map(([k, x]) => `<option value="${k}"${k === f.schedule ? " selected" : ""}>${k === "off" ? "Schedule" : x}</option>`).join("")}</select>${withClass(I.down, "i2")}</span>
+        <button class="b" id="record2">${withClass(I.rec, "")}Record new</button>`) + `</div>
+    ${recording ? "" : `<div class="seg" role="tablist"><button role="tab" data-view="steps" aria-selected="${view === "steps"}">Steps</button>${f.inputs ? `<button role="tab" data-view="inputs" aria-selected="${view === "inputs"}">Inputs</button>` : ""}<button role="tab" data-view="runs" aria-selected="${view === "runs"}">History</button></div>`}
+    ${pending ? `<div class="review"><b>The site changed, and AI fixed ${pending.ai} step${pending.ai > 1 ? "s" : ""}.</b> Keep the fixed steps for next time?
+      <div class="diff" style="flex-direction:column;align-items:flex-start">${pending.changes.map(c => Array.isArray(c) ? `<span><s>${v(c[0])}</s> → <b>${v(c[1])}</b></span>` : `<span>${esc(c)}</span>`).join("")}</div>
+      <div class="acts"><button class="b sm pri" id="keep">Keep fix</button><button class="b sm" id="undo">Undo</button></div></div>` : ""}
     <div class="body">${body}</div>
-    ${recording ? "" : `<div class="setting"><span id="rv-l">Review AI fixes before saving</span><button class="switch" id="rv" role="switch" aria-checked="${f.review}" aria-labelledby="rv-l"${busy ? " disabled" : ""}></button></div>`}
+    ${recording ? "" : `<div class="setting"><span id="rv-l">Review AI fixes before saving</span><button class="switch" id="rv" role="switch" aria-checked="${f.review}" aria-labelledby="rv-l"${busy ? " disabled" : ""}></button></div>
+    <div class="setting" style="border-top:0;padding-top:0"><span id="ask-l">Ask before it submits or posts</span><button class="switch" id="askset" role="switch" aria-checked="${f.ask}" aria-labelledby="ask-l"${busy ? " disabled" : ""}></button></div>`}
     <div class="foot${foot ? (foot.ok ? " ok" : " bad") : ""}">${foot ? esc(foot.text) : ""}</div>`;
 }
 function draw() { renderTabs(); renderPage(); renderNav(); renderSide(); $("win").classList.toggle("collapsed", collapsed); }
 
 // ---------------------------------------------------------------- someone using the page
+// hovering a node in the memory graph lights up everything it connects to
+$("site").addEventListener("mouseover", e => {
+  const g = e.target.closest(".gn"), svg = g && g.closest("svg"); if (!g) return;
+  const id = g.dataset.id, es = [...svg.querySelectorAll(".ge")].filter(p => p.dataset.a === id || p.dataset.b === id), near = new Set([id, ...es.flatMap(p => [p.dataset.a, p.dataset.b])]);
+  svg.classList.add("focus"); svg.querySelectorAll(".ge").forEach(p => p.classList.toggle("hot", es.includes(p))); svg.querySelectorAll(".gn").forEach(n => n.classList.toggle("hot", near.has(n.dataset.id)));
+});
+$("site").addEventListener("mouseleave", () => { if (tab().site === "memory") renderPage(); });
+$("site").addEventListener("mouseout", e => { if (e.target.closest(".gn") && !e.relatedTarget?.closest?.(".gn") && tab().site === "memory") renderPage(); });
+$("site").addEventListener("keydown", e => { const g = e.target.closest(".gn"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles:true })); } });
 $("site").addEventListener("click", e => {
   const t = tab();
   if (!t.site) {
@@ -520,121 +882,178 @@ $("site").addEventListener("change", e => {
 const nodes = () => [...$("site").querySelectorAll("[data-kind]")];
 const sim = (a, b) => a.startsWith(b) || b.startsWith(a) || a.includes(b) || b.includes(a);
 const KIND = { select:["select"], fill:["input"], read:["value"] };
-function locate(step) { // find a saved step on the page as it is now
+function locate(step) { // find a saved step on the page as it is now; only a single match counts
   const all = nodes();
   if (step.type !== "click") {
     const c = all.filter(n => KIND[step.type].includes(n.dataset.kind));
     let m = c.filter(n => n.dataset.label === step.field);
     if (m.length === 1) return { node:m[0], how:"replay" };
     m = c.filter(n => sim(n.dataset.label, step.field) || (step.type === "select" && [...n.options].some(o => o.value === step.value)));
-    if (m.length === 1) return { node:m[0], how:"free", why:`‘${step.field}’ is now ‘${m[0].dataset.label}’`, fixed:{ ...step, field:m[0].dataset.label } };
+    if (m.length === 1) return { node:m[0], how:"free", was:step.field, is:m[0].dataset.label, why:"Same field, new name. Matched it without AI.", fixed:{ ...step, field:m[0].dataset.label } };
     return null;
   }
   const same = all.filter(n => n.dataset.kind === step.kind);
   let m = same.filter(n => n.dataset.label === step.label);
   if (m.length === 1) return { node:m[0], how:"replay" };
   m = same.filter(n => step.href ? n.dataset.href === step.href : sim(n.dataset.label, step.label));
-  if (m.length === 1) return { node:m[0], how:"free", why:`‘${step.label}’ is now ‘${m[0].dataset.label}’`, fixed:{ ...step, label:m[0].dataset.label } };
+  if (m.length === 1) return { node:m[0], how:"free", was:step.label, is:m[0].dataset.label,
+    why:step.href ? "Same link, new name. Matched it without AI." : "Same button, new name. Matched it without AI.", fixed:{ ...step, label:m[0].dataset.label } };
   return null;
 }
 function heal(step) { // the AI fix: the labels of the controls to use, in order
   if (step.type === "select" && nodes().some(n => n.dataset.kind === "button" && n.dataset.label === step.value))
-    return { seq:[step.value], why:`${step.field} is now a row of buttons; clicked ‘${step.value}’` };
-  const want = MEANS[step.field || step.label]; if (!want) return null;
-  return { seq:want, why:want.length > 1 ? `‘${step.label}’ moved into the ‘${want[0]}’ menu` : `‘${step.field || step.label}’ is now ‘${want[0]}’` };
+    return { seq:[step.value], was:`${step.field} dropdown`, is:`${step.field} buttons`, why:`The ${step.field} dropdown is now a row of buttons, so AI clicked “${step.value}”.` };
+  const old = step.field || step.label, want = MEANS[old]; if (!want) return null;
+  return { seq:want, was:old, is:want.join(" › "), why:want.length > 1 ? `“${old}” is gone. AI found the same action inside the “${want[0]}” menu.` : `“${old}” is gone. AI matched it to “${want[0]}”, which does the same thing.` };
 }
-async function press(node, step) {
-  node.classList.add("hl"); await wait(420);
+function ghost(node, html) { // the cursor on the page that shows what autopilot is doing
+  const g = $("ghost"); if (!node) { g.classList.remove("on"); return; }
+  node.scrollIntoView({ block:"nearest", inline:"nearest" });
+  const p = $("page").getBoundingClientRect(), r = node.getBoundingClientRect();
+  g.style.transform = `translate(${Math.round(r.left - p.left + Math.min(r.width / 2, 36))}px, ${Math.round(r.top - p.top + r.height / 2)}px)`;
+  $("gcap").innerHTML = html; g.classList.add("on");
+}
+async function press(node, step, cap) {
+  ghost(node, cap); node.classList.add("hl"); await wait(560);
   const t = tab(), s = SITES[t.site], k = node.dataset.kind;
   if (k === "select" || k === "input") s.set(t.S, node.dataset.key, step.value);
   else if (k === "value") s.read(t.S, node);
   else s.act(t.S, node.dataset.act);
-  renderTabs(); renderPage(); await wait(240);
+  renderTabs(); renderPage(); await wait(260);
 }
-const fill = (x, p) => typeof x === "string" ? x.replace(/\{\{(\w+)\}\}/g, (_, k) => p[k] ?? "") : Object.fromEntries(Object.entries(x).map(([k, v]) => [k, fill(v, p)]));
+let stopReq = false, answer = null, result = null;
+async function act1(f, o, node, step, cap) { // press, but stop and ask first before anything that can't be undone
+  if (stopReq) return false;
+  if (node.dataset.risk && f.ask) {
+    Object.assign(o, { how:"ask", askLabel:node.dataset.label, ask:`Next it clicks “${node.dataset.label}” on ${SITES[f.site].domain}. That can’t be undone, so it waits for you.` });
+    ghost(node, "Waiting for your OK"); node.classList.add("hl"); renderSide();
+    const yes = await new Promise(res => answer = res); answer = null; o.ask = null;
+    if (!yes) return false;
+    o.how = "now"; renderSide();
+  }
+  await press(node, step, cap); return true;
+}
+const fill = (x, p) => typeof x === "string" ? x.replace(/\{\{(\w+)\}\}/g, (_, k) => p[k] ?? "") : Object.fromEntries(Object.entries(x).map(([k, y]) => [k, fill(y, p)]));
+const NEXT = { type:"click", kind:"button", label:"Next page" };
 
 async function runOnce(f, params) {
   focusSite(f.site, true); out = f.steps.map(s => ({ s:fill(s, params) })); renderTabs(); renderPage(); renderSide();
-  const next = []; let ai = 0, fixed = 0;
+  const next = [], changes = [], used = new Set(), paged = []; let ai = 0;
+  const halt = (i, lab) => ({ halted:true, at:i, label:lab, used, paged, ai });
+  const stuck = (i, o, why, short) => { Object.assign(o, { how:"fail", why }); renderSide(); return { ok:false, at:i, why:short, used, paged, ai }; };
   for (let i = 0; i < f.steps.length; i++) {
+    if (stopReq) return halt(i);
     const tpl = f.steps[i], s = out[i].s, o = out[i], param = /\{\{/.test(JSON.stringify(tpl)), notes = [];
-    o.how = "now"; renderSide(); await wait(180);
-    const pop = nodes().find(n => n.dataset.act === "dismiss");
-    if (pop) { await press(pop, {}); notes.push("Closed a pop-up"); }
+    o.how = "now"; renderSide(); await wait(200);
+    if (tab().S.loading) { o.why = "Waiting for the page to load…"; ghost(null); renderSide(); while (tab().S.loading) await wait(100); notes.push("The page was slow, so it waited for it to load."); o.why = null; o.waited = true; }
     let r = locate(s), pages = 0;
-    while (!r && s.type === "click" && s.kind === "link" && nodes().some(n => n.dataset.act === "next")) { await press(nodes().find(n => n.dataset.act === "next"), {}); pages++; r = locate(s); }
-    if (!param) for (let k = 0; k < pages; k++) next.push({ type:"click", kind:"button", label:"Next page" });
-    if (r && pages) { r.how = "free"; r.why = `Looked ${pages} page${pages > 1 ? "s" : ""} further down; found it`; r.fixed = null; }
+    const rec = !r && s.type === "click" && s.kind === "link" && mem.records[f.site + "|" + s.label], direct = rec && rec.act && ruleOn("direct", f.site);
+    if (direct) { // memory knows this record's address, so go straight there instead of paging
+      ghost(null); await wait(300); SITES[f.site].act(tab().S, rec.act); renderTabs(); renderPage(); await wait(300);
+      used.add(direct); usedBy(rec, f.name); next.push(tpl);
+      Object.assign(o, { how:"mem", did:`Opened ${q(s.label)} at ${esc(rec.href)}`, why:[...notes, `Went straight there instead of paging. It learned where ${s.label} lives in “${rec.flows[0]}”.`].join(" ") }); renderSide(); continue;
+    }
+    while (!r && s.type === "click" && s.kind === "link" && nodes().some(n => n.dataset.act === "next")) { await press(nodes().find(n => n.dataset.act === "next"), NEXT, label(NEXT, "now")); pages++; r = locate(s); }
+    if (pages) paged.push({ label:s.label, pages, flow:f.name });
+    if (!param) for (let k = 0; k < pages; k++) next.push(NEXT);
+    if (r && pages) { Object.assign(r, { how:"free", fixed:null, was:null, why:`It wasn’t on this page anymore. Autopilot paged ahead and found it ${pages} page${pages > 1 ? "s" : ""} further on. No AI needed.` }); if (!param) changes.push(`Pages ahead to find ${s.label}`); }
     if (!r) {
-      o.why = "Fixing with AI…"; renderSide(); await wait(800);
-      const h = heal(s), fixedSteps = []; let done = !!h;
-      if (h) for (const lab of h.seq) {
-        const n = nodes().find(x => x.dataset.label === lab); if (!n) { done = false; break; }
-        const k = n.dataset.kind;
-        fixedSteps.push(k === "input" ? { ...s, field:lab } : k === "select" ? { ...s, field:lab } : k === "value" ? { ...s, field:lab } : { type:"click", kind:k, label:lab });
-        await press(n, s);
+      const old = s.label || s.field, lr = mem.renames[f.site + "|" + old], rule = lr && ruleOn("rename", f.site);
+      let h;
+      if (rule) { used.add(rule); usedBy(lr, f.name); h = { seq:lr.seq, was:old, is:lr.seq.join(" › "), why:`Fixed from memory, no AI. It learned this rename in “${lr.from}”.` }; }
+      else { o.why = `Can’t find “${old}” on the page. Asking AI…`; ghost(null); renderSide(); await wait(900); h = heal(s); }
+      if (!h) return stuck(i, o, `Can’t find “${old}” on the page, and AI couldn’t work out what replaced it.`, `couldn’t find “${old}”`);
+      const did = [];
+      for (const lab of h.seq) {
+        const n = nodes().find(x => x.dataset.label === lab);
+        if (!n) return stuck(i, o, `${rule ? "Memory" : "AI"} pointed to “${lab}”, but it isn’t on the page.`, `couldn’t find “${lab}”`);
+        const k = n.dataset.kind, fs = k === "input" || k === "select" || k === "value" ? { ...s, field:lab } : { type:"click", kind:k, label:lab };
+        did.push(fs);
+        if (!await act1(f, o, n, fs, label(fs, "now"))) return halt(i, lab);
       }
-      if (!done) { o.how = "fail"; o.why = "Couldn’t find this on the page"; renderSide(); return { ok:false, ai, fixed }; }
-      ai++; fixed++; next.push(...fixedSteps); o.how = "ai"; o.why = [...notes, h.why].join(". "); renderSide(); continue;
+      if (!rule) ai++;
+      next.push(...did); changes.push([h.was, h.is]);
+      Object.assign(o, { how:rule ? "mem" : "ai", was:h.was, is:h.is, why:[...notes, h.why].join(" "), did:did.map((x, k) => k && x.type === "click" ? q(x.label) : label(x, "done")).join(" → "),
+        rename:!rule && MEANS[old] ? { old, seq:h.seq } : null });
+      renderSide(); continue;
     }
     next.push(r.fixed && !param ? r.fixed : tpl);
-    o.how = r.how === "replay" && (notes.length || pages) ? "free" : r.how; o.why = [...notes, r.why].filter(Boolean).join(". ");
-    if (o.how !== "replay" && !param) fixed++;
-    await press(r.node, s); renderSide();
+    if (r.fixed && !param) changes.push([r.was, r.is]);
+    const node = r.node, link = node.dataset.href ? { label:node.dataset.label, href:node.dataset.href, act:node.dataset.act } : null;
+    if (!await act1(f, o, node, s, label(s, "now"))) return halt(i, node.dataset.label);
+    Object.assign(o, { how:r.how, was:r.was, is:r.is, why:[...notes, r.why].filter(Boolean).join(" ") || null, link,
+      rename:r.fixed && !param && r.was ? { old:r.was, seq:[r.is] } : null });
+    if (s.type === "read") o.did = `${label(s, "done")}: ${tab().S.last.split(": ")[1]}`;
+    renderSide();
   }
-  const got = tab().S.last;
-  return { ok:got === fill(f.expect, params), got, next, ai, fixed };
+  ghost(null);
+  const got = tab().S.last, want = fill(f.expect, params), ok = got === want;
+  out.push({ how:ok ? "ver" : "fail", did:"Checked the result on the page", why:ok ? `It shows ${got}.` : `Expected ${want}, but the page shows ${got || "no change"}.` });
+  renderSide();
+  return { ok, got, next, changes, ai, used, paged, at:f.steps.length, why:"the result didn’t match what was recorded" };
 }
 
 async function run() {
   if (busy || recording || pending) return;
-  const f = flows[cur]; busy = true; foot = null;
+  const f = flows[cur]; busy = true; foot = null; result = null; stopReq = false;
   view = "steps"; rowState = f.inputs ? f.inputs.rows.map(() => null) : null;
   draw();
-  const rows = f.inputs ? f.inputs.rows.map(r => Object.fromEntries(f.inputs.cols.map((c, i) => [c, r[i]]))) : [{}];
-  let done = 0, last = null, next = null, ai = 0, fixed = 0;
-  for (let i = 0; i < rows.length; i++) {
-    if (rowState) rowState[i] = "now";
-    const r = await runOnce(f, rows[i]); last = r; ai += r.ai; fixed += r.fixed;
-    if (r.ok) { done++; next = next || r.next; }
+  const rows = f.inputs ? f.inputs.rows.map(r => Object.fromEntries(f.inputs.cols.map((c, i) => [c, r[i]]))) : [{}], n = rows.length;
+  const lines = []; let done = 0, next = null, changes = [], ai = 0, halted = null, fixes = 0, memo = 0;
+  for (let i = 0; i < n; i++) {
+    if (rowState) { rowState[i] = "now"; if (view === "inputs") renderSide(); }
+    const r = await runOnce(f, rows[i]);
+    fixes += out.filter(o => o.how === "free" || o.how === "ai").length; memo += out.filter(o => o.how === "mem").length;
+    learn(f, r);
+    if (r.halted) { halted = r; if (rowState) rowState[i] = "bad"; break; }
+    ai += r.ai || 0;
+    if (r.ok) { done++; if (!next) { next = r.next; changes = r.changes; } lines.push(["ok", f.done(r.got, rows[i])]); }
+    else lines.push(["bad", (n > 1 ? Object.values(rows[i])[0] + ": " : `Step ${r.at + 1}: `) + r.why]);
     if (rowState) { rowState[i] = r.ok ? "ok" : "bad"; await wait(250); }
   }
-  busy = false;
-  const changed = !!next && JSON.stringify(next) !== JSON.stringify(f.steps);
-  const read = f.site === "northwind" && last.ok ? last.got.split(": ")[1] : null;
-  const fx = fixed ? `fixed ${fixed} step${fixed > 1 ? "s" : ""}` : "";
-  const text = rows.length > 1 ? `Ran on ${rows.length} rows · ${done === rows.length ? "all done" : `${done} done, ${rows.length - done} stuck`}`
-    : !last.ok ? "Stopped and needs you" : read ? `Read ${read}` + (fx ? " · " + fx : "") : fx ? fx[0].toUpperCase() + fx.slice(1) + " itself" : "Ran on autopilot";
-  const entry = { when:now(), text, how:!done ? "fail" : ai ? "ai" : fixed ? "free" : "replay" };
+  busy = false; ghost(null);
+  const ok = !halted && done === n, changed = !halted && !!next && JSON.stringify(next) !== JSON.stringify(f.steps);
+  const head = halted ? (halted.label && !stopReq ? `You stopped it before “${halted.label}”. Nothing was sent.` : `You took over at step ${halted.at + 1}. The page is yours.`)
+    : ok ? (n > 1 ? `Done for all ${n} rows.` : lines[0][1]) : n > 1 ? `${done} of ${n} rows done. The rest need you.` : "It got stuck and needs you. The workflow wasn’t changed.";
+  const entry = { when:now(), text:halted ? "Stopped by you" : ok ? (n > 1 ? `Updated ${n} rows` : head.replace(/\.$/, "")) : "Got stuck", how:halted || !done ? "fail" : ai ? "ai" : memo ? "mem" : fixes ? "free" : "replay" };
   f.runs.unshift(entry);
-  if (changed && f.review && ai) pending = { next, ai, entry };
-  else {
-    if (changed) { f.steps = next; f.ver++; }
-    foot = done ? { ok:true, text:(rows.length > 1 ? `✓ ${done} of ${rows.length} rows done` : `✓ ${last.got}`) + (changed ? ` · saved as version ${f.ver}` : "") }
-                : { ok:false, text:"Stopped. The workflow wasn’t changed." };
-  }
-  if (rows.length > 1) view = "inputs";
-  draw();
+  if (changed && f.review && ai) pending = { next, changes, ai, entry };
+  else if (changed) saveVersion(f, next, changes);
+  result = { ok, head, rows:n > 1 ? lines : !ok && !halted ? lines : null, saved:changed && !pending ? f.ver : null, pending:!!pending, memo };
+  if (n > 1) view = "inputs";
+  ideas = triage(); draw();
+  const card = $("side").querySelector(".done"); if (card) card.scrollIntoView({ block:"nearest" });
 }
-function selectFlow(i) { if (busy || recording) return; cur = i; out = null; foot = null; pending = null; rowState = null; view = "steps"; focusSite(flows[i].site, false); draw(); }
+function saveVersion(f, next, changes) {
+  f.steps = next; f.ver = Math.max(...f.versions.map(x => x.v)) + 1;
+  f.versions.unshift({ v:f.ver, when:now(), note:changes.map(c => Array.isArray(c) ? `“${c[0]}” → “${c[1]}”` : c).join(" · ") || "Updated steps", steps:clone(next) });
+}
+function selectFlow(i) { if (busy || recording) return; cur = i; out = null; foot = null; pending = null; result = null; rowState = null; view = "steps"; focusSite(flows[i].site, false); draw(); }
 
 // ---------------------------------------------------------------- controls
 $("side").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   const f = flows[cur], id = b.id;
   if (b.dataset.view) { view = b.dataset.view; renderSide(); return; }
+  if (b.dataset.open) { openInternal(b.dataset.open); return; }
   if (b.dataset.delrow) { f.inputs.rows.splice(+b.dataset.delrow, 1); rowState = null; renderSide(); return; }
+  if (b.dataset.restore) { const x = f.versions[+b.dataset.restore]; f.steps = clone(x.steps); f.ver = x.v; out = null; result = null; foot = { ok:true, text:`Now using version ${x.v}.` }; renderSide(); return; }
   if (id === "run") run();
+  else if (id === "stop") { stopReq = true; if (answer) answer(false); }
+  else if (id === "approve" && answer) answer(true);
+  else if (id === "deny" && answer) answer(false);
+  else if (id === "record2") startRecording();
   else if (id === "addrow") { f.inputs.rows.push(f.inputs.cols.map(() => "")); rowState = null; renderSide(); $("side").querySelector(`[data-cell="${f.inputs.rows.length - 1},0"]`).focus(); }
   else if (id === "rv") { f.review = !f.review; renderSide(); }
-  else if (id === "keep") { f.steps = pending.next; f.ver++; foot = { ok:true, text:`✓ Kept the fix. Saved as version ${f.ver}.` }; pending = null; draw(); }
-  else if (id === "undo") { pending.entry.text += " · fix undone"; pending = null; out = null; foot = { ok:false, text:"Undid the fix. The workflow is unchanged." }; draw(); }
+  else if (id === "askset") { f.ask = !f.ask; renderSide(); }
+  else if (id === "keep") { saveVersion(f, pending.next, pending.changes); result = { ...result, pending:false, saved:f.ver }; pending = null; draw(); }
+  else if (id === "undo") { pending.entry.text += " · fix undone"; pending = null; result = { ...result, pending:false }; foot = { ok:false, text:"Undid the fix. The workflow keeps its old steps." }; draw(); }
   else if (id === "save") saveRecording();
   else if (id === "cancel") { recording = null; foot = null; draw(); }
 });
 $("side").addEventListener("change", e => {
   const f = flows[cur];
-  if (e.target.id === "sched") { f.schedule = e.target.value; foot = f.schedule === "off" ? null : { ok:true, text:`Scheduled: ${SCHED[f.schedule]}. Runs in the background.` }; renderSide(); }
+  if (e.target.id === "sched") { f.schedule = e.target.value; foot = f.schedule === "off" ? null : { ok:true, text:`Scheduled: ${SCHED[f.schedule]}. It runs in the background and asks you only if it gets stuck.` }; renderSide(); }
   else if (e.target.id === "pick") selectFlow(+e.target.value);
 });
 $("side").addEventListener("input", e => { const c = e.target.dataset.cell; if (!c) return; const [r, k] = c.split(",").map(Number); flows[cur].inputs.rows[r][k] = e.target.value; });
@@ -648,6 +1067,7 @@ $("nav").addEventListener("click", e => {
   if (n === "all") { filter = null; query = ""; searching = false; renderNav(); }
   else if (n === "search") { searching = !searching; query = ""; renderNav(); }
   else if (n === "new") { if (busy) return; openTab(null); draw(); $("ask").focus(); }
+  else if (n === "memory" || n === "improve") openInternal(n);
   else if (n === "custom") {
     const r = b.getBoundingClientRect(), theme = document.documentElement.dataset.theme || "system";
     showPop(r.left, r.bottom + 4, `<div class="lbl">Appearance</div>` + ["system","light","dark"].map(t => `<button data-theme-set="${t}">${t[0].toUpperCase() + t.slice(1)}<span>${t === theme ? "✓" : ""}</span></button>`).join(""));
@@ -680,16 +1100,18 @@ $("reload").onclick = async () => { $("site").classList.add("loading"); await wa
 
 function startRecording() {
   if (busy || recording) return;
-  if (!tab().site) focusSite(flows[cur].site, false);
-  const t = tab(); t.S = SITES[t.site].start(); t.S.popup = null; t.S.banner = false; t.hist = []; t.fwd = [];
-  recording = { steps:[] }; out = null; foot = null; pending = null; draw();
+  if (!tab().site || SITES[tab().site].internal) focusSite(flows[cur].site, false);
+  const t = tab(); t.S = SITES[t.site].start(); t.hist = []; t.fwd = [];
+  recording = { steps:[] }; out = null; foot = null; pending = null; result = null; draw();
 }
 function saveRecording() {
   const t = tab(), got = t.S.last;
-  if (!got || !recording.steps.length) { foot = { ok:false, text:"Finish the task on the page first, then save." }; renderSide(); return; }
-  flows.push({ name:got.length > 42 ? got.slice(0, 40) + "…" : got, site:t.site, project:PROJECT_OF[t.site], ver:1, schedule:"off", review:true, expect:got, steps:recording.steps, runs:[{ when:now(), text:"Recorded", how:"replay" }] });
+  if (!got || !recording.steps.length) { foot = { ok:false, text:"Finish the task on the page first (save or submit it), then save the workflow." }; renderSide(); return; }
+  const name = got.length > 42 ? got.slice(0, 40) + "…" : got, when = now(), steps = recording.steps;
+  flows.push({ name, site:t.site, project:PROJECT_OF[t.site], ver:1, schedule:"off", review:true, ask:true, expect:got, desc:`Repeats what you just did on ${SITES[t.site].name}.`, done:g => g,
+    steps, runs:[{ when, text:"Recorded", how:"replay" }], versions:[{ v:1, when, note:"Recorded", steps:clone(steps) }] });
   recording = null; cur = flows.length - 1; out = null; filter = null; foot = { ok:true, text:"Saved. Run it now, put it on a schedule, or start it from a new tab." };
-  t.S = SITES[t.site].start(); t.S.popup = null; t.S.banner = false; draw();
+  t.S = SITES[t.site].start(); draw();
 }
 
 openTab("pipeline"); openTab("ledgerly"); active = 0; draw();
