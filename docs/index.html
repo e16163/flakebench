@@ -186,17 +186,16 @@ li.ask .ic { background:var(--accent); border-color:var(--accent); color:#fff; }
 /* built-in pages: memory and improve */
 .p-wrap { padding:22px 26px 30px; color:var(--ink); background:var(--surface); flex:1; font:14px/20px var(--font); }
 .p-h { font-size:20px; font-weight:600; margin:0; letter-spacing:-.01em; } .p-sub { color:var(--ink2); margin:2px 0 14px; font-size:13px; }
-.legend { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--ink2); margin-bottom:10px; align-items:center; } .legend span { display:inline-flex; align-items:center; gap:6px; }
-.legend i { display:inline-block; width:10px; height:10px; border-radius:3px; }
-.gwrap { border:1px solid var(--border2); border-radius:14px; background:var(--url); padding:12px; overflow:auto; }
-.gwrap svg { display:block; width:100%; min-width:680px; height:auto; }
-.colh { font-size:10.5px; fill:var(--ink3); font-weight:600; letter-spacing:.06em; }
-.gn { cursor:pointer; transition:opacity .15s; } .gn rect { fill:var(--surface); stroke:var(--border2); } .gn:hover > rect:first-child, .gn:focus > rect:first-child { stroke:var(--ink3); } .gn:focus { outline:none; }
-.gn .t1 { font-size:12px; fill:var(--ink); font-weight:500; } .gn .t2, .gwrap .t2 { font-size:10.5px; fill:var(--ink2); }
-.gn .kb { stroke:none; } .k-w .kb { fill:#3b8cff; } .k-s .kb { fill:#8a8a94; } .k-r .kb { fill:#e8a33c; } .k-c .kb { fill:#2f8a57; }
-.gn.sel > rect:first-child { stroke:var(--accent); stroke-width:2; }
-.ge { fill:none; stroke:var(--ink3); stroke-opacity:.45; stroke-width:1.3; transition:opacity .15s; } .ge.from { stroke:#e8a33c; stroke-opacity:.9; stroke-dasharray:4 3; } .ge.used { stroke:#7e3fc0; stroke-opacity:1; stroke-width:2.2; }
-svg.focus .gn:not(.hot) { opacity:.28; } svg.focus .ge:not(.hot) { opacity:.08; } .ge.hot { stroke-width:2.6; stroke-opacity:1; }
+.hsub { color:var(--ink2); font-size:13px; padding:0 14px 12px; line-height:19px; }
+.hlist { padding:2px 10px 10px; }
+.hcard { border:1px solid var(--border2); border-radius:12px; padding:12px; margin:0 4px 8px; cursor:pointer; transition:background .15s, border-color .15s; background:var(--surface); }
+.hcard:hover, .hcard:focus-visible { background:var(--hover); outline:none; border-color:var(--ink3); }
+.hrow { display:flex; align-items:center; gap:8px; } .hn { flex:1; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hd { color:var(--ink2); font-size:12.5px; line-height:18px; margin:4px 0 6px; }
+.hm { color:var(--ink3); font-size:12px; display:flex; align-items:center; gap:4px; flex-wrap:wrap; } .hm svg { width:12px; height:12px; } .hm .fail { color:var(--fail); }
+.mlist { list-style:none; margin:6px 0 0; padding:0; border:1px solid var(--border2); border-radius:12px; }
+.mlist li { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); }
+.mlist li:last-child { border-bottom:0; } .mt { font-size:13.5px; } .mt b { font-weight:600; } .ms { color:var(--ink2); font-size:12px; font-weight:400; margin-top:1px; }
 .pcard { border:1px solid var(--border2); border-radius:12px; padding:14px 16px; margin-top:12px; background:var(--surface); }
 .pcard h4 { margin:0 0 4px; font-size:14px; font-weight:600; } .pcard p { margin:4px 0; color:var(--ink2); font-size:13px; } .pcard ul { margin:4px 0; padding-left:18px; font-size:13px; color:var(--ink2); }
 .pcard .acts { display:flex; gap:8px; margin-top:10px; align-items:center; }
@@ -567,7 +566,7 @@ const PROJECT_OF = { pipeline:"Sales", hirebase:"Recruiting", ledgerly:"Ops", no
 // ---------------------------------------------------------------- memory: what autopilot learned from every run, shared by all workflows
 const mem = { renames:{}, records:{}, slow:{} };
 const traces = []; // one per run: what autopilot saw and did, for the self-review
-const harness = { v:1, rules:[], log:[], bar:{ rename:1, direct:2 } }; // its own working rules, which it proposes and tests itself
+const harness = { v:1, rules:[], log:[], bar:{ update:1, direct:2 } }; // its own working rules, which it proposes and tests itself
 let ideas = [];
 const ago = () => now().replace("Today, ", "today ");
 function remember(site, name, info, from) {
@@ -578,7 +577,7 @@ const usedBy = (x, name) => { if (!x.usedBy.includes(name)) x.usedBy.push(name);
 const ruleOn = (type, site) => harness.rules.find(r => r.on && r.type === type && r.site === site);
 function learn(f, r) {
   for (const o of out) {
-    if (o.rename && !/\{\{/.test(o.rename.old)) mem.renames[f.site + "|" + o.rename.old] ||= { site:f.site, old:o.rename.old, seq:o.rename.seq, from:f.name, when:ago(), usedBy:[], ai:o.how === "ai" };
+    if (o.rename && !/\{\{/.test(o.rename.old)) mem.renames[f.site + "|" + o.rename.old] ||= { site:f.site, old:o.rename.old, seq:o.rename.seq, steps:o.rename.steps, from:f.name, when:ago(), usedBy:[], ai:o.how === "ai" };
     if (o.link) remember(f.site, o.link.label, { href:o.link.href, act:o.link.act }, f.name);
   }
   if (out.some(o => o.waited)) mem.slow[f.site] = (mem.slow[f.site] || 0) + 1;
@@ -595,6 +594,16 @@ function learn(f, r) {
 }
 // seed: what it saw when each workflow was recorded
 flows.forEach(f => f.steps.forEach(s => s.href && remember(f.site, s.label, { href:s.href, act:"open:" + s.href.split("/").pop() }, f.name)));
+// keep what it learned across reloads (this browser only)
+const STORE = "polar-autopilot-v1";
+function save() { try { localStorage.setItem(STORE, JSON.stringify({ flows:flows.map(({ done, ...f }) => f), mem, traces, harness })); } catch (e) {} }
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(STORE)); if (!d) return;
+    d.flows.forEach(x => { const f = flows.find(y => y.name === x.name); if (f) Object.assign(f, x); else flows.push({ ...x, done:g => g }); });
+    Object.assign(mem, d.mem); traces.push(...d.traces); Object.assign(harness, d.harness);
+  } catch (e) {}
+}
 
 // the self-review: read past runs, find patterns, propose a change to its own rules, and test it on what was recorded
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
@@ -602,14 +611,11 @@ function triage() {
   const found = [];
   for (const site of Object.keys(SITES).filter(k => !SITES[k].internal)) {
     const dom = SITES[site].domain, runs = traces.filter(t => t.site === site);
-    const rn = Object.values(mem.renames).filter(x => x.site === site && x.ai);
-    if (rn.length >= harness.bar.rename && !harness.rules.some(x => x.type === "rename" && x.site === site)) {
-      const hits = flows.flatMap(g => g.site === site ? g.steps.filter(s => rn.some(x => x.from !== g.name && x.old === (s.label || s.field))).map(() => g.name) : []), who = [...new Set(hits)];
-      found.push({ type:"rename", site, title:`Reuse AI fixes from one ${SITES[site].name} workflow in all of them`,
-        saw:rn.map(x => `AI worked out that “${x.old}” is now ${x.seq.join(" › ")} (in ${x.from})`),
-        test:who.length ? `Tested on your saved workflows: ${who.join(", ")} still ${who.length > 1 ? "use" : "uses"} the old names. With this change ${who.length > 1 ? "they" : "it"} would skip ${plural(hits.length, "AI call")}.`
-          : `No other saved workflow uses these old names right now. New ones on ${dom} will reuse them.`, gain:hits.length });
-    }
+    const rn = Object.values(mem.renames).filter(x => x.site === site && x.ai && x.steps);
+    const hits = flows.flatMap(g => g.site === site ? g.steps.filter(st => rn.some(x => x.from !== g.name && x.old === (st.label || st.field))).map(st => [g.name, st.label || st.field]) : []), who = [...new Set(hits.map(h => h[0]))];
+    if (hits.length >= harness.bar.update) found.push({ type:"update", site, title:`Update ${plural(who.length, "saved workflow")} to ${SITES[site].name}’s new names`,
+      saw:[...new Set(hits.map(h => h[1]))].map(o => { const x = rn.find(y => y.old === o); return `“${o}” is now ${x.seq.join(" › ")} (AI worked this out in ${x.from})`; }),
+      test:`Checked your saved workflows: ${who.join(", ")} still ${who.length > 1 ? "use" : "uses"} the old names. Memory already covers them, and updating them now makes those steps exact again.`, gain:hits.length, who });
     const flips = runs.flatMap(t => t.paged).filter(p => mem.records[site + "|" + p.label]?.act);
     if (flips.length >= harness.bar.direct && !harness.rules.some(x => x.type === "direct" && x.site === site)) {
       const n = flips.reduce((a, p) => a + p.pages, 0);
@@ -622,6 +628,14 @@ function triage() {
 }
 function applyIdea(k) {
   const x = ideas[k]; harness.v++;
+  if (x.type === "update") { // repair the other workflows' saved steps with what memory knows
+    for (const g of flows.filter(g => x.who.includes(g.name))) {
+      const ch = [], next = g.steps.flatMap(st => { const m = mem.renames[g.site + "|" + (st.label || st.field)]; if (!m || !m.steps) return [st]; ch.push([st.label || st.field, m.seq.join(" › ")]);
+        return m.steps.map(t => t.type === "click" ? t : { ...st, field:t.field }); });
+      saveVersion(g, next, ch);
+    }
+    harness.log.unshift({ when:now(), text:`Updated ${x.who.join(", ")} to the new names.` }); ideas = triage(); save(); return;
+  }
   harness.rules.push({ id:harness.v, type:x.type, site:x.site, title:x.title, on:true, used:0, good:0, bad:0, when:now(), v:harness.v });
   harness.log.unshift({ when:now(), text:`Applied “${x.title}”. Its rules are now version ${harness.v}.`, kind:"on" });
   ideas = triage();
@@ -637,72 +651,20 @@ function forget(id) {
   ideas = triage();
 }
 
-// the graph: workflows, the sites they run on, and what was learned there, with every connection drawn
-function graph() {
-  const sites = Object.keys(SITES).filter(k => !SITES[k].internal && flows.some(f => f.site === k));
-  const W = [], S = [], L = [], E = [];
-  sites.forEach(site => {
-    flows.forEach((f, i) => f.site === site && W.push({ id:"w:" + i, kind:"w", t1:f.name, t2:`v${f.ver} · ${plural(f.runs.length, "run")}`, site, name:f.name }));
-    S.push({ id:"s:" + site, kind:"s", t1:SITES[site].name, t2:SITES[site].domain + (mem.slow[site] ? " · loads slowly" : ""), site });
-    Object.entries(mem.renames).filter(([, x]) => x.site === site).forEach(([k, x]) => L.push({ id:"r:" + k, kind:"r", t1:`“${x.old}” → ${x.seq.join(" › ")}`, t2:x.ai ? "rename, worked out by AI" : "rename, matched by name", site, x }));
-    Object.entries(mem.records).filter(([, x]) => x.site === site).forEach(([k, x]) => L.push({ id:"c:" + k, kind:"c", t1:x.name, t2:x.fact || x.href || "", site, x }));
-  });
-  const wid = name => W.find(w => w.name === name)?.id;
-  W.forEach(w => E.push({ a:w.id, b:"s:" + w.site, k:"uses" }));
-  L.forEach(l => {
-    E.push({ a:"s:" + l.site, b:l.id, k:"on" });
-    const from = l.kind === "r" ? [l.x.from] : l.x.flows;
-    from.forEach(n => wid(n) && E.push({ a:wid(n), b:l.id, k:"from" }));
-    l.x.usedBy.forEach(n => wid(n) && !from.includes(n) && E.push({ a:wid(n), b:l.id, k:"used" }));
-  });
-  return { W, S, L, E };
-}
-function graphSvg(sel) {
-  const { W, S, L, E } = graph(), H = 38, top = 34, col = [{ x:8, w:214 }, { x:318, w:168 }, { x:582, w:262 }];
-  W.forEach((n, i) => { n.c = 0; n.y = top + i * H; });
-  L.forEach((n, i) => { n.c = 2; n.y = top + i * H; });
-  S.forEach(n => { n.c = 1; const ys = [...W, ...L].filter(m => m.site === n.site).map(m => m.y); n.y = Math.round(ys.reduce((a, y) => a + y, 0) / ys.length); });
-  const all = [...W, ...S, ...L], at = Object.fromEntries(all.map(n => [n.id, n])), h = Math.max(W.length, L.length, 1) * H + top + 8;
-  const near = sel ? new Set([sel, ...E.filter(e => e.a === sel || e.b === sel).flatMap(e => [e.a, e.b])]) : null;
-  const cut = (t, w) => t.length * 6.6 > w - 20 ? t.slice(0, Math.floor((w - 24) / 6.6)) + "…" : t;
-  const edges = E.map(e => {
-    const a = at[e.a], b = at[e.b], x1 = col[a.c].x + col[a.c].w, y1 = a.y + 15, x2 = col[b.c].x, y2 = b.y + 15, m = (x1 + x2) / 2;
-    const hot = near && near.has(e.a) && near.has(e.b) && (e.a === sel || e.b === sel);
-    return `<path class="ge ${e.k}${hot ? " hot" : ""}" data-a="${e.a}" data-b="${e.b}" d="M${x1} ${y1}C${m} ${y1} ${m} ${y2} ${x2} ${y2}"/>`;
-  }).join("");
-  const box = n => `<g class="gn k-${n.kind}${n.id === sel ? " sel" : ""}${near && near.has(n.id) ? " hot" : ""}" data-act="sel:${esc(n.id)}" data-id="${esc(n.id)}" transform="translate(${col[n.c].x} ${n.y})" tabindex="0" role="button" aria-label="${esc(n.t1)}">
-    <rect width="${col[n.c].w}" height="30" rx="8"/><rect class="kb" width="4" height="18" x="6" y="6" rx="2"/><text class="t1" x="16" y="13">${esc(cut(n.t1, col[n.c].w))}</text><text class="t2" x="16" y="25">${esc(cut(n.t2, col[n.c].w + 20))}</text></g>`;
-  return `<svg viewBox="0 0 852 ${h}" class="${near ? "focus" : ""}" role="img" aria-label="Memory graph">
-    <text class="colh" x="${col[0].x}" y="16">WORKFLOWS</text><text class="colh" x="${col[1].x}" y="16">SITES</text><text class="colh" x="${col[2].x}" y="16">WHAT IT LEARNED</text>
-    ${edges}${all.map(box).join("")}${L.length ? "" : `<text class="t2" x="${col[2].x}" y="${top + 18}">Nothing yet. Run a workflow.</text>`}</svg>`;
-}
-function nodeCard(id) {
-  const i = id.indexOf(":"), kind = id.slice(0, i), key = id.slice(i + 1);
-  if (kind === "w") { const f = flows[+key], got = Object.values(mem.renames).filter(x => x.from === f.name).length + Object.values(mem.records).filter(x => x.flows.includes(f.name)).length;
-    const reused = [...Object.values(mem.renames), ...Object.values(mem.records)].filter(x => x.usedBy.includes(f.name)).length;
-    return `<h4>${esc(f.name)}</h4><p>Runs on ${SITES[f.site].domain}. Taught memory ${plural(got, "thing")}${reused ? `, and reused ${plural(reused, "thing")} other workflows learned` : ""}.</p><div class="acts"><button class="b sm" data-act="flow:${key}">Open workflow</button></div>`; }
-  if (kind === "s") { const n = flows.filter(f => f.site === key).length, k = Object.values(mem.renames).filter(x => x.site === key).length + Object.values(mem.records).filter(x => x.site === key).length;
-    return `<h4>${SITES[key].name} · ${SITES[key].domain}</h4><p>${plural(n, "workflow")} run here. Everything learned here (${plural(k, "item")}) is shared by all of them.${mem.slow[key] ? ` It was slow to load in ${plural(mem.slow[key], "run")}, so autopilot waits for it.` : ""}</p>`; }
-  if (kind === "r") { const x = mem.renames[key]; if (!x) return "";
-    return `<h4>“${esc(x.old)}” is now ${esc(x.seq.join(" › "))}</h4><p>${x.ai ? "AI worked this out" : "Matched by name"} in “${esc(x.from)}”, ${x.when}.</p>
-      <p>${x.usedBy.length ? `Reused, with no AI, by ${esc(x.usedBy.join(", "))}.` : ruleOn("rename", x.site) ? "Other workflows on this site will reuse it." : "Not shared yet. Autopilot will suggest sharing it on the Improve page."}</p><div class="acts"><button class="b sm" data-act="forget:${esc(id)}">Forget this</button></div>`; }
-  const x = mem.records[key]; if (!x) return "";
-  return `<h4>${esc(x.name)}</h4><p>${[x.fact && `Last seen: ${esc(x.fact)}.`, x.href && `Lives at ${SITES[x.site].domain}${esc(x.href)}.`].filter(Boolean).join(" ")}</p><p>Seen in ${esc(x.flows.join(", "))}.${x.usedBy.length ? ` Found by address, with no paging, in ${esc(x.usedBy.join(", "))}.` : ""}</p>
-    <div class="acts"><button class="b sm" data-act="forget:${esc(id)}">Forget this</button></div>`;
-}
-SITES.memory = { name:"Memory", domain:"polar://memory", fav:"#7e3fc0", internal:true, start:() => ({ sel:null }), title:() => "Memory", path:() => "",
-  render(S) {
-    const n = Object.keys(mem.renames).length + Object.keys(mem.records).length;
-    return `<div class="p-wrap"><h3 class="p-h">Memory</h3><div class="p-sub">What autopilot has learned from ${plural(traces.length, "run")} so far: ${plural(n, "thing")}, shared by every workflow on the same site.</div>
-      <div class="legend"><span><i style="background:#3b8cff"></i>Workflow</span><span><i style="background:#8a8a94"></i>Site</span><span><i style="background:#e8a33c"></i>Renamed control</span><span><i style="background:#2f8a57"></i>Record</span>
-      <span><svg width="22" height="8"><path d="M0 4h22" stroke="#e8a33c" stroke-width="2" stroke-dasharray="4 3"/></svg>learned in</span><span><svg width="22" height="8"><path d="M0 4h22" stroke="#7e3fc0" stroke-width="2.5"/></svg>reused by</span></div>
-      <div class="gwrap">${graphSvg(S.sel)}</div>${S.sel && nodeCard(S.sel) ? `<div class="pcard">${nodeCard(S.sel)}</div>` : ""}</div>`;
+SITES.memory = { name:"Memory", domain:"polar://memory", fav:"#7e3fc0", internal:true, start:() => ({}), title:() => "Memory", path:() => "",
+  render() {
+    const sites = Object.keys(SITES).filter(k => !SITES[k].internal), n = Object.keys(mem.renames).length + Object.keys(mem.records).length;
+    const item = (id, t, sub) => `<li><div><div class="mt">${t}</div><div class="ms">${sub}</div></div><button class="b sm" data-act="forget:${esc(id)}">Forget</button></li>`;
+    return `<div class="p-wrap"><h3 class="p-h">Memory</h3><div class="p-sub">What autopilot has picked up from ${plural(traces.length, "run")}. Every workflow on the same site uses it, so a fix learned once is never paid for twice.</div>` +
+      sites.map(site => {
+        const rn = Object.entries(mem.renames).filter(([, x]) => x.site === site), rc = Object.entries(mem.records).filter(([, x]) => x.site === site);
+        if (!rn.length && !rc.length && !mem.slow[site]) return "";
+        return `<div class="psec">${SITES[site].name} <span class="ms">${SITES[site].domain}${mem.slow[site] ? " · slow to load, so it waits" : ""}</span></div><ul class="mlist">` +
+          rn.map(([k, x]) => item("r:" + k, `“${esc(x.old)}” is now <b>${esc(x.seq.join(" › "))}</b>`, `${x.ai ? "Worked out by AI" : "Matched by name"} in ${esc(x.from)}${x.usedBy.length ? ` · reused by ${esc(x.usedBy.join(", "))}` : ""}`)).join("") +
+          rc.map(([k, x]) => item("c:" + k, `${esc(x.name)}${x.fact ? ` · ${esc(x.fact)}` : ""}`, `${x.href ? `At ${esc(x.href)} · ` : ""}seen in ${esc(x.flows.join(", "))}${x.usedBy.length ? ` · opened directly by ${esc(x.usedBy.join(", "))}` : ""}`)).join("") + `</ul>`;
+      }).join("") + (n ? "" : `<div class="p-sub">Nothing yet. Run a workflow.</div>`) + `</div>`;
   },
-  act(S, a) {
-    if (a.startsWith("sel:")) S.sel = S.sel === a.slice(4) ? null : a.slice(4);
-    else if (a.startsWith("forget:")) { forget(a.slice(7)); S.sel = null; renderNav(); }
-    else if (a.startsWith("flow:")) setTimeout(() => selectFlow(+a.slice(5)));
-  }, set() {} };
+  act(S, a) { if (a.startsWith("forget:")) { forget(a.slice(7)); save(); renderNav(); } }, set() {} };
 SITES.improve = { name:"Improve", domain:"polar://improve", fav:"#16803c", internal:true, start:() => ({ reviewed:null }), title:() => "Improve", path:() => "",
   render(S) {
     const ai = traces.reduce((a, t) => a + t.ai, 0), stuck = traces.filter(t => !t.ok).length, m = traces.reduce((a, t) => a + t.mem, 0);
@@ -721,7 +683,7 @@ SITES.improve = { name:"Improve", domain:"polar://improve", fav:"#16803c", inter
     else if (a.startsWith("apply:")) applyIdea(+a.slice(6));
     else if (a.startsWith("skip:")) skipIdea(+a.slice(5));
     else if (a.startsWith("toggle:")) { const r = harness.rules.find(x => x.id === +a.slice(7)); r.on = !r.on; harness.log.unshift({ when:now(), text:`${r.on ? "Turned back on" : "Turned off"} “${r.title}”.`, kind:"off" }); }
-    renderNav();
+    save(); renderNav();
   }, set() {} };
 function openInternal(name) { if (busy || recording) return; let i = tabs.findIndex(t => t.site === name); if (i < 0) openTab(name); else active = i; draw(); }
 
@@ -799,7 +761,19 @@ function resultCard() {
     (result.ok && !result.saved && !result.pending && !result.rows && !result.memo ? `<div class="ds">Every step ran exactly as recorded.</div>` : "") +
     (ideas.length ? `<div class="ds">It has ${ideas.length} idea${ideas.length > 1 ? "s" : ""} for working better. <button class="lnk" data-open="improve">Review</button></div>` : "") + `</div>`;
 }
+let home = true;
+function renderHome() {
+  $("side").innerHTML = `<div class="sp-head"><span class="logo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11.5 6.5 8 9 10.5 13 5"/><path d="M10 5h3v3"/></svg></span><span class="h">Autopilot</span></div>
+    <div class="hsub">Repeats tasks you’ve done once, and fixes itself when a site changes.</div>
+    <div class="ctrl"><button class="b pri" id="record2">${I.rec}Record a task</button></div>
+    <div class="body hlist">` + flows.map((f, i) => { const r = f.runs[0];
+      return `<div class="hcard" data-open-flow="${i}" role="button" tabindex="0" aria-label="${esc(f.name)}"><div class="hrow"><span class="fav" style="background:${SITES[f.site].fav}">${SITES[f.site].name[0]}</span><span class="hn">${esc(f.name)}</span>
+        <button class="b sm" data-runflow2="${i}" aria-label="Run ${esc(f.name)}">${I.play}Run</button></div><div class="hd">${esc(f.desc)}</div>
+        <div class="hm">${f.schedule !== "off" ? `${I.clock}${SCHED[f.schedule]} · ` : ""}<span class="${r.how}">${esc(r.text)}</span> · ${esc(r.when)}</div></div>`; }).join("") + `</div>
+    <div class="foot${foot ? (foot.ok ? " ok" : " bad") : ""}">${foot ? esc(foot.text) : ""}</div>`;
+}
 function renderSide() {
+  if (home && !recording && !busy) return renderHome();
   const f = flows[cur], rows = f.inputs ? f.inputs.rows.length : 0, asking = out && out.some(o => o.how === "ask");
   const state = recording ? ["rec", "Recording"] : asking ? ["rev", "Needs your OK"] : busy ? ["run", "Running"] : pending ? ["rev", "Review fix"] : f.schedule !== "off" ? ["sch", SCHED[f.schedule]] : ["", "Ready"];
   let body;
@@ -817,6 +791,7 @@ function renderSide() {
       <button class="b sm addrow" id="addrow"${busy ? " disabled" : ""}>${I.plus}Add row</button>` + resultCard();
   else body = `<ol class="list" aria-live="polite">` + (out || f.steps.map(s => ({ s }))).map(stepLi).join("") + `</ol>` + resultCard();
   $("side").innerHTML = `<div class="sp-head"><span class="logo"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11.5 6.5 8 9 10.5 13 5"/><path d="M10 5h3v3"/></svg></span><span class="h">Autopilot</span>
+      <button class="b sm" id="home" aria-label="All workflows"${busy ? " disabled" : ""}>All workflows</button>
       <select class="b sm mob" id="pick" aria-label="Workflow"${busy || recording ? " disabled" : ""}>${flows.map((x, i) => `<option value="${i}"${i === cur ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>
     <div class="shead"><div class="row"><span class="t">${recording ? "New workflow" : esc(f.name)}</span><span class="pill ${state[0]}">${state[0] === "sch" ? I.clock : ""}${state[1]}</span></div>
       <div class="meta">${recording ? "Recording on " + SITES[tab().site].domain : `${SITES[f.site].domain} · version ${f.ver} · ${f.steps.length} steps`}</div></div>
@@ -824,8 +799,7 @@ function renderSide() {
     <div class="ctrl">` + (recording ? `<button class="b pri" id="save"${recording.steps.length ? "" : " disabled"}>Save workflow</button><button class="b" id="cancel">Discard</button>`
       : busy ? `<button class="b pri" disabled>${I.play}Running…</button><button class="b" id="stop">${I.stop}Stop, I’ll take over</button>`
       : `<button class="b pri" id="run"${pending ? " disabled" : ""}>${I.play}${rows ? `Run on ${rows} row${rows > 1 ? "s" : ""}` : "Run now"}</button>
-        <span class="selwrap">${withClass(I.clock, "i1")}<select id="sched" aria-label="Schedule">${Object.entries(SCHED).map(([k, x]) => `<option value="${k}"${k === f.schedule ? " selected" : ""}>${k === "off" ? "Schedule" : x}</option>`).join("")}</select>${withClass(I.down, "i2")}</span>
-        <button class="b" id="record2">${withClass(I.rec, "")}Record new</button>`) + `</div>
+        <span class="selwrap">${withClass(I.clock, "i1")}<select id="sched" aria-label="Schedule">${Object.entries(SCHED).map(([k, x]) => `<option value="${k}"${k === f.schedule ? " selected" : ""}>${k === "off" ? "Schedule" : x}</option>`).join("")}</select>${withClass(I.down, "i2")}</span>`) + `</div>
     ${recording ? "" : `<div class="seg" role="tablist"><button role="tab" data-view="steps" aria-selected="${view === "steps"}">Steps</button>${f.inputs ? `<button role="tab" data-view="inputs" aria-selected="${view === "inputs"}">Inputs</button>` : ""}<button role="tab" data-view="runs" aria-selected="${view === "runs"}">History</button></div>`}
     ${pending ? `<div class="review"><b>The site changed, and AI fixed ${pending.ai} step${pending.ai > 1 ? "s" : ""}.</b> Keep the fixed steps for next time?
       <div class="diff" style="flex-direction:column;align-items:flex-start">${pending.changes.map(c => Array.isArray(c) ? `<span><s>${v(c[0])}</s> → <b>${v(c[1])}</b></span>` : `<span>${esc(c)}</span>`).join("")}</div>
@@ -838,15 +812,6 @@ function renderSide() {
 function draw() { renderTabs(); renderPage(); renderNav(); renderSide(); $("win").classList.toggle("collapsed", collapsed); }
 
 // ---------------------------------------------------------------- someone using the page
-// hovering a node in the memory graph lights up everything it connects to
-$("site").addEventListener("mouseover", e => {
-  const g = e.target.closest(".gn"), svg = g && g.closest("svg"); if (!g) return;
-  const id = g.dataset.id, es = [...svg.querySelectorAll(".ge")].filter(p => p.dataset.a === id || p.dataset.b === id), near = new Set([id, ...es.flatMap(p => [p.dataset.a, p.dataset.b])]);
-  svg.classList.add("focus"); svg.querySelectorAll(".ge").forEach(p => p.classList.toggle("hot", es.includes(p))); svg.querySelectorAll(".gn").forEach(n => n.classList.toggle("hot", near.has(n.dataset.id)));
-});
-$("site").addEventListener("mouseleave", () => { if (tab().site === "memory") renderPage(); });
-$("site").addEventListener("mouseout", e => { if (e.target.closest(".gn") && !e.relatedTarget?.closest?.(".gn") && tab().site === "memory") renderPage(); });
-$("site").addEventListener("keydown", e => { const g = e.target.closest(".gn"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles:true })); } });
 $("site").addEventListener("click", e => {
   const t = tab();
   if (!t.site) {
@@ -958,9 +923,13 @@ async function runOnce(f, params) {
     if (!param) for (let k = 0; k < pages; k++) next.push(NEXT);
     if (r && pages) { Object.assign(r, { how:"free", fixed:null, was:null, why:`It wasn’t on this page anymore. Autopilot paged ahead and found it ${pages} page${pages > 1 ? "s" : ""} further on. No AI needed.` }); if (!param) changes.push(`Pages ahead to find ${s.label}`); }
     if (!r) {
-      const old = s.label || s.field, lr = mem.renames[f.site + "|" + old], rule = lr && ruleOn("rename", f.site);
-      let h;
-      if (rule) { used.add(rule); usedBy(lr, f.name); h = { seq:lr.seq, was:old, is:lr.seq.join(" › "), why:`Fixed from memory, no AI. It learned this rename in “${lr.from}”.` }; }
+      const old = s.label || s.field, key = f.site + "|" + old;
+      let lr = mem.renames[key], h;
+      if (lr && !nodes().some(x => x.dataset.label === lr.seq[0])) { // memory is out of date: drop it rather than trust it
+        delete mem.renames[key]; harness.log.unshift({ when:now(), text:`Forgot that “${old}” is ${lr.seq.join(" › ")}: the page no longer matches.` }); notes.push("What it remembered here was out of date, so it forgot it."); lr = null;
+      }
+      const rule = lr;
+      if (rule) { usedBy(lr, f.name); h = { seq:lr.seq, was:old, is:lr.seq.join(" › "), why:`From memory, no AI: it learned this in “${lr.from}”.` }; }
       else { o.why = `Can’t find “${old}” on the page. Asking AI…`; ghost(null); renderSide(); await wait(900); h = heal(s); }
       if (!h) return stuck(i, o, `Can’t find “${old}” on the page, and AI couldn’t work out what replaced it.`, `couldn’t find “${old}”`);
       const did = [];
@@ -974,7 +943,7 @@ async function runOnce(f, params) {
       if (!rule) ai++;
       next.push(...did); changes.push([h.was, h.is]);
       Object.assign(o, { how:rule ? "mem" : "ai", was:h.was, is:h.is, why:[...notes, h.why].join(" "), did:did.map((x, k) => k && x.type === "click" ? q(x.label) : label(x, "done")).join(" → "),
-        rename:!rule && MEANS[old] ? { old, seq:h.seq } : null });
+        rename:!rule && MEANS[old] ? { old, seq:h.seq, steps:did } : null });
       renderSide(); continue;
     }
     next.push(r.fixed && !param ? r.fixed : tpl);
@@ -1021,18 +990,21 @@ async function run() {
   else if (changed) saveVersion(f, next, changes);
   result = { ok, head, rows:n > 1 ? lines : !ok && !halted ? lines : null, saved:changed && !pending ? f.ver : null, pending:!!pending, memo };
   if (n > 1) view = "inputs";
-  ideas = triage(); draw();
+  ideas = triage(); save(); draw();
   const card = $("side").querySelector(".done"); if (card) card.scrollIntoView({ block:"nearest" });
 }
 function saveVersion(f, next, changes) {
   f.steps = next; f.ver = Math.max(...f.versions.map(x => x.v)) + 1;
   f.versions.unshift({ v:f.ver, when:now(), note:changes.map(c => Array.isArray(c) ? `“${c[0]}” → “${c[1]}”` : c).join(" · ") || "Updated steps", steps:clone(next) });
 }
-function selectFlow(i) { if (busy || recording) return; cur = i; out = null; foot = null; pending = null; result = null; rowState = null; view = "steps"; focusSite(flows[i].site, false); draw(); }
+function selectFlow(i) { if (busy || recording) return; home = false; cur = i; out = null; foot = null; pending = null; result = null; rowState = null; view = "steps"; focusSite(flows[i].site, false); draw(); }
 
 // ---------------------------------------------------------------- controls
 $("side").addEventListener("click", e => {
+  const rf = e.target.closest("[data-runflow2]"); if (rf) { selectFlow(+rf.dataset.runflow2); run(); return; }
+  const of = !e.target.closest("button") && e.target.closest("[data-open-flow]"); if (of) { selectFlow(+of.dataset.openFlow); return; }
   const b = e.target.closest("button"); if (!b) return;
+  if (b.id === "home") { home = true; out = null; result = null; foot = null; pending = null; renderSide(); return; }
   const f = flows[cur], id = b.id;
   if (b.dataset.view) { view = b.dataset.view; renderSide(); return; }
   if (b.dataset.open) { openInternal(b.dataset.open); return; }
@@ -1046,7 +1018,8 @@ $("side").addEventListener("click", e => {
   else if (id === "addrow") { f.inputs.rows.push(f.inputs.cols.map(() => "")); rowState = null; renderSide(); $("side").querySelector(`[data-cell="${f.inputs.rows.length - 1},0"]`).focus(); }
   else if (id === "rv") { f.review = !f.review; renderSide(); }
   else if (id === "askset") { f.ask = !f.ask; renderSide(); }
-  else if (id === "keep") { saveVersion(f, pending.next, pending.changes); result = { ...result, pending:false, saved:f.ver }; pending = null; draw(); }
+  if (["keep","undo","rv","askset","addrow"].includes(id) || b.dataset.restore || b.dataset.delrow) setTimeout(save);
+  if (id === "keep") { saveVersion(f, pending.next, pending.changes); result = { ...result, pending:false, saved:f.ver }; pending = null; draw(); }
   else if (id === "undo") { pending.entry.text += " · fix undone"; pending = null; result = { ...result, pending:false }; foot = { ok:false, text:"Undid the fix. The workflow keeps its old steps." }; draw(); }
   else if (id === "save") saveRecording();
   else if (id === "cancel") { recording = null; foot = null; draw(); }
@@ -1055,8 +1028,10 @@ $("side").addEventListener("change", e => {
   const f = flows[cur];
   if (e.target.id === "sched") { f.schedule = e.target.value; foot = f.schedule === "off" ? null : { ok:true, text:`Scheduled: ${SCHED[f.schedule]}. It runs in the background and asks you only if it gets stuck.` }; renderSide(); }
   else if (e.target.id === "pick") selectFlow(+e.target.value);
+  save();
 });
-$("side").addEventListener("input", e => { const c = e.target.dataset.cell; if (!c) return; const [r, k] = c.split(",").map(Number); flows[cur].inputs.rows[r][k] = e.target.value; });
+$("side").addEventListener("keydown", e => { const c = e.target.closest("[data-open-flow]"); if (c && e.target === c && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); selectFlow(+c.dataset.openFlow); } });
+$("side").addEventListener("input", e => { const c = e.target.dataset.cell; if (!c) return; const [r, k] = c.split(",").map(Number); flows[cur].inputs.rows[r][k] = e.target.value; save(); });
 
 $("nav").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
@@ -1064,13 +1039,14 @@ $("nav").addEventListener("click", e => {
   if (b.dataset.i) { selectFlow(+b.dataset.i); return; }
   if (b.dataset.proj) { filter = filter === b.dataset.proj ? null : b.dataset.proj; renderNav(); return; }
   const n = b.dataset.nav;
-  if (n === "all") { filter = null; query = ""; searching = false; renderNav(); }
+  if (n === "all") { filter = null; query = ""; searching = false; if (!busy && !recording) { home = true; out = null; result = null; } renderNav(); renderSide(); }
   else if (n === "search") { searching = !searching; query = ""; renderNav(); }
   else if (n === "new") { if (busy) return; openTab(null); draw(); $("ask").focus(); }
   else if (n === "memory" || n === "improve") openInternal(n);
   else if (n === "custom") {
     const r = b.getBoundingClientRect(), theme = document.documentElement.dataset.theme || "system";
-    showPop(r.left, r.bottom + 4, `<div class="lbl">Appearance</div>` + ["system","light","dark"].map(t => `<button data-theme-set="${t}">${t[0].toUpperCase() + t.slice(1)}<span>${t === theme ? "✓" : ""}</span></button>`).join(""));
+    showPop(r.left, r.bottom + 4, `<div class="lbl">Appearance</div>` + ["system","light","dark"].map(t => `<button data-theme-set="${t}">${t[0].toUpperCase() + t.slice(1)}<span>${t === theme ? "✓" : ""}</span></button>`).join("") +
+      `<div class="lbl">Autopilot</div><button data-reset>Forget everything it learned</button>`);
   }
 });
 $("nav").addEventListener("input", e => { if (e.target.id === "q") { query = e.target.value; renderNav(); } });
@@ -1079,6 +1055,7 @@ let pop = null;
 function showPop(x, y, html) { closePop(); pop = document.createElement("div"); pop.className = "popover"; pop.style.top = y + "px"; pop.style.left = x + "px"; pop.innerHTML = html; document.body.append(pop); }
 function closePop() { if (pop) { pop.remove(); pop = null; } }
 document.addEventListener("click", e => {
+  if (e.target.closest("[data-reset]")) { try { localStorage.removeItem(STORE); } catch (x) {} location.reload(); return; }
   const t = e.target.closest("[data-theme-set]");
   if (t) { const v = t.dataset.themeSet; if (v === "system") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = v; closePop(); return; }
   if (pop && !pop.contains(e.target) && !e.target.closest('[data-nav="custom"]')) closePop();
@@ -1111,9 +1088,10 @@ function saveRecording() {
   flows.push({ name, site:t.site, project:PROJECT_OF[t.site], ver:1, schedule:"off", review:true, ask:true, expect:got, desc:`Repeats what you just did on ${SITES[t.site].name}.`, done:g => g,
     steps, runs:[{ when, text:"Recorded", how:"replay" }], versions:[{ v:1, when, note:"Recorded", steps:clone(steps) }] });
   recording = null; cur = flows.length - 1; out = null; filter = null; foot = { ok:true, text:"Saved. Run it now, put it on a schedule, or start it from a new tab." };
-  t.S = SITES[t.site].start(); draw();
+  t.S = SITES[t.site].start(); save(); draw();
 }
 
+load(); ideas = triage();
 openTab("pipeline"); openTab("ledgerly"); active = 0; draw();
 </script>
 </body></html>
